@@ -1,0 +1,192 @@
+'use client'
+
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import type {
+  CooperationStatus,
+  CooperationRating,
+  AgreementStatus,
+  ProjectPhase,
+  ExpertRating,
+  ActivityStatus,
+  AchievementType,
+} from '@/lib/types'
+import {
+  COOPERATION_STATUS_LABELS,
+  COOPERATION_RATING_LABELS,
+  AGREEMENT_STATUS_LABELS,
+  PROJECT_PHASE_LABELS,
+  EXPERT_RATING_LABELS,
+  ACTIVITY_STATUS_LABELS,
+  ACHIEVEMENT_TYPE_LABELS,
+} from '@/lib/types'
+
+interface StatusBadgeProps {
+  status: CooperationStatus
+  className?: string
+}
+
+export function CooperationStatusBadge({ status, className }: StatusBadgeProps) {
+  const variants: Record<CooperationStatus, string> = {
+    negotiating: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    active: 'bg-green-100 text-green-800 border-green-200',
+    paused: 'bg-gray-100 text-gray-800 border-gray-200',
+    terminated: 'bg-red-100 text-red-800 border-red-200',
+  }
+
+  return (
+    <Badge variant="outline" className={cn(variants[status], className)}>
+      {COOPERATION_STATUS_LABELS[status]}
+    </Badge>
+  )
+}
+
+interface RatingBadgeProps {
+  rating: CooperationRating
+  className?: string
+}
+
+export function CooperationRatingBadge({ rating, className }: RatingBadgeProps) {
+  const variants: Record<CooperationRating, string> = {
+    strategic: 'bg-blue-100 text-blue-800 border-blue-200',
+    deep: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+    general: 'bg-gray-100 text-gray-800 border-gray-200',
+  }
+
+  return (
+    <Badge variant="outline" className={cn(variants[rating], className)}>
+      {COOPERATION_RATING_LABELS[rating]}
+    </Badge>
+  )
+}
+
+interface AgreementStatusBadgeProps {
+  status: AgreementStatus
+  className?: string
+}
+
+export function AgreementStatusBadge({ status, className }: AgreementStatusBadgeProps) {
+  const variants: Record<AgreementStatus, string> = {
+    draft: 'bg-gray-100 text-gray-800 border-gray-200',
+    active: 'bg-green-100 text-green-800 border-green-200',
+    expired: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    renewed: 'bg-blue-100 text-blue-800 border-blue-200',
+    terminated: 'bg-red-100 text-red-800 border-red-200',
+  }
+
+  return (
+    <Badge variant="outline" className={cn(variants[status], className)}>
+      {AGREEMENT_STATUS_LABELS[status]}
+    </Badge>
+  )
+}
+
+interface ProjectPhaseBadgeProps {
+  phase: ProjectPhase
+  className?: string
+}
+
+export function ProjectPhaseBadge({ phase, className }: ProjectPhaseBadgeProps) {
+  const variants: Record<ProjectPhase, string> = {
+    initiation: 'bg-blue-100 text-blue-800 border-blue-200',
+    execution: 'bg-green-100 text-green-800 border-green-200',
+    acceptance: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    closure: 'bg-purple-100 text-purple-800 border-purple-200',
+    archived: 'bg-gray-100 text-gray-800 border-gray-200',
+    terminated: 'bg-red-100 text-red-800 border-red-200',
+  }
+
+  return (
+    <Badge variant="outline" className={cn(variants[phase], className)}>
+      {PROJECT_PHASE_LABELS[phase]}
+    </Badge>
+  )
+}
+
+interface ExpertRatingBadgeProps {
+  rating: ExpertRating
+  className?: string
+}
+
+export function ExpertRatingBadge({ rating, className }: ExpertRatingBadgeProps) {
+  const variants: Record<ExpertRating, string> = {
+    gold: 'bg-amber-100 text-amber-800 border-amber-200',
+    silver: 'bg-slate-100 text-slate-700 border-slate-200',
+    bronze: 'bg-orange-100 text-orange-800 border-orange-200',
+  }
+
+  return (
+    <Badge variant="outline" className={cn(variants[rating], className)}>
+      {EXPERT_RATING_LABELS[rating]}
+    </Badge>
+  )
+}
+
+interface ActivityStatusBadgeProps {
+  status: ActivityStatus
+  className?: string
+}
+
+export function ActivityStatusBadge({ status, className }: ActivityStatusBadgeProps) {
+  const variants: Record<ActivityStatus, string> = {
+    draft: 'bg-gray-100 text-gray-800 border-gray-200',
+    published: 'bg-green-100 text-green-800 border-green-200',
+    ended: 'bg-blue-100 text-blue-800 border-blue-200',
+  }
+
+  return (
+    <Badge variant="outline" className={cn(variants[status], className)}>
+      {ACTIVITY_STATUS_LABELS[status]}
+    </Badge>
+  )
+}
+
+interface AchievementTypeBadgeProps {
+  type: AchievementType
+  className?: string
+}
+
+export function AchievementTypeBadge({ type, className }: AchievementTypeBadgeProps) {
+  const variants: Record<AchievementType, string> = {
+    'joint-build': 'bg-blue-100 text-blue-800 border-blue-200',
+    'training-base': 'bg-green-100 text-green-800 border-green-200',
+    'education-reform': 'bg-purple-100 text-purple-800 border-purple-200',
+    'case-study': 'bg-orange-100 text-orange-800 border-orange-200',
+    patent: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+    award: 'bg-amber-100 text-amber-800 border-amber-200',
+  }
+
+  return (
+    <Badge variant="outline" className={cn(variants[type], className)}>
+      {ACHIEVEMENT_TYPE_LABELS[type]}
+    </Badge>
+  )
+}
+
+// 通用里程碑状态徽章
+interface MilestoneStatusBadgeProps {
+  status: 'pending' | 'in-progress' | 'completed' | 'delayed'
+  className?: string
+}
+
+export function MilestoneStatusBadge({ status, className }: MilestoneStatusBadgeProps) {
+  const labels = {
+    pending: '待开始',
+    'in-progress': '进行中',
+    completed: '已完成',
+    delayed: '已延期',
+  }
+
+  const variants = {
+    pending: 'bg-gray-100 text-gray-800 border-gray-200',
+    'in-progress': 'bg-blue-100 text-blue-800 border-blue-200',
+    completed: 'bg-green-100 text-green-800 border-green-200',
+    delayed: 'bg-red-100 text-red-800 border-red-200',
+  }
+
+  return (
+    <Badge variant="outline" className={cn(variants[status], className)}>
+      {labels[status]}
+    </Badge>
+  )
+}
