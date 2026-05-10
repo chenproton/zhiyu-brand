@@ -684,3 +684,40 @@ export const EXPERIENCE_LEVELS = [
   '3-5年',
   '5年以上',
 ]
+
+// 就业项目类型
+export type EmploymentProjectType = 'spring' | 'autumn' | '定向招聘' | '专场招聘'
+
+// 就业项目状态
+export type EmploymentProjectStatus = 'preparing' | 'ongoing' | 'ended'
+
+// 就业项目
+export interface EmploymentProject {
+  id: string
+  name: string
+  type: EmploymentProjectType
+  season: string
+  partnerIds: string[]
+  targetStudents: string
+  startDate: Date
+  endDate: Date
+  status: EmploymentProjectStatus
+  jobCount: number
+  applicationCount: number
+  description?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export const EMPLOYMENT_PROJECT_TYPE_LABELS: Record<EmploymentProjectType, string> = {
+  spring: '春季招聘',
+  autumn: '秋季招聘',
+  '定向招聘': '定向招聘',
+  '专场招聘': '专场招聘',
+}
+
+export const EMPLOYMENT_PROJECT_STATUS_LABELS: Record<EmploymentProjectStatus, string> = {
+  preparing: '筹备中',
+  ongoing: '进行中',
+  ended: '已结束',
+}

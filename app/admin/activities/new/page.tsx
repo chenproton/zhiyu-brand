@@ -12,14 +12,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { projects } from "@/lib/mock-data"
 import { ACTIVITY_TYPES } from "@/lib/types"
-import type { ActivityType } from "@/lib/types"
+
 
 export default function NewActivityPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
-    type: "" as ActivityType | "",
+    type: "" as string,
     description: "",
     startDate: "",
     endDate: "",
@@ -78,7 +78,7 @@ export default function NewActivityPage() {
                     <Label htmlFor="type">活动类型 *</Label>
                     <Select
                       value={formData.type}
-                      onValueChange={(value) => setFormData({ ...formData, type: value as ActivityType })}
+                      onValueChange={(value) => setFormData({ ...formData, type: value as string })}
                       required
                     >
                       <SelectTrigger id="type">

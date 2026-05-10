@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { AdminHeader } from '@/components/admin/header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,9 +29,7 @@ export default function AdminDashboardPage() {
     .slice(0, 3)
 
   return (
-    <>
-      <AdminHeader title="仪表盘" />
-      <main className="flex-1 overflow-y-auto p-6">
+    <div>
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card>
@@ -305,7 +302,6 @@ export default function AdminDashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </main>
-    </>
+    </div>
   )
 }

@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { AdminHeader } from '@/components/admin/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -99,9 +98,7 @@ export default function AgreementsListPage() {
   }
 
   return (
-    <>
-      <AdminHeader title="合作协议管理" />
-      <main className="flex-1 overflow-y-auto p-6">
+    <div>
         {/* Header Actions */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -221,7 +218,6 @@ export default function AgreementsListPage() {
             </TableBody>
           </Table>
         </Card>
-      </main>
-    </>
+    </div>
   )
 }

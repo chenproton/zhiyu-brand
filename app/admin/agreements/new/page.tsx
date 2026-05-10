@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AdminHeader } from '@/components/admin/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -58,9 +57,7 @@ export default function NewAgreementPage() {
   }
 
   return (
-    <>
-      <AdminHeader title="新增合作协议" />
-      <main className="flex-1 overflow-y-auto p-6">
+    <div>
         {/* Back Button */}
         <div className="mb-6">
           <Link href="/admin/agreements">
@@ -236,7 +233,6 @@ export default function NewAgreementPage() {
             </div>
           </div>
         </form>
-      </main>
-    </>
+    </div>
   )
 }

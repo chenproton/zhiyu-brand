@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { AdminHeader } from '@/components/admin/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -34,9 +33,7 @@ export default async function ExpertDetailPage({ params }: PageProps) {
   const partner = expert.partnerId ? getPartnerById(expert.partnerId) : null
 
   return (
-    <>
-      <AdminHeader title="专家详情" />
-      <main className="flex-1 overflow-y-auto p-6">
+    <div>
         {/* Back Button */}
         <div className="mb-6">
           <Link href="/admin/experts">
@@ -225,7 +222,6 @@ export default async function ExpertDetailPage({ params }: PageProps) {
             </Card>
           </div>
         </div>
-      </main>
-    </>
+    </div>
   )
 }

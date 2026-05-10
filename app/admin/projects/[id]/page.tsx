@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { AdminHeader } from '@/components/admin/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -60,9 +59,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   }
 
   return (
-    <>
-      <AdminHeader title="项目详情" />
-      <main className="flex-1 overflow-y-auto p-6">
+    <div>
         {/* Back Button */}
         <div className="mb-6">
           <Link href="/admin/projects">
@@ -308,7 +305,6 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
-    </>
+    </div>
   )
 }

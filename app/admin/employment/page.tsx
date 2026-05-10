@@ -103,7 +103,30 @@ export default function EmploymentPage() {
       </div>
 
       {/* 快捷入口 */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
+        <Link href="/admin/employment/projects">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-100 rounded-lg">
+                  <FileText className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">就业项目</CardTitle>
+                  <CardDescription>招聘季项目管理</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  管理招聘活动
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
         <Link href="/admin/employment/jobs">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader>

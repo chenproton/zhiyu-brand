@@ -104,7 +104,7 @@ const brandModules = [
     title: "品牌专题页",
     description: "品牌专题页创建与管理",
     icon: FileText,
-    href: "/admin/brands/topic",
+    href: "/admin/brands/topics",
     stats: [
       { label: "专题页", value: brandTopics.length },
       { label: "首页推荐", value: brandTopics.filter(t => t.isRecommended).length },
