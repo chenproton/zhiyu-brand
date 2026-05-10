@@ -52,7 +52,7 @@ export default function PartnersPage() {
 
   return (
     <div className="py-8 lg:py-12">
-      <div className="container">
+      <div className="container mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">合作主体</h1>

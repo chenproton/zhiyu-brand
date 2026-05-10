@@ -90,7 +90,7 @@ export default function BrandsPage() {
     <div className="min-h-screen bg-muted/30">
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-background to-muted/30 py-16">
-        <div className="container">
+        <div className="container mx-auto">
           <div className="text-center max-w-3xl mx-auto">
             <Badge variant="secondary" className="mb-4">
               品牌展示中心
@@ -107,7 +107,7 @@ export default function BrandsPage() {
       </section>
 
       {/* Brand Categories */}
-      <section className="container py-12">
+      <section className="container mx-auto py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {brandCategories.map((category) => {
             const Icon = category.icon
@@ -138,7 +138,7 @@ export default function BrandsPage() {
       </section>
 
       {/* Featured Content */}
-      <section className="container py-12">
+      <section className="container mx-auto py-12">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold">精选人才</h2>
@@ -172,7 +172,7 @@ export default function BrandsPage() {
       </section>
 
       {/* Featured Majors */}
-      <section className="container py-12">
+      <section className="container mx-auto py-12">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold">特色专业</h2>

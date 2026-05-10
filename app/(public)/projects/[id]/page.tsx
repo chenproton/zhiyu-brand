@@ -42,7 +42,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="py-8 lg:py-12">
-      <div className="container">
+      <div className="container mx-auto">
         {/* Back Button */}
         <Button variant="ghost" size="sm" asChild className="mb-6">
           <Link href="/projects">

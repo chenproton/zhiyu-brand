@@ -1,5 +1,31 @@
 import type { PlatformNavigationConfig } from "@/platform-navigation-shell"
 
+const externalPortalUrl = "http://47.251.48.187:3001/portal"
+const externalWorkspaceUrl = "http://47.251.48.187:3001/portal/workspace"
+const externalAppsUrl = "http://47.251.48.187:3001/portal/apps"
+
+export const publicNavigationConfig: PlatformNavigationConfig = {
+  brandTitle: "产业联盟与人资品牌服务平台",
+  currentPlatformId: "public",
+  currentPlatformLabel: "门户首页",
+  brandHref: "/",
+  brandIcon: "settings",
+  platformIcon: "settings",
+  sideBackHref: "/",
+  showCurrentTime: true,
+  showUserMenu: false,
+  hideSideNav: true,
+  topNavItems: [
+    { id: "portal", label: "门户首页", href: externalPortalUrl, icon: "home" },
+    { id: "workspace", label: "我的服务台", href: externalWorkspaceUrl, icon: "briefcase" },
+    { id: "apps", label: "应用服务中心", href: externalAppsUrl, icon: "layoutGrid" },
+  ],
+  sideNavItems: [],
+  shellClassName: "bg-background",
+  mainClassName: "min-w-0 flex-1",
+  contentClassName: "p-0",
+}
+
 export const brandNavigationConfig: PlatformNavigationConfig = {
   brandTitle: "产业联盟与人资品牌服务平台",
   currentPlatformId: "brand",
@@ -17,30 +43,47 @@ export const brandNavigationConfig: PlatformNavigationConfig = {
     { id: "logout", label: "退出登录", tone: "danger" },
   ],
   topNavItems: [
-    { id: "portal", label: "门户首页", href: "/admin", icon: "home", matchers: ["/admin"] },
-    { id: "workspace", label: "我的服务台", href: "/admin", icon: "briefcase", matchers: ["/admin/workspace"] },
-    { id: "apps", label: "应用服务中心", href: "/admin", icon: "layoutGrid", matchers: ["/admin/apps"] },
+    { id: "portal", label: "门户首页", href: externalPortalUrl, icon: "home" },
+    { id: "workspace", label: "我的服务台", href: externalWorkspaceUrl, icon: "briefcase" },
+    { id: "apps", label: "应用服务中心", href: externalAppsUrl, icon: "layoutGrid" },
   ],
   sideNavItems: [
     { id: "overview", label: "仪表盘", href: "/admin", icon: "barChart3", matchers: ["/admin"] },
-    { id: "school", label: "学校信息", href: "/admin/school", icon: "graduationCap", matchers: ["/admin/school"] },
-    { id: "partners", label: "合作主体", href: "/admin/partners", icon: "folderKanban", matchers: ["/admin/partners"] },
-    { id: "agreements", label: "合作协议", href: "/admin/agreements", icon: "fileText", matchers: ["/admin/agreements"] },
-    { id: "projects", label: "合作项目", href: "/admin/projects", icon: "folderKanban", matchers: ["/admin/projects"] },
-    { id: "experts", label: "专家资源库", href: "/admin/experts", icon: "user", matchers: ["/admin/experts"] },
-    { id: "achievements", label: "合作成果", href: "/admin/achievements", icon: "badgeCheck", matchers: ["/admin/achievements"] },
-    { id: "activities", label: "联盟活动", href: "/admin/activities", icon: "calendar", matchers: ["/admin/activities"] },
-    { id: "ratings", label: "合作评级", href: "/admin/ratings", icon: "badgeCheck", matchers: ["/admin/ratings"] },
-    { id: "cooperation-types", label: "合作类型", href: "/admin/cooperation-types", icon: "bookOpen", matchers: ["/admin/cooperation-types"] },
-    { id: "brands", label: "品牌运营", href: "/admin/brands", icon: "share2", matchers: ["/admin/brands"], children: [
-      { id: "brand-overview", label: "品牌概览", href: "/admin/brands", matchers: ["/admin/brands"] },
-      { id: "brand-topics", label: "专题页管理", href: "/admin/brands/topics", matchers: ["/admin/brands/topics"] },
-    ]},
-    { id: "employment", label: "就业服务", href: "/admin/employment", icon: "briefcase", matchers: ["/admin/employment"], children: [
-      { id: "employment-overview", label: "就业概览", href: "/admin/employment", matchers: ["/admin/employment"] },
-      { id: "employment-projects", label: "就业项目", href: "/admin/employment/projects", matchers: ["/admin/employment/projects"] },
-      { id: "employment-jobs", label: "岗位管理", href: "/admin/employment/jobs", matchers: ["/admin/employment/jobs"] },
-      { id: "employment-applications", label: "投递管理", href: "/admin/employment/applications", matchers: ["/admin/employment/applications"] },
-    ]},
+    {
+      id: "cooperation",
+      label: "产教融合管理",
+      icon: "folderKanban",
+      children: [
+        { id: "school", label: "学校信息", href: "/admin/school", matchers: ["/admin/school"] },
+        { id: "partners", label: "合作主体", href: "/admin/partners", matchers: ["/admin/partners"] },
+        { id: "agreements", label: "合作协议", href: "/admin/agreements", matchers: ["/admin/agreements"] },
+        { id: "projects", label: "合作项目", href: "/admin/projects", matchers: ["/admin/projects"] },
+        { id: "experts", label: "专家资源库", href: "/admin/experts", matchers: ["/admin/experts"] },
+        { id: "achievements", label: "合作成果", href: "/admin/achievements", matchers: ["/admin/achievements"] },
+        { id: "activities", label: "联盟活动", href: "/admin/activities", matchers: ["/admin/activities"] },
+        { id: "ratings", label: "合作评级", href: "/admin/ratings", matchers: ["/admin/ratings"] },
+        { id: "cooperation-types", label: "合作类型", href: "/admin/cooperation-types", matchers: ["/admin/cooperation-types"] },
+      ],
+    },
+    {
+      id: "brand",
+      label: "品牌运营管理",
+      icon: "share2",
+      children: [
+        { id: "brand-overview", label: "品牌概览", href: "/admin/brands", matchers: ["/admin/brands"] },
+        { id: "brand-topics", label: "专题页管理", href: "/admin/brands/topics", matchers: ["/admin/brands/topics"] },
+      ],
+    },
+    {
+      id: "employment",
+      label: "就业服务管理",
+      icon: "briefcase",
+      children: [
+        { id: "employment-overview", label: "就业概览", href: "/admin/employment", matchers: ["/admin/employment"] },
+        { id: "employment-projects", label: "就业项目", href: "/admin/employment/projects", matchers: ["/admin/employment/projects"] },
+        { id: "employment-jobs", label: "岗位管理", href: "/admin/employment/jobs", matchers: ["/admin/employment/jobs"] },
+        { id: "employment-applications", label: "投递管理", href: "/admin/employment/applications", matchers: ["/admin/employment/applications"] },
+      ],
+    },
   ],
 }

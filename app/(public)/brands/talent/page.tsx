@@ -38,7 +38,7 @@ export default function TalentBrandPage() {
     <div className="min-h-screen bg-muted/30">
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-background to-muted/30 py-12">
-        <div className="container">
+        <div className="container mx-auto">
           <div className="max-w-3xl">
             <Badge variant="secondary" className="mb-4">
               人才品牌
@@ -53,7 +53,7 @@ export default function TalentBrandPage() {
         </div>
       </section>
 
-      <section className="container py-8">
+      <section className="container mx-auto py-8">
         <Tabs defaultValue="cases" className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <TabsList>

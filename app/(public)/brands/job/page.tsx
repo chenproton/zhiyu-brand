@@ -43,7 +43,7 @@ export default function JobBrandPage() {
     <div className="min-h-screen bg-muted/30">
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-background to-muted/30 py-12">
-        <div className="container">
+        <div className="container mx-auto">
           <div className="max-w-3xl">
             <Badge variant="secondary" className="mb-4">
               岗位品牌
@@ -58,7 +58,7 @@ export default function JobBrandPage() {
         </div>
       </section>
 
-      <section className="container py-8">
+      <section className="container mx-auto py-8">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-4 mb-8">
           <div className="relative flex-1 min-w-[200px] max-w-sm">

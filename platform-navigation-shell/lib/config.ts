@@ -12,6 +12,7 @@ export interface TopNavItem {
   href: string
   icon: PlatformIcon
   matchers?: string[]
+  disabled?: boolean
 }
 
 export interface SideNavChild {
@@ -54,6 +55,7 @@ export interface PlatformNavigationConfig {
   userMenuItems?: UserMenuItem[]
   showCurrentTime?: boolean
   defaultExpandedSideNavIds?: string[]
+  hideSideNav?: boolean
   shellClassName?: string
   mainClassName?: string
   contentClassName?: string

@@ -92,14 +92,24 @@ export function PlatformTopNav({ config }: { config: PlatformNavigationConfig })
           {config.topNavItems.map((item) => {
             const Icon = resolvePlatformIcon(item.icon)
             const active = isTopItemActive(pathname, item)
-            return (
+            const itemClassName = cn(
+              "relative flex items-center gap-1.5 rounded-md px-4 py-2 text-sm transition-colors",
+              item.disabled
+                ? "cursor-default text-gray-400"
+                : active
+                  ? "font-medium text-primary"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+            )
+            return item.disabled ? (
+              <span key={item.id} className={itemClassName}>
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </span>
+            ) : (
               <Link
                 key={item.id}
                 href={item.href}
-                className={cn(
-                  "relative flex items-center gap-1.5 rounded-md px-4 py-2 text-sm transition-colors",
-                  active ? "font-medium text-primary" : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-                )}
+                className={itemClassName}
               >
                 <Icon className="h-4 w-4" />
                 {item.label}
@@ -288,7 +298,7 @@ export function PlatformShell({
     <>
       <PlatformTopNav config={config} />
       <div className={cn("flex min-h-screen bg-[#f5f7fa] pt-14", config.shellClassName)}>
-        <PlatformSideNav config={config} />
+        {config.hideSideNav ? null : <PlatformSideNav config={config} />}
         <main className={cn("min-w-0 flex-1", config.mainClassName)}>
           <div className={cn("p-6", config.contentClassName)}>{children}</div>
         </main>
