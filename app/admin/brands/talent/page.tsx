@@ -80,7 +80,7 @@ export default function TalentBrandPage() {
                   <CardTitle>人才画像排名</CardTitle>
                   <CardDescription>基于能力认证结果的学生综合排名</CardDescription>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => alert('同步数据功能开发中')}>
                   <RefreshCw className="h-4 w-4 mr-2" />
                   同步数据
                 </Button>
@@ -214,11 +214,11 @@ export default function TalentBrandPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>查看详情</DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => alert('查看详情功能开发中')}>查看详情</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => alert(`${profile.isFeatured ? "取消特色展示" : "设为特色展示"}功能开发中`)}>
                               {profile.isFeatured ? "取消特色展示" : "设为特色展示"}
                             </DropdownMenuItem>
-                            <DropdownMenuItem>生成就业案例</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => alert('生成就业案例功能开发中')}>生成就业案例</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -238,7 +238,7 @@ export default function TalentBrandPage() {
                   <CardTitle>典型就业案例</CardTitle>
                   <CardDescription>展示优秀毕业生的就业故事</CardDescription>
                 </div>
-                <Button>
+                <Button onClick={() => alert('新增案例功能开发中')}>
                   <Plus className="h-4 w-4 mr-2" />
                   新增案例
                 </Button>
@@ -309,10 +309,10 @@ export default function TalentBrandPage() {
                           <span>{case_.viewCount}</span>
                         </div>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => alert('编辑功能开发中')}>
                             编辑
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" onClick={() => alert('预览功能开发中')}>
                             预览
                           </Button>
                         </div>

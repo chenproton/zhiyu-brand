@@ -18,13 +18,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FilterBar } from '@/components/shared/filter-bar'
 import {
   CooperationStatusBadge,
   CooperationRatingBadge,
+  AgreementStatusBadge,
 } from '@/components/shared/status-badge'
-import { Plus, MoreHorizontal, Eye, Pencil, Trash2, Building2 } from 'lucide-react'
+import { Plus, MoreHorizontal, Eye, Pencil, Trash2, Building2, FileText, Download, Tag, Settings } from 'lucide-react'
 import { enterprises } from '@/lib/mock-data'
+import type { EnterpriseAgreement } from '@/lib/types'
 import {
   ENTERPRISE_TYPE_LABELS,
   COOPERATION_STATUS_LABELS,
@@ -32,6 +36,8 @@ import {
   INDUSTRIES,
 } from '@/lib/types'
 import type { EnterpriseType, CooperationStatus, CooperationRating } from '@/lib/types'
+import CooperationTypeManager from '@/components/admin/cooperation-type-manager'
+import CooperationRatingManager from '@/components/admin/cooperation-rating-manager'
 
 export default function EnterprisesListPage() {
   const [search, setSearch] = useState('')
@@ -41,6 +47,10 @@ export default function EnterprisesListPage() {
     rating: 'all',
     industry: 'all',
   })
+  const [agreementDialogOpen, setAgreementDialogOpen] = useState(false)
+  const [agreementDialogEnterpriseId, setAgreementDialogEnterpriseId] = useState<string | null>(null)
+  const [cooperationTypeDialogOpen, setCooperationTypeDialogOpen] = useState(false)
+  const [cooperationRatingDialogOpen, setCooperationRatingDialogOpen] = useState(false)
 
   const filteredEnterprises = useMemo(() => {
     return enterprises.filter((enterprise) => {
@@ -76,6 +86,15 @@ export default function EnterprisesListPage() {
     })
   }
 
+  const openAgreementDialog = (enterpriseId: string) => {
+    setAgreementDialogEnterpriseId(enterpriseId)
+    setAgreementDialogOpen(true)
+  }
+
+  const selectedEnterprise = useMemo(() => {
+    return enterprises.find((e) => e.id === agreementDialogEnterpriseId)
+  }, [agreementDialogEnterpriseId])
+
   const filterConfigs = [
     {
       key: 'enterpriseType',
@@ -107,12 +126,18 @@ export default function EnterprisesListPage() {
             共 {filteredEnterprises.length} 个企业
           </p>
         </div>
-        <Link href="/admin/enterprises/new">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            新增企业
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setCooperationRatingDialogOpen(true)}>
+            <Settings className="h-4 w-4 mr-1" />
+            合作评级管理
           </Button>
-        </Link>
+          <Link href="/admin/enterprises/new">
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-1" />
+              新增企业
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card className="mb-6">
@@ -137,9 +162,9 @@ export default function EnterprisesListPage() {
               <TableHead>企业类型</TableHead>
               <TableHead>行业</TableHead>
               <TableHead>地区</TableHead>
-              <TableHead>状态</TableHead>
+              <TableHead>合作状态</TableHead>
               <TableHead>合作评级</TableHead>
-              <TableHead>协议数</TableHead>
+              <TableHead>校企合作协议</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -173,7 +198,14 @@ export default function EnterprisesListPage() {
                   <TableCell>
                     <CooperationRatingBadge rating={enterprise.rating} />
                   </TableCell>
-                  <TableCell>{enterprise.agreements?.length || 0}</TableCell>
+                  <TableCell>
+                    <button
+                      onClick={() => openAgreementDialog(enterprise.id)}
+                      className="text-primary font-semibold hover:underline"
+                    >
+                      {enterprise.agreements?.length || 0}
+                    </button>
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -194,7 +226,11 @@ export default function EnterprisesListPage() {
                             编辑
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
+                        <DropdownMenuItem onClick={() => openAgreementDialog(enterprise.id)}>
+                          <FileText className="h-4 w-4 mr-2" />
+                          协议管理
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600" onClick={() => { if (confirm('确定要删除该企业吗？')) alert('企业已删除（演示）') }}>
                           <Trash2 className="h-4 w-4 mr-2" />
                           删除
                         </DropdownMenuItem>
@@ -213,6 +249,87 @@ export default function EnterprisesListPage() {
           </TableBody>
         </Table>
       </Card>
+
+      {/* Agreement Dialog */}
+      <Dialog open={agreementDialogOpen} onOpenChange={setAgreementDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{selectedEnterprise?.name} - 校企合作协议</DialogTitle>
+            <DialogDescription>查看与该企业签订的所有合作协议</DialogDescription>
+          </DialogHeader>
+          {selectedEnterprise?.agreements && selectedEnterprise.agreements.length > 0 ? (
+            <Tabs defaultValue={selectedEnterprise.agreements[0].id}>
+              <TabsList className="mb-4">
+                {selectedEnterprise.agreements.map((agreement) => (
+                  <TabsTrigger key={agreement.id} value={agreement.id}>
+                    {agreement.name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {selectedEnterprise.agreements.map((agreement) => (
+                <TabsContent key={agreement.id} value={agreement.id}>
+                  <AgreementDetail agreement={agreement} />
+                </TabsContent>
+              ))}
+            </Tabs>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">暂无合作协议</div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Cooperation Rating Dialog */}
+      <Dialog open={cooperationRatingDialogOpen} onOpenChange={setCooperationRatingDialogOpen}>
+        <DialogContent className="w-[95vw] max-w-[1400px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>合作评级管理</DialogTitle>
+            <DialogDescription>维护合作深度评级的字典定义</DialogDescription>
+          </DialogHeader>
+          <CooperationRatingManager />
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+function AgreementDetail({ agreement }: { agreement: EnterpriseAgreement }) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-sm text-muted-foreground">协议类型</p>
+          <p className="font-medium">{agreement.type}</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">协议状态</p>
+          <AgreementStatusBadge status={agreement.status} />
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">开始日期</p>
+          <p className="font-medium">{agreement.startDate.toLocaleDateString('zh-CN')}</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">结束日期</p>
+          <p className="font-medium">{agreement.endDate.toLocaleDateString('zh-CN')}</p>
+        </div>
+      </div>
+      <div>
+        <p className="text-sm text-muted-foreground mb-1">协议内容</p>
+        <p className="text-sm bg-muted p-3 rounded-md">{agreement.content || '暂无内容'}</p>
+      </div>
+      {agreement.attachments && agreement.attachments.length > 0 && (
+        <div>
+          <p className="text-sm text-muted-foreground mb-2">附件</p>
+          <div className="flex flex-wrap gap-2">
+            {agreement.attachments.map((file) => (
+              <Button key={file} variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-1" />
+                {file}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

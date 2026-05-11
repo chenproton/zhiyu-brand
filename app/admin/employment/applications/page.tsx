@@ -209,26 +209,26 @@ export default function ApplicationsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => alert('查看详情功能开发中')}>
                             <Eye className="h-4 w-4 mr-2" />
                             查看详情
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => alert('查看简历功能开发中')}>
                             <FileText className="h-4 w-4 mr-2" />
                             查看简历
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           {app.status === "pending" && (
                             <>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => alert('标记为已查看功能开发中')}>
                                 <Eye className="h-4 w-4 mr-2" />
                                 标记为已查看
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => alert('安排面试功能开发中')}>
                                 <Calendar className="h-4 w-4 mr-2" />
                                 安排面试
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
+                              <DropdownMenuItem className="text-destructive" onClick={() => alert('不合适功能开发中')}>
                                 <XCircle className="h-4 w-4 mr-2" />
                                 不合适
                               </DropdownMenuItem>
@@ -236,11 +236,11 @@ export default function ApplicationsPage() {
                           )}
                           {app.status === "viewed" && (
                             <>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => alert('安排面试功能开发中')}>
                                 <Calendar className="h-4 w-4 mr-2" />
                                 安排面试
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
+                              <DropdownMenuItem className="text-destructive" onClick={() => alert('不合适功能开发中')}>
                                 <XCircle className="h-4 w-4 mr-2" />
                                 不合适
                               </DropdownMenuItem>
@@ -248,24 +248,24 @@ export default function ApplicationsPage() {
                           )}
                           {app.status === "interview" && (
                             <>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => alert('发送Offer功能开发中')}>
                                 <CheckCircle2 className="h-4 w-4 mr-2" />
                                 发送Offer
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
+                              <DropdownMenuItem className="text-destructive" onClick={() => alert('面试未通过功能开发中')}>
                                 <XCircle className="h-4 w-4 mr-2" />
                                 面试未通过
                               </DropdownMenuItem>
                             </>
                           )}
                           {app.status === "offer" && (
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => alert('确认入职功能开发中')}>
                               <CheckCircle2 className="h-4 w-4 mr-2" />
                               确认入职
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => alert('联系学生功能开发中')}>
                             <Phone className="h-4 w-4 mr-2" />
                             联系学生
                           </DropdownMenuItem>

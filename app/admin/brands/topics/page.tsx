@@ -35,7 +35,7 @@ export default function BrandTopicsPage() {
           <h1 className="text-2xl font-bold">品牌专题页管理</h1>
           <p className="text-muted-foreground">创建与运营品牌专题展示页</p>
         </div>
-        <Button>
+        <Button onClick={() => alert('新建专题页功能开发中')}>
           <Plus className="h-4 w-4 mr-2" />
           新建专题页
         </Button>
@@ -110,11 +110,11 @@ export default function BrandTopicsPage() {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => alert('预览功能开发中')}>
                   <Eye className="h-4 w-4 mr-1" />
                   预览
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => alert('编辑功能开发中')}>
                   编辑
                 </Button>
               </div>

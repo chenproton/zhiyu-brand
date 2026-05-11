@@ -38,7 +38,7 @@ export default function EmploymentProjectsPage() {
           <h1 className="text-2xl font-bold">就业项目管理</h1>
           <p className="text-muted-foreground">春招/秋招/定向招聘/专场招聘的项目化管理</p>
         </div>
-        <Button>
+        <Button onClick={() => alert('新建项目功能开发中')}>
           <Plus className="h-4 w-4 mr-2" />
           新建项目
         </Button>
@@ -188,7 +188,7 @@ export default function EmploymentProjectsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" onClick={() => alert('查看功能开发中')}>
                       <Eye className="h-4 w-4 mr-1" />
                       查看
                     </Button>

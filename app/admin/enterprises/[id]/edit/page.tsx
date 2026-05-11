@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ArrowLeft, Save, Upload, X } from 'lucide-react'
+import { enterprises } from '@/lib/mock-data'
 import {
   ENTERPRISE_TYPE_LABELS,
   COOPERATION_STATUS_LABELS,
@@ -24,11 +26,14 @@ import {
 } from '@/lib/types'
 import type { EnterpriseType, CooperationStatus, CooperationRating } from '@/lib/types'
 
-export default function NewEnterprisePage() {
+export default function EditEnterprisePage() {
+  const params = useParams()
   const router = useRouter()
+  const enterpriseId = params.id as string
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [notFound, setNotFound] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     enterpriseType: 'platform' as EnterpriseType,
@@ -46,10 +51,54 @@ export default function NewEnterprisePage() {
     employeeCount: '',
   })
 
+  useEffect(() => {
+    const enterprise = enterprises.find((e) => e.id === enterpriseId)
+    if (!enterprise) {
+      setNotFound(true)
+      return
+    }
+    setFormData({
+      name: enterprise.name,
+      enterpriseType: enterprise.enterpriseType,
+      industry: enterprise.industry,
+      status: enterprise.status,
+      rating: enterprise.rating,
+      description: enterprise.description,
+      unifiedSocialCreditCode: enterprise.unifiedSocialCreditCode || '',
+      businessLicensePhotos: enterprise.businessLicensePhotos || [],
+      contactPerson: enterprise.contactPerson || '',
+      contactPhone: enterprise.contactPhone || '',
+      contactEmail: enterprise.contactEmail || '',
+      address: enterprise.address || '',
+      establishedYear: enterprise.establishedYear?.toString() || '',
+      employeeCount: enterprise.employeeCount?.toString() || '',
+    })
+  }, [enterpriseId])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    const enterprise = enterprises.find((e) => e.id === enterpriseId)
+    if (enterprise) {
+      enterprise.name = formData.name
+      enterprise.enterpriseType = formData.enterpriseType
+      enterprise.industry = formData.industry
+      enterprise.status = formData.status
+      enterprise.rating = formData.rating
+      enterprise.description = formData.description
+      enterprise.unifiedSocialCreditCode = formData.unifiedSocialCreditCode
+      enterprise.businessLicensePhotos = formData.businessLicensePhotos
+      enterprise.contactPerson = formData.contactPerson
+      enterprise.contactPhone = formData.contactPhone
+      enterprise.contactEmail = formData.contactEmail
+      enterprise.address = formData.address
+      enterprise.establishedYear = formData.establishedYear ? parseInt(formData.establishedYear) : undefined
+      enterprise.employeeCount = formData.employeeCount ? parseInt(formData.employeeCount) : undefined
+      enterprise.updatedAt = new Date()
+    }
+
     alert('企业信息已保存（演示）')
     router.push('/admin/enterprises')
   }
@@ -72,6 +121,21 @@ export default function NewEnterprisePage() {
     }))
   }
 
+  if (notFound) {
+    return (
+      <div className="text-center py-20">
+        <h1 className="text-2xl font-bold mb-4">企业不存在</h1>
+        <p className="text-muted-foreground mb-6">该企业可能已被删除或 ID 不正确</p>
+        <Link href="/admin/enterprises">
+          <Button>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            返回列表
+          </Button>
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -84,8 +148,8 @@ export default function NewEnterprisePage() {
       </div>
 
       <div>
-        <h1 className="text-2xl font-bold">新增企业</h1>
-        <p className="text-muted-foreground">录入新的企业档案信息</p>
+        <h1 className="text-2xl font-bold">编辑企业</h1>
+        <p className="text-muted-foreground">修改企业档案信息</p>
       </div>
 
       <form onSubmit={handleSubmit}>

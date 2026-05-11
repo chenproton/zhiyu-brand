@@ -59,11 +59,11 @@ export default function TeacherBrandPage() {
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => alert('同步教务数据功能开发中')}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 同步教务数据
               </Button>
-              <Button>
+              <Button onClick={() => alert('新增教师功能开发中')}>
                 <Plus className="h-4 w-4 mr-2" />
                 新增教师
               </Button>
@@ -130,7 +130,7 @@ export default function TeacherBrandPage() {
                         {BRAND_STATUS_LABELS[teacher.status]}
                       </Badge>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => alert('编辑功能开发中')}>
                       <Edit className="h-4 w-4 mr-2" />
                       编辑
                     </Button>
@@ -152,7 +152,7 @@ export default function TeacherBrandPage() {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => alert('同步专家库功能开发中')}>
               <RefreshCw className="h-4 w-4 mr-2" />
               同步专家库
             </Button>

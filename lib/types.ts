@@ -52,6 +52,10 @@ export interface Enterprise {
   address?: string
   establishedYear?: number
   employeeCount?: number
+  // 统一社会信用代码
+  unifiedSocialCreditCode?: string
+  // 营业执照照片
+  businessLicensePhotos?: string[]
   // 企业合作协议（内嵌）
   agreements?: EnterpriseAgreement[]
   // 企业评级记录
@@ -126,12 +130,46 @@ export interface Milestone {
   status: 'pending' | 'in-progress' | 'completed' | 'delayed'
 }
 
+// 项目配套成果
+export interface ProjectSupportingResult {
+  id: string
+  name: string
+  type: string
+  description: string
+  createdAt: Date
+}
+
+// 项目协议
+export interface ProjectAgreement {
+  id: string
+  name: string
+  type: string
+  startDate: Date
+  endDate: Date
+  status: AgreementStatus
+  content?: string
+  attachments?: string[]
+  createdAt: Date
+}
+
+// 项目阶段与进展
+export interface ProjectPhaseItem {
+  id: string
+  name: string
+  description: string
+  startDate: Date
+  endDate?: Date
+  status: 'pending' | 'in-progress' | 'completed' | 'delayed'
+  progress?: number
+}
+
 // 合作项目
 export interface Project {
   id: string
   name: string
   partnerId: string
   partnerName: string
+  partnerIds?: string[]
   type: string
   agreementId?: string
   phase: ProjectPhase
@@ -143,6 +181,12 @@ export interface Project {
   outputs?: string[]
   rating?: number
   publishStatus: ProjectPublishStatus
+  // 配套成果关联
+  supportingResults?: ProjectSupportingResult[]
+  // 项目协议管理
+  projectAgreements?: ProjectAgreement[]
+  // 项目阶段与进展
+  phases?: ProjectPhaseItem[]
   createdAt: Date
   updatedAt: Date
 }

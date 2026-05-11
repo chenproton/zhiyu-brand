@@ -87,7 +87,7 @@ export default function CultureBrandPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button>
+        <Button onClick={() => alert('新增内容功能开发中')}>
           <Plus className="h-4 w-4 mr-2" />
           新增内容
         </Button>
@@ -129,12 +129,12 @@ export default function CultureBrandPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>编辑</DropdownMenuItem>
-                    <DropdownMenuItem>预览</DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => alert('编辑功能开发中')}>编辑</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => alert('预览功能开发中')}>预览</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => alert(`${culture.status === "published" ? "下架" : "发布"}功能开发中`)}>
                       {culture.status === "published" ? "下架" : "发布"}
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">删除</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive" onClick={() => { if (confirm('确定要删除吗？')) alert('删除功能开发中') }}>删除</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

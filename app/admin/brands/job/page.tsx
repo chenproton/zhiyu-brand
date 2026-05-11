@@ -76,11 +76,11 @@ export default function JobBrandPage() {
               <CardDescription>从职业岗位平台同步岗位，进行品牌化配置</CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => alert('同步岗位功能开发中')}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 同步岗位
               </Button>
-              <Button>
+              <Button onClick={() => alert('新增岗位功能开发中')}>
                 <Plus className="h-4 w-4 mr-2" />
                 新增岗位
               </Button>
@@ -200,10 +200,10 @@ export default function JobBrandPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>编辑</DropdownMenuItem>
-                        <DropdownMenuItem>预览</DropdownMenuItem>
-                        <DropdownMenuItem>调整等级</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">下架</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => alert('编辑功能开发中')}>编辑</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => alert('预览功能开发中')}>预览</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => alert('调整等级功能开发中')}>调整等级</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onClick={() => { if (confirm('确定要下架吗？')) alert('下架功能开发中') }}>下架</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

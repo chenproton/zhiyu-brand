@@ -212,7 +212,7 @@ export default function NewAgreementPage() {
                   <p className="text-xs text-muted-foreground mt-1">
                     支持 PDF、Word 格式，单个文件不超过 10MB
                   </p>
-                  <Button type="button" variant="outline" className="mt-4">
+                  <Button type="button" variant="outline" className="mt-4" onClick={() => alert('文件上传功能开发中')}>
                     选择文件
                   </Button>
                 </div>

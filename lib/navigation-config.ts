@@ -57,8 +57,6 @@ export const brandNavigationConfig: PlatformNavigationConfig = {
         { id: "school", label: "学校信息", href: "/admin/school", matchers: ["/admin/school"] },
         { id: "enterprises", label: "企业档案", href: "/admin/enterprises", matchers: ["/admin/enterprises"] },
         { id: "projects", label: "合作项目", href: "/admin/projects", matchers: ["/admin/projects"] },
-        { id: "ratings", label: "合作评级", href: "/admin/ratings", matchers: ["/admin/ratings"] },
-        { id: "cooperation-types", label: "合作类型", href: "/admin/cooperation-types", matchers: ["/admin/cooperation-types"] },
         { id: "achievements", label: "合作成果", href: "/admin/achievements", matchers: ["/admin/achievements"] },
         { id: "experts", label: "专家资源库", href: "/admin/experts", matchers: ["/admin/experts"] },
         { id: "permissions", label: "合作权限", href: "/admin/permissions", matchers: ["/admin/permissions"] },

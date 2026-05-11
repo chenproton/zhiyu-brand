@@ -234,7 +234,7 @@ export default function ActivitiesPage() {
                               <Eye className="h-4 w-4" />
                             </Link>
                           </Button>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" onClick={() => alert('编辑功能开发中')}>
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button 

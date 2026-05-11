@@ -21,9 +21,13 @@ import {
   FileText,
   Star,
   Award,
+  CreditCard,
+  Image,
 } from 'lucide-react'
-import { getEnterpriseById, getProjectsByPartnerId, getAchievementsByPartnerId } from '@/lib/mock-data'
-import { ENTERPRISE_TYPE_LABELS, COOPERATION_TYPES } from '@/lib/types'
+import { AddAgreementButton } from './enterprise-action-bar'
+import { getEnterpriseById, getProjectsByPartnerId, getAchievementsByPartnerId, achievements } from '@/lib/mock-data'
+import { ENTERPRISE_TYPE_LABELS, COOPERATION_TYPES, COOPERATION_RATING_LABELS } from '@/lib/types'
+import { NewProjectButton, LinkAchievementButton } from './enterprise-detail-actions'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -207,6 +211,10 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
                   <span className="text-sm">{ENTERPRISE_TYPE_LABELS[enterprise.enterpriseType]}</span>
                 </div>
                 <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">统一社会信用代码</span>
+                  <span className="text-sm">{enterprise.unifiedSocialCreditCode || '-'}</span>
+                </div>
+                <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">成立年份</span>
                   <span className="text-sm">{enterprise.establishedYear || '-'}</span>
                 </div>
@@ -224,6 +232,29 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
                 </div>
               </CardContent>
             </Card>
+
+            {enterprise.businessLicensePhotos && enterprise.businessLicensePhotos.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Image className="h-4 w-4" />
+                    营业执照
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-3">
+                    {enterprise.businessLicensePhotos.map((photo, index) => (
+                      <img
+                        key={index}
+                        src={photo}
+                        alt={`营业执照 ${index + 1}`}
+                        className="w-full h-48 object-contain rounded-lg border"
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
 
@@ -234,7 +265,7 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
                 <CardTitle className="text-base">企业合作协议</CardTitle>
                 <CardDescription>与该企业的所有合作协议</CardDescription>
               </div>
-              <Button size="sm">新增协议</Button>
+              <AddAgreementButton />
             </CardHeader>
             <CardContent>
               {enterprise.agreements && enterprise.agreements.length > 0 ? (
@@ -265,9 +296,12 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
 
         <TabsContent value="projects">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">合作项目</CardTitle>
-              <CardDescription>与该企业开展的所有合作项目</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base">合作项目</CardTitle>
+                <CardDescription>与该企业开展的所有合作项目</CardDescription>
+              </div>
+              <NewProjectButton />
             </CardHeader>
             <CardContent>
               {projects.length > 0 ? (
@@ -302,9 +336,12 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
 
         <TabsContent value="achievements">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">合作成果</CardTitle>
-              <CardDescription>与该企业合作产生的成果</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base">合作成果</CardTitle>
+                <CardDescription>与该企业合作产生的成果</CardDescription>
+              </div>
+              <LinkAchievementButton availableAchievements={achievements} />
             </CardHeader>
             <CardContent>
               {achievements.length > 0 ? (

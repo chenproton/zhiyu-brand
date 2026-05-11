@@ -57,16 +57,16 @@ export function AdminHeader({ title }: AdminHeaderProps) {
               <p className="text-xs text-muted-foreground">admin@hdvtc.edu.cn</p>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => alert('个人信息功能开发中')}>
               <User className="h-4 w-4 mr-2" />
               个人信息
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => alert('系统设置功能开发中')}>
               <Settings className="h-4 w-4 mr-2" />
               系统设置
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">
+            <DropdownMenuItem className="text-red-600" onClick={() => alert('退出登录功能开发中')}>
               <LogOut className="h-4 w-4 mr-2" />
               退出登录
             </DropdownMenuItem>

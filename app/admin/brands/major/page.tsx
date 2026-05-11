@@ -77,7 +77,7 @@ export default function MajorBrandPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button>
+        <Button onClick={() => alert('新增专业功能开发中')}>
           <Plus className="h-4 w-4 mr-2" />
           新增专业
         </Button>
@@ -108,10 +108,10 @@ export default function MajorBrandPage() {
                   <CardDescription>{major.department}</CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" onClick={() => alert('编辑功能开发中')}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" onClick={() => alert('跳转功能开发中')}>
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </div>

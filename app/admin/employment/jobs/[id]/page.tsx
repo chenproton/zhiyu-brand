@@ -1,3 +1,6 @@
+"use client"
+
+import { use } from "react"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -49,8 +52,8 @@ const appStatusColors: Record<string, string> = {
   withdrawn: "bg-gray-100 text-gray-800",
 }
 
-export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const job = getJobById(id)
 
   if (!job) {
@@ -78,17 +81,17 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         </div>
         <div className="flex gap-2">
           {job.status === "published" ? (
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => alert('暂停招聘功能开发中')}>
               <Pause className="h-4 w-4 mr-2" />
               暂停招聘
             </Button>
           ) : job.status === "paused" ? (
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => alert('恢复招聘功能开发中')}>
               <Play className="h-4 w-4 mr-2" />
               恢复招聘
             </Button>
           ) : null}
-          <Button>
+          <Button onClick={() => alert('编辑岗位功能开发中')}>
             <Edit className="h-4 w-4 mr-2" />
             编辑岗位
           </Button>

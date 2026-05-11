@@ -223,7 +223,7 @@ export default function JobsPage() {
                               查看详情
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => alert('编辑岗位功能开发中')}>
                             <Edit className="h-4 w-4 mr-2" />
                             编辑岗位
                           </DropdownMenuItem>
@@ -234,17 +234,17 @@ export default function JobsPage() {
                             </Link>
                           </DropdownMenuItem>
                           {job.status === "published" ? (
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => alert('暂停招聘功能开发中')}>
                               <Pause className="h-4 w-4 mr-2" />
                               暂停招聘
                             </DropdownMenuItem>
                           ) : job.status === "paused" ? (
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => alert('恢复招聘功能开发中')}>
                               <Play className="h-4 w-4 mr-2" />
                               恢复招聘
                             </DropdownMenuItem>
                           ) : null}
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem className="text-destructive" onClick={() => { if (confirm('确定要删除该岗位吗？')) alert('删除岗位功能开发中') }}>
                             <Trash2 className="h-4 w-4 mr-2" />
                             删除岗位
                           </DropdownMenuItem>

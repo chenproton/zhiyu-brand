@@ -88,7 +88,7 @@ export default function HomePage() {
                     {schoolInfo.introduction}
                   </p>
                   <div className="flex items-center gap-3 mt-3 pt-3 border-t text-sm">
-                    <span className="text-muted-foreground">建校 {new Date().getFullYear() - (schoolInfo.establishedYear || 0)} 年</span>
+                    <span className="text-muted-foreground">{schoolInfo.establishedYear} 年建校</span>
                     {schoolInfo.website && (
                       <a href={schoolInfo.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">
                         学校官网

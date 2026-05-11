@@ -208,7 +208,7 @@ export default function PartnersListPage() {
                               编辑
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem className="text-red-600" onClick={() => { if (confirm('确定要删除该合作主体吗？')) alert('合作主体已删除（演示）') }}>
                             <Trash2 className="h-4 w-4 mr-2" />
                             删除
                           </DropdownMenuItem>
