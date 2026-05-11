@@ -7,8 +7,8 @@ $REMOTE_USER = "root"
 $REMOTE_BASE = "/var/www"
 
 # 每个项目修改这里
-$SITE_NAME = "job" 
-$PORT = "3002"
+$SITE_NAME = "brand" 
+$PORT = "3004"
 
 $SSH_PORT = "22"
 
