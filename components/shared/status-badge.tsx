@@ -7,6 +7,7 @@ import type {
   CooperationRating,
   AgreementStatus,
   ProjectPhase,
+  ProjectPublishStatus,
   ExpertRating,
   ActivityStatus,
   AchievementType,
@@ -16,6 +17,7 @@ import {
   COOPERATION_RATING_LABELS,
   AGREEMENT_STATUS_LABELS,
   PROJECT_PHASE_LABELS,
+  PROJECT_PUBLISH_STATUS_LABELS,
   EXPERT_RATING_LABELS,
   ACTIVITY_STATUS_LABELS,
   ACHIEVEMENT_TYPE_LABELS,
@@ -99,6 +101,24 @@ export function ProjectPhaseBadge({ phase, className }: ProjectPhaseBadgeProps) 
   return (
     <Badge variant="outline" className={cn(variants[phase], className)}>
       {PROJECT_PHASE_LABELS[phase]}
+    </Badge>
+  )
+}
+
+interface ProjectPublishStatusBadgeProps {
+  status: ProjectPublishStatus
+  className?: string
+}
+
+export function ProjectPublishStatusBadge({ status, className }: ProjectPublishStatusBadgeProps) {
+  const variants: Record<ProjectPublishStatus, string> = {
+    draft: 'bg-gray-100 text-gray-800 border-gray-200',
+    published: 'bg-green-100 text-green-800 border-green-200',
+  }
+
+  return (
+    <Badge variant="outline" className={cn(variants[status], className)}>
+      {PROJECT_PUBLISH_STATUS_LABELS[status]}
     </Badge>
   )
 }

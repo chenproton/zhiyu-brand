@@ -25,17 +25,21 @@ export default function ProjectsPage() {
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [phaseFilter, setPhaseFilter] = useState<string>("all")
 
+  const publishedProjects = useMemo(() => {
+    return projects.filter((project) => project.publishStatus === 'published')
+  }, [])
+
   const filteredProjects = useMemo(() => {
-    return projects.filter((project) => {
+    return publishedProjects.filter((project) => {
       const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.description?.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesType = typeFilter === "all" || project.type === typeFilter
       const matchesPhase = phaseFilter === "all" || project.phase === phaseFilter
       return matchesSearch && matchesType && matchesPhase
     })
-  }, [searchTerm, typeFilter, phaseFilter])
+  }, [publishedProjects, searchTerm, typeFilter, phaseFilter])
 
-  const projectTypes = [...new Set(projects.map(p => p.type))]
+  const projectTypes = [...new Set(publishedProjects.map(p => p.type))]
 
   return (
     <div className="py-8 lg:py-12">

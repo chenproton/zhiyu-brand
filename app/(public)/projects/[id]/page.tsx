@@ -31,7 +31,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const { id } = await params
   const project = projects.find(p => p.id === id)
 
-  if (!project) {
+  if (!project || project.publishStatus !== 'published') {
     notFound()
   }
 

@@ -7,11 +7,14 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   ProjectPhaseBadge,
+  ProjectPublishStatusBadge,
   MilestoneStatusBadge,
 } from '@/components/shared/status-badge'
 import {
   ArrowLeft,
   Pencil,
+  Send,
+  EyeOff,
   FolderKanban,
   Calendar,
   Building2,
@@ -20,9 +23,10 @@ import {
   Circle,
   Clock,
   AlertCircle,
+  Award,
 } from 'lucide-react'
 import { getProjectById, getPartnerById, getAgreementById, getAchievementsByPartnerId } from '@/lib/mock-data'
-import { PROJECT_PHASE_LABELS } from '@/lib/types'
+import { PROJECT_PHASE_LABELS, PROJECT_PUBLISH_STATUS_LABELS } from '@/lib/types'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -82,6 +86,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               <p className="text-muted-foreground">{project.type}</p>
               <div className="flex items-center gap-2 mt-2">
                 <ProjectPhaseBadge phase={project.phase} />
+                <ProjectPublishStatusBadge status={project.publishStatus} />
                 {project.rating && (
                   <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
                     评级 {project.rating} 分
@@ -90,12 +95,39 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               </div>
             </div>
           </div>
-          <Link href={`/admin/projects/${id}/edit`}>
-            <Button>
-              <Pencil className="h-4 w-4 mr-2" />
-              编辑项目
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {project.publishStatus === 'draft' ? (
+              <Button
+                variant="default"
+                onClick={() => {
+                  project.publishStatus = 'published'
+                  project.updatedAt = new Date()
+                  window.location.reload()
+                }}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                发布项目
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  project.publishStatus = 'draft'
+                  project.updatedAt = new Date()
+                  window.location.reload()
+                }}
+              >
+                <EyeOff className="h-4 w-4 mr-2" />
+                撤销发布
+              </Button>
+            )}
+            <Link href={`/admin/projects/${id}/edit`}>
+              <Button variant="outline">
+                <Pencil className="h-4 w-4 mr-2" />
+                编辑项目
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Progress Overview */}

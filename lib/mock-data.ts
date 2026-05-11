@@ -696,6 +696,8 @@ export const projects: Project[] = [
       { id: 'm5', name: '试点运行', description: '完成首届学生培养', dueDate: new Date('2025-06-30'), status: 'pending' },
     ],
     outputs: ['人才培养方案1套', 'AI应用课程3门', '实训项目库1个'],
+    publishStatus: 'published',
+
     createdAt: new Date('2023-02-15'),
     updatedAt: new Date('2024-06-10'),
   },
@@ -718,6 +720,8 @@ export const projects: Project[] = [
       { id: 'm4', name: '试点应用', description: '在合作企业试点应用', dueDate: new Date('2025-05-31'), status: 'pending' },
     ],
     outputs: ['技术报告', '软件著作权', '专利申请'],
+    publishStatus: 'published',
+
     createdAt: new Date('2023-05-20'),
     updatedAt: new Date('2024-05-15'),
   },
@@ -741,6 +745,8 @@ export const projects: Project[] = [
     ],
     outputs: ['实训基地1个', '实训项目20个', '双师培养'],
     rating: 4.5,
+    publishStatus: 'published',
+
     createdAt: new Date('2022-08-15'),
     updatedAt: new Date('2024-04-20'),
   },
@@ -764,6 +770,8 @@ export const projects: Project[] = [
     ],
     outputs: ['获奖选手50名', '优秀作品20件'],
     rating: 4.8,
+    publishStatus: 'published',
+
     createdAt: new Date('2023-08-20'),
     updatedAt: new Date('2024-04-01'),
   },
@@ -786,6 +794,8 @@ export const projects: Project[] = [
       { id: 'm4', name: '成果转化', description: '推动优秀项目注册公司', dueDate: new Date('2026-08-31'), status: 'pending' },
     ],
     outputs: ['孵化项目30个', '注册公司5家'],
+    publishStatus: 'published',
+
     createdAt: new Date('2023-08-15'),
     updatedAt: new Date('2024-05-20'),
   },
@@ -808,6 +818,8 @@ export const projects: Project[] = [
       { id: 'm4', name: '试运营', description: '基地投入试运营', dueDate: new Date('2025-09-30'), status: 'pending' },
     ],
     outputs: ['实训基地1个', '实训课程5门', '检测项目库1个'],
+    publishStatus: 'published',
+
     createdAt: new Date('2024-03-15'),
     updatedAt: new Date('2024-08-25'),
   },
@@ -829,6 +841,8 @@ export const projects: Project[] = [
       { id: 'm3', name: '课程开发', description: '完成核心课程开发', dueDate: new Date('2025-06-30'), status: 'pending' },
     ],
     outputs: ['人才培养方案1套', '直播课程3门', '实训项目库1个'],
+    publishStatus: 'published',
+
     createdAt: new Date('2024-08-01'),
     updatedAt: new Date('2024-08-15'),
   },
@@ -851,6 +865,8 @@ export const projects: Project[] = [
       { id: 'm4', name: '试点实施', description: '开展定向培养试点', dueDate: new Date('2025-05-31'), status: 'pending' },
     ],
     outputs: ['定向培养方案1套', '企业课程模块5个', '双师团队1支'],
+    publishStatus: 'published',
+
     createdAt: new Date('2024-05-15'),
     updatedAt: new Date('2024-07-30'),
   },
@@ -871,6 +887,8 @@ export const projects: Project[] = [
       { id: 'm3', name: '产品孵化', description: '完成产品打样和市场测试', dueDate: new Date('2025-07-31'), status: 'pending' },
     ],
     outputs: ['文创产品3款', '设计案例库1个'],
+    publishStatus: 'published',
+
     createdAt: new Date('2024-09-01'),
     updatedAt: new Date('2024-09-10'),
   },
@@ -891,6 +909,8 @@ export const projects: Project[] = [
       { id: 'm3', name: '成果总结', description: '完成培训成果总结', dueDate: new Date('2025-06-30'), status: 'pending' },
     ],
     outputs: ['培训课程体系1套', '培训师资库1个', '培训案例集1册'],
+    publishStatus: 'published',
+
     createdAt: new Date('2024-06-15'),
     updatedAt: new Date('2024-08-30'),
   },
@@ -912,6 +932,8 @@ export const projects: Project[] = [
       { id: 'm4', name: '现场测试', description: '完成现场应用测试', dueDate: new Date('2026-04-30'), status: 'pending' },
     ],
     outputs: ['技术方案1套', '软件系统1套', '专利申请2项'],
+    publishStatus: 'draft',
+
     createdAt: new Date('2024-10-01'),
     updatedAt: new Date('2024-10-05'),
   },
@@ -932,6 +954,8 @@ export const projects: Project[] = [
       { id: 'm3', name: '全面推广', description: '覆盖10个社区开展讲座', dueDate: new Date('2025-06-30'), status: 'pending' },
     ],
     outputs: ['科普课程3门', '活动手册1册', '媒体报道5篇'],
+    publishStatus: 'draft',
+
     createdAt: new Date('2024-07-15'),
     updatedAt: new Date('2024-09-28'),
   },

@@ -22,6 +22,9 @@ export type AgreementStatus = 'draft' | 'active' | 'expired' | 'renewed' | 'term
 // 项目阶段
 export type ProjectPhase = 'initiation' | 'execution' | 'acceptance' | 'closure' | 'archived' | 'terminated'
 
+// 项目发布状态
+export type ProjectPublishStatus = 'draft' | 'published'
+
 // 专家评级
 export type ExpertRating = 'gold' | 'silver' | 'bronze'
 
@@ -139,6 +142,7 @@ export interface Project {
   milestones: Milestone[]
   outputs?: string[]
   rating?: number
+  publishStatus: ProjectPublishStatus
   createdAt: Date
   updatedAt: Date
 }
@@ -289,6 +293,11 @@ export const PROJECT_PHASE_LABELS: Record<ProjectPhase, string> = {
   closure: '结项阶段',
   archived: '已归档',
   terminated: '已终止',
+}
+
+export const PROJECT_PUBLISH_STATUS_LABELS: Record<ProjectPublishStatus, string> = {
+  draft: '草稿',
+  published: '已发布',
 }
 
 export const EXPERT_RATING_LABELS: Record<ExpertRating, string> = {

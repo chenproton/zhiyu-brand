@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { partners, projects, experts, achievements, activities, jobs, employmentCases, majorBrands, talentProfiles, jobBrands, teacherBrands, cultureBrands } from "@/lib/mock-data"
+import { partners, projects, experts, achievements, activities, jobs, employmentCases, majorBrands, talentProfiles, jobBrands, teacherBrands, cultureBrands, schoolInfo } from "@/lib/mock-data"
 import { PARTNER_TYPE_LABELS, PROJECT_PHASE_LABELS, JOB_TYPE_LABELS, ACHIEVEMENT_TYPE_LABELS, EXPERT_RATING_LABELS, TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS } from "@/lib/types"
 
 const stats = [
   { label: "合作主体", value: partners.filter(p => p.status === "active").length, icon: Building2, href: "/partners" },
-  { label: "合作项目", value: projects.length, icon: FolderKanban, href: "/projects" },
+  { label: "合作项目", value: projects.filter(p => p.publishStatus === "published").length, icon: FolderKanban, href: "/projects" },
   { label: "专家资源", value: experts.length, icon: Users, href: "/experts" },
   { label: "成果产出", value: achievements.length, icon: Trophy, href: "/achievements" },
   { label: "在招岗位", value: jobs.filter(j => j.status === "published").length, icon: Briefcase, href: "/jobs" },
@@ -33,7 +33,7 @@ const brandCategories = [
 
 export default function HomePage() {
   const featuredPartners = partners.filter(p => p.status === "active").slice(0, 6)
-  const featuredProjects = projects.slice(0, 3)
+  const featuredProjects = projects.filter(p => p.publishStatus === "published").slice(0, 3)
   const upcomingActivities = activities.filter(a => a.status === "published").slice(0, 3)
   const featuredAchievements = achievements.filter(a => a.status === "published").slice(0, 3)
   const featuredExperts = experts.filter(e => e.status === "active").slice(0, 5)
@@ -48,16 +48,56 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-28 bg-gradient-to-b from-muted/50 to-background">
+      <section className="relative py-12 lg:py-16 bg-gradient-to-b from-muted/50 to-background">
         <div className="container mx-auto">
-          <div className="max-w-3xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-4 px-3 py-1 text-xs">产业联盟与人资品牌服务平台</Badge>
-            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-balance mb-5">
-              搭建产教融合桥梁 <span className="text-muted-foreground">共育产业英才</span>
-            </h1>
-            <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto leading-relaxed">
-              整合学校、企业、行业协会、产业园区等多元主体资源，构建产教深度融合的协同育人新生态。
-            </p>
+          <div className="grid lg:grid-cols-5 gap-8 items-center">
+            {/* Left: Title & Slogan */}
+            <div className="lg:col-span-3 text-center lg:text-left">
+              <Badge variant="secondary" className="mb-3 px-3 py-1 text-xs">产业联盟与人资品牌服务平台</Badge>
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-balance mb-3">
+                搭建产教融合桥梁 <span className="text-muted-foreground">共育产业英才</span>
+              </h1>
+              <p className="text-base text-muted-foreground text-pretty max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                整合学校、企业、行业协会、产业园区等多元主体资源，构建产教深度融合的协同育人新生态。
+              </p>
+            </div>
+
+            {/* Right: School Info Card */}
+            <div className="lg:col-span-2">
+              <Card className="border shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="shrink-0">
+                      <img
+                        src={schoolInfo.logo || "/placeholder.svg?height=80&width=80"}
+                        alt={schoolInfo.name}
+                        className="w-16 h-16 rounded-xl object-cover border"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-lg truncate">{schoolInfo.name}</h3>
+                      <p className="text-sm text-muted-foreground">{schoolInfo.type} · {schoolInfo.province}{schoolInfo.city}</p>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
+                        <span><strong className="text-foreground">{schoolInfo.studentCount?.toLocaleString()}</strong> <span className="text-muted-foreground">在校生</span></span>
+                        <span><strong className="text-foreground">{schoolInfo.teacherCount}</strong> <span className="text-muted-foreground">教师</span></span>
+                        <span><strong className="text-foreground">{schoolInfo.majorCount}</strong> <span className="text-muted-foreground">专业</span></span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-3 line-clamp-2 leading-relaxed">
+                    {schoolInfo.introduction}
+                  </p>
+                  <div className="flex items-center gap-3 mt-3 pt-3 border-t text-sm">
+                    <span className="text-muted-foreground">建校 {new Date().getFullYear() - (schoolInfo.establishedYear || 0)} 年</span>
+                    {schoolInfo.website && (
+                      <a href={schoolInfo.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">
+                        学校官网
+                      </a>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>

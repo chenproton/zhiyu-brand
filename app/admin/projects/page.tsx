@@ -20,11 +20,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Progress } from '@/components/ui/progress'
 import { FilterBar } from '@/components/shared/filter-bar'
-import { ProjectPhaseBadge } from '@/components/shared/status-badge'
-import { Plus, MoreHorizontal, Eye, Pencil, Trash2, FolderKanban } from 'lucide-react'
+import { ProjectPhaseBadge, ProjectPublishStatusBadge } from '@/components/shared/status-badge'
+import { Plus, MoreHorizontal, Eye, Pencil, Trash2, FolderKanban, Send, EyeOff } from 'lucide-react'
 import { projects } from '@/lib/mock-data'
-import { PROJECT_PHASE_LABELS } from '@/lib/types'
-import type { ProjectPhase } from '@/lib/types'
+import { PROJECT_PHASE_LABELS, PROJECT_PUBLISH_STATUS_LABELS } from '@/lib/types'
+import type { ProjectPhase, ProjectPublishStatus } from '@/lib/types'
 
 const PROJECT_TYPES = [
   '人才培养项目',
@@ -41,6 +41,7 @@ export default function ProjectsListPage() {
   const [filters, setFilters] = useState<Record<string, string>>({
     phase: 'all',
     type: 'all',
+    publishStatus: 'all',
   })
 
   const filteredProjects = useMemo(() => {
@@ -60,6 +61,9 @@ export default function ProjectsListPage() {
       // Type filter
       if (filters.type !== 'all' && project.type !== filters.type) return false
 
+      // Publish status filter
+      if (filters.publishStatus !== 'all' && project.publishStatus !== filters.publishStatus) return false
+
       return true
     })
   }, [search, filters])
@@ -73,6 +77,7 @@ export default function ProjectsListPage() {
     setFilters({
       phase: 'all',
       type: 'all',
+      publishStatus: 'all',
     })
   }
 
@@ -89,6 +94,14 @@ export default function ProjectsListPage() {
       key: 'type',
       label: '全部类型',
       options: PROJECT_TYPES.map((type) => ({ value: type, label: type })),
+    },
+    {
+      key: 'publishStatus',
+      label: '全部状态',
+      options: [
+        { value: 'draft', label: '草稿' },
+        { value: 'published', label: '已发布' },
+      ],
     },
   ]
 
@@ -142,6 +155,7 @@ export default function ProjectsListPage() {
                 <TableHead>起止时间</TableHead>
                 <TableHead>里程碑进度</TableHead>
                 <TableHead>阶段</TableHead>
+                <TableHead>发布状态</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -189,6 +203,9 @@ export default function ProjectsListPage() {
                         <ProjectPhaseBadge phase={project.phase} />
                       </TableCell>
                       <TableCell>
+                        <ProjectPublishStatusBadge status={project.publishStatus} />
+                      </TableCell>
+                      <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
@@ -208,6 +225,29 @@ export default function ProjectsListPage() {
                                 编辑
                               </Link>
                             </DropdownMenuItem>
+                            {project.publishStatus === 'draft' ? (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  project.publishStatus = 'published'
+                                  project.updatedAt = new Date()
+                                  window.location.reload()
+                                }}
+                              >
+                                <Send className="h-4 w-4 mr-2" />
+                                发布
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  project.publishStatus = 'draft'
+                                  project.updatedAt = new Date()
+                                  window.location.reload()
+                                }}
+                              >
+                                <EyeOff className="h-4 w-4 mr-2" />
+                                撤销发布
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem className="text-red-600">
                               <Trash2 className="h-4 w-4 mr-2" />
                               删除
@@ -220,7 +260,7 @@ export default function ProjectsListPage() {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     暂无符合条件的合作项目
                   </TableCell>
                 </TableRow>
