@@ -1,4 +1,13 @@
-// 合作主体类型
+// 企业类型
+export type EnterpriseType = 'platform' | 'school-based'
+
+// 企业类型标签
+export const ENTERPRISE_TYPE_LABELS: Record<EnterpriseType, string> = {
+  platform: '平台企业',
+  'school-based': '校本企业',
+}
+
+// 合作主体类型（兼容旧类型，但企业档案只保留 enterprise）
 export type PartnerType = 'enterprise' | 'association' | 'park' | 'institution' | 'expert'
 
 // 合作状态
@@ -20,9 +29,53 @@ export type ExpertRating = 'gold' | 'silver' | 'bronze'
 export type ActivityStatus = 'draft' | 'published' | 'ended'
 
 // 成果类型
-export type AchievementType = 'joint-build' | 'training-base' | 'education-reform' | 'case-study' | 'patent' | 'award'
+export type AchievementType = 'job' | 'scene' | 'course' | 'custom'
 
-// 合作主体
+// 企业档案
+export interface Enterprise {
+  id: string
+  enterpriseType: EnterpriseType
+  name: string
+  industry: string
+  region: string
+  description: string
+  logo?: string
+  status: CooperationStatus
+  rating: CooperationRating
+  cooperationTypes: string[]
+  contactPerson?: string
+  contactPhone?: string
+  contactEmail?: string
+  address?: string
+  establishedYear?: number
+  employeeCount?: number
+  // 企业合作协议（内嵌）
+  agreements?: EnterpriseAgreement[]
+  // 企业评级记录
+  ratingRecord?: {
+    rating: CooperationRating
+    evaluatedAt: Date
+    evaluator: string
+    remark?: string
+  }
+  createdAt: Date
+  updatedAt: Date
+}
+
+// 企业合作协议（内嵌于企业档案）
+export interface EnterpriseAgreement {
+  id: string
+  name: string
+  type: string
+  startDate: Date
+  endDate: Date
+  status: AgreementStatus
+  content?: string
+  attachments?: string[]
+  createdAt: Date
+}
+
+// 合作主体（兼容旧类型定义）
 export interface Partner {
   id: string
   type: PartnerType
@@ -251,12 +304,10 @@ export const ACTIVITY_STATUS_LABELS: Record<ActivityStatus, string> = {
 }
 
 export const ACHIEVEMENT_TYPE_LABELS: Record<AchievementType, string> = {
-  'joint-build': '共建成果',
-  'training-base': '实训基地',
-  'education-reform': '教改成果',
-  'case-study': '典型案例',
-  patent: '专利成果',
-  award: '获奖成果',
+  job: '岗位成果',
+  scene: '场景成果',
+  course: '课程成果',
+  custom: '自定义成果',
 }
 
 // 行业列表
@@ -323,6 +374,37 @@ export const ACTIVITY_TYPES = [
   '研讨会',
   '培训活动',
 ]
+
+// ==================== 合作权限管理类型 ====================
+
+// 权限主体类型
+export type PermissionSubjectType = 'enterprise' | 'expert'
+
+// 功能权限项
+export type FunctionPermission = 'job_manage' | 'scene_manage' | 'course_manage'
+
+export const PERMISSION_SUBJECT_TYPE_LABELS: Record<PermissionSubjectType, string> = {
+  enterprise: '企业类型',
+  expert: '专家类型',
+}
+
+export const FUNCTION_PERMISSION_LABELS: Record<FunctionPermission, string> = {
+  job_manage: '岗位管理',
+  scene_manage: '场景管理',
+  course_manage: '课程管理',
+}
+
+// 权限配置记录
+export interface PermissionConfig {
+  id: string
+  subjectType: PermissionSubjectType
+  subjectId: string
+  subjectName: string
+  permissions: FunctionPermission[]
+  enabled: boolean
+  createdAt: Date
+  updatedAt: Date
+}
 
 // ==================== 品牌运营管理类型 ====================
 

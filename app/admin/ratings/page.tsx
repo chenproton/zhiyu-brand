@@ -1,46 +1,159 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Star, TrendingUp, Award, Building2, FolderKanban } from 'lucide-react'
-import { partners, projects } from '@/lib/mock-data'
-import { COOPERATION_RATING_LABELS, PROJECT_PHASE_LABELS } from '@/lib/types'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Plus, Pencil, Trash2, Star, Award } from 'lucide-react'
+import { COOPERATION_RATING_LABELS } from '@/lib/types'
+import type { CooperationRating } from '@/lib/types'
 
-const ratingColors: Record<string, string> = {
-  strategic: 'bg-emerald-100 text-emerald-800',
-  deep: 'bg-blue-100 text-blue-800',
-  general: 'bg-gray-100 text-gray-800',
+interface RatingDictItem {
+  id: string
+  rating: CooperationRating
+  label: string
+  description: string
+  criteria: string
+  sortOrder: number
 }
 
-export default function RatingsPage() {
-  const [activeTab, setActiveTab] = useState<'partner' | 'project'>('partner')
+const initialRatings: RatingDictItem[] = [
+  {
+    id: 'r001',
+    rating: 'strategic',
+    label: '战略合作',
+    description: '双方建立全面、长期、深度的战略合作关系',
+    criteria: '合作年限≥3年，年度合作项目≥3个，有共建实体（产业学院/实验室等）',
+    sortOrder: 1,
+  },
+  {
+    id: 'r002',
+    rating: 'deep',
+    label: '深度合作',
+    description: '在多个领域开展持续深入的合作',
+    criteria: '合作年限≥2年，年度合作项目≥2个，有稳定的合作机制',
+    sortOrder: 2,
+  },
+  {
+    id: 'r003',
+    rating: 'general',
+    label: '一般合作',
+    description: '在单一领域开展常规合作',
+    criteria: '合作年限≥1年，有正在执行的合作项目',
+    sortOrder: 3,
+  },
+]
 
-  const ratedProjects = useMemo(() => {
-    return projects.filter(p => p.rating !== undefined)
-  }, [])
+export default function RatingsPage() {
+  const [ratings, setRatings] = useState<RatingDictItem[]>(initialRatings)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingItem, setEditingItem] = useState<RatingDictItem | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deletingItem, setDeletingItem] = useState<RatingDictItem | null>(null)
+
+  const [formData, setFormData] = useState<Partial<RatingDictItem>>({
+    rating: 'general',
+    label: '',
+    description: '',
+    criteria: '',
+    sortOrder: 1,
+  })
+
+  const handleAdd = () => {
+    setEditingItem(null)
+    setFormData({
+      rating: 'general',
+      label: '',
+      description: '',
+      criteria: '',
+      sortOrder: ratings.length + 1,
+    })
+    setDialogOpen(true)
+  }
+
+  const handleEdit = (item: RatingDictItem) => {
+    setEditingItem(item)
+    setFormData({ ...item })
+    setDialogOpen(true)
+  }
+
+  const handleDelete = (item: RatingDictItem) => {
+    setDeletingItem(item)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (deletingItem) {
+      setRatings(ratings.filter(r => r.id !== deletingItem.id))
+      setDeleteDialogOpen(false)
+      setDeletingItem(null)
+    }
+  }
+
+  const handleSave = () => {
+    if (!formData.label) return
+
+    if (editingItem) {
+      setRatings(ratings.map(r => r.id === editingItem.id ? { ...r, ...formData } as RatingDictItem : r))
+    } else {
+      const newItem: RatingDictItem = {
+        id: `r${Date.now()}`,
+        rating: formData.rating as CooperationRating,
+        label: formData.label || '',
+        description: formData.description || '',
+        criteria: formData.criteria || '',
+        sortOrder: formData.sortOrder || ratings.length + 1,
+      }
+      setRatings([...ratings, newItem])
+    }
+    setDialogOpen(false)
+  }
+
+  const ratingColors: Record<string, string> = {
+    strategic: 'bg-emerald-100 text-emerald-800',
+    deep: 'bg-blue-100 text-blue-800',
+    general: 'bg-gray-100 text-gray-800',
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">合作评级管理</h1>
-          <p className="text-muted-foreground">合作主体评级与项目质量评级</p>
+          <p className="text-muted-foreground">维护合作深度评级的字典定义，评级与企业关联在企业档案中管理</p>
         </div>
+        <Button onClick={handleAdd}>
+          <Plus className="h-4 w-4 mr-2" />
+          新增评级
+        </Button>
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">战略合作主体</p>
-                <p className="text-3xl font-bold">
-                  {partners.filter(p => p.rating === 'strategic').length}
-                </p>
+                <p className="text-sm text-muted-foreground">评级字典项</p>
+                <p className="text-3xl font-bold">{ratings.length}</p>
+              </div>
+              <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Star className="h-5 w-5 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">最高评级</p>
+                <p className="text-3xl font-bold">战略合作</p>
               </div>
               <div className="h-10 w-10 bg-emerald-100 rounded-lg flex items-center justify-center">
                 <Award className="h-5 w-5 text-emerald-600" />
@@ -52,10 +165,8 @@ export default function RatingsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">深度合作主体</p>
-                <p className="text-3xl font-bold">
-                  {partners.filter(p => p.rating === 'deep').length}
-                </p>
+                <p className="text-sm text-muted-foreground">使用说明</p>
+                <p className="text-sm text-muted-foreground mt-1">在企业档案页面中为企业分配评级</p>
               </div>
               <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Star className="h-5 w-5 text-blue-600" />
@@ -63,150 +174,132 @@ export default function RatingsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">已评级项目</p>
-                <p className="text-3xl font-bold">{ratedProjects.length}</p>
-              </div>
-              <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">平均项目评分</p>
-                <p className="text-3xl font-bold">
-                  {ratedProjects.length > 0
-                    ? (ratedProjects.reduce((sum, p) => sum + (p.rating || 0), 0) / ratedProjects.length).toFixed(1)
-                    : '-'}
-                </p>
-              </div>
-              <div className="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Star className="h-5 w-5 text-amber-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* 切换标签 */}
-      <div className="flex gap-2 border-b pb-2">
-        <Button
-          variant={activeTab === 'partner' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('partner')}
-        >
-          <Building2 className="h-4 w-4 mr-2" />
-          合作主体评级
-        </Button>
-        <Button
-          variant={activeTab === 'project' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('project')}
-        >
-          <FolderKanban className="h-4 w-4 mr-2" />
-          合作项目评级
-        </Button>
-      </div>
-
-      {/* 主体评级 */}
-      {activeTab === 'partner' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>合作主体评级列表</CardTitle>
-            <CardDescription>按合作深度与贡献度对合作主体进行综合评级</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>主体名称</TableHead>
-                  <TableHead>类型</TableHead>
-                  <TableHead>当前评级</TableHead>
-                  <TableHead>合作状态</TableHead>
-                  <TableHead>关联项目数</TableHead>
-                  <TableHead className="text-right">操作</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {partners.map((partner) => (
-                  <TableRow key={partner.id}>
-                    <TableCell className="font-medium">{partner.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{partner.type}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={ratingColors[partner.rating]}>
-                        {COOPERATION_RATING_LABELS[partner.rating]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{partner.status}</TableCell>
-                    <TableCell>
-                      {projects.filter(p => p.partnerId === partner.id).length}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">调整评级</Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 项目评级 */}
-      {activeTab === 'project' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>合作项目评级列表</CardTitle>
-            <CardDescription>对已结项项目进行质量评级</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>项目名称</TableHead>
-                  <TableHead>合作主体</TableHead>
-                  <TableHead>当前阶段</TableHead>
-                  <TableHead>项目评分</TableHead>
-                  <TableHead className="text-right">操作</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {projects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell className="font-medium">{project.name}</TableCell>
-                    <TableCell>{project.partnerName}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{PROJECT_PHASE_LABELS[project.phase]}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {project.rating ? (
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                          <span className="font-medium">{project.rating}</span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">未评级</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        {project.rating ? '修改评级' : '添加评级'}
+      {/* 评级字典列表 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>评级字典列表</CardTitle>
+          <CardDescription>定义合作深度的评级标准与评定条件</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>排序</TableHead>
+                <TableHead>评级名称</TableHead>
+                <TableHead>评级标识</TableHead>
+                <TableHead>说明</TableHead>
+                <TableHead>评定条件</TableHead>
+                <TableHead className="text-right">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {ratings.sort((a, b) => a.sortOrder - b.sortOrder).map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.sortOrder}</TableCell>
+                  <TableCell>
+                    <Badge className={ratingColors[item.rating]}>
+                      {item.label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <code className="text-xs bg-gray-100 px-2 py-1 rounded">{item.rating}</code>
+                  </TableCell>
+                  <TableCell className="max-w-xs">{item.description}</TableCell>
+                  <TableCell className="max-w-xs">{item.criteria}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(item)}>
+                        <Pencil className="h-4 w-4" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(item)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* 编辑/新增对话框 */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingItem ? '编辑评级' : '新增评级'}</DialogTitle>
+            <DialogDescription>
+              {editingItem ? '修改评级字典项的配置' : '添加新的合作深度评级'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>评级名称</Label>
+              <Input
+                value={formData.label}
+                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                placeholder="如：战略合作"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>评级标识</Label>
+              <Input
+                value={formData.rating}
+                onChange={(e) => setFormData({ ...formData, rating: e.target.value as CooperationRating })}
+                placeholder="如：strategic"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>说明</Label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="评级的简要说明"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>评定条件</Label>
+              <Textarea
+                value={formData.criteria}
+                onChange={(e) => setFormData({ ...formData, criteria: e.target.value })}
+                placeholder="达到该评级需要满足的条件"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>排序</Label>
+              <Input
+                type="number"
+                value={formData.sortOrder}
+                onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>
+            <Button onClick={handleSave}>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 删除确认对话框 */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>
+              确定要删除评级「{deletingItem?.label}」吗？此操作不可撤销。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>取消</Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>确认删除</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

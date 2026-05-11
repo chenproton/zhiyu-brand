@@ -21,7 +21,7 @@ import {
   Clock,
   AlertCircle,
 } from 'lucide-react'
-import { getProjectById, getPartnerById, getAgreementById } from '@/lib/mock-data'
+import { getProjectById, getPartnerById, getAgreementById, getAchievementsByPartnerId } from '@/lib/mock-data'
 import { PROJECT_PHASE_LABELS } from '@/lib/types'
 
 interface PageProps {
@@ -38,6 +38,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
   const partner = project.partnerId ? getPartnerById(project.partnerId) : null
   const agreement = project.agreementId ? getAgreementById(project.agreementId) : null
+  const achievements = getAchievementsByPartnerId(project.partnerId).filter(a => a.projectId === project.id)
 
   // Calculate milestone progress
   const completedMilestones = project.milestones.filter((m) => m.status === 'completed').length
@@ -133,9 +134,11 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         {/* Tabs */}
         <Tabs defaultValue="milestones" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="milestones">里程碑</TabsTrigger>
+            <TabsTrigger value="milestones">里程碑（进展）</TabsTrigger>
             <TabsTrigger value="info">项目信息</TabsTrigger>
-            <TabsTrigger value="outputs">项目成果</TabsTrigger>
+            <TabsTrigger value="agreement">项目协议</TabsTrigger>
+            <TabsTrigger value="achievements">关联成果 ({achievements.length})</TabsTrigger>
+            <TabsTrigger value="activities">联盟活动</TabsTrigger>
           </TabsList>
 
           <TabsContent value="milestones">
@@ -244,6 +247,17 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                       </div>
                     </div>
                   )}
+                  {achievements.length > 0 && (
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <Award className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">关联成果</p>
+                        <p className="font-medium">{achievements.length} 项成果</p>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -273,6 +287,94 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="agreement">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">项目合作协议</CardTitle>
+                  <CardDescription>该项目关联的合作协议</CardDescription>
+                </div>
+                <Button size="sm">关联协议</Button>
+              </CardHeader>
+              <CardContent>
+                {agreement ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <Link
+                          href={`/admin/agreements/${agreement.id}`}
+                          className="font-medium hover:underline"
+                        >
+                          {agreement.name}
+                        </Link>
+                        <p className="text-sm text-muted-foreground">
+                          {agreement.type} · 有效期至 {agreement.endDate.toLocaleDateString('zh-CN')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    暂无关联协议
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="achievements">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">关联合作成果</CardTitle>
+                  <CardDescription>该项目产生的合作成果</CardDescription>
+                </div>
+                <Button size="sm">关联成果</Button>
+              </CardHeader>
+              <CardContent>
+                {achievements.length > 0 ? (
+                  <div className="space-y-4">
+                    {achievements.map((achievement) => (
+                      <div
+                        key={achievement.id}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium">{achievement.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {achievement.publishDate.toLocaleDateString('zh-CN')} 发布
+                          </p>
+                        </div>
+                        <Badge variant="secondary">{achievement.type}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    暂无关联成果
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="activities">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">联盟活动</CardTitle>
+                  <CardDescription>与该项目相关的联盟活动</CardDescription>
+                </div>
+                <Button size="sm">关联活动</Button>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-muted-foreground">
+                  暂无关联活动
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="outputs">

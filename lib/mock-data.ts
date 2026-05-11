@@ -1,5 +1,7 @@
 import type {
   Partner,
+  Enterprise,
+  PermissionConfig,
   Agreement,
   Project,
   Expert,
@@ -30,7 +32,178 @@ export const schoolInfo: SchoolInfo = {
   establishedYear: 1998,
 }
 
-// 合作主体数据
+// 企业档案数据
+export const enterprises: Enterprise[] = [
+  {
+    id: 'e001',
+    enterpriseType: 'platform',
+    name: '苏州智联科技有限公司',
+    industry: '信息技术',
+    region: '江苏省苏州市',
+    description: '专注于人工智能和大数据解决方案的高新技术企业，是国家级专精特新"小巨人"企业。',
+    logo: '/placeholder.svg?height=64&width=64',
+    status: 'active',
+    rating: 'strategic',
+    cooperationTypes: ['人才培养', '实习实训', '技术研发', '课程共建'],
+    contactPerson: '张明',
+    contactPhone: '13800138001',
+    contactEmail: 'zhangming@zltech.com',
+    address: '苏州市工业园区创业街100号',
+    establishedYear: 2010,
+    employeeCount: 500,
+    agreements: [
+      {
+        id: 'ea001',
+        name: '战略合作框架协议',
+        type: '战略合作协议',
+        startDate: new Date('2022-03-01'),
+        endDate: new Date('2027-02-28'),
+        status: 'active',
+        content: '双方建立长期战略合作伙伴关系，在人才培养、技术研发、产业服务等方面开展全面合作。',
+        attachments: ['协议正文.pdf'],
+        createdAt: new Date('2022-02-20'),
+      },
+      {
+        id: 'ea002',
+        name: '产学研合作协议',
+        type: '产学研合作协议',
+        startDate: new Date('2023-01-01'),
+        endDate: new Date('2025-12-31'),
+        status: 'active',
+        content: '共同开展人工智能应用技术研发，联合申报科研项目，共享知识产权成果。',
+        createdAt: new Date('2022-12-15'),
+      },
+    ],
+    ratingRecord: {
+      rating: 'strategic',
+      evaluatedAt: new Date('2024-06-20'),
+      evaluator: '学校产教融合办公室',
+      remark: '合作深入，成果显著',
+    },
+    createdAt: new Date('2022-01-15'),
+    updatedAt: new Date('2024-06-20'),
+  },
+  {
+    id: 'e002',
+    enterpriseType: 'platform',
+    name: '江苏新能源集团',
+    industry: '新能源',
+    region: '江苏省南京市',
+    description: '江苏省重点新能源企业，业务涵盖光伏发电、风力发电、储能系统等领域。',
+    logo: '/placeholder.svg?height=64&width=64',
+    status: 'active',
+    rating: 'deep',
+    cooperationTypes: ['人才培养', '实习实训', '就业合作'],
+    contactPerson: '李华',
+    contactPhone: '13900139002',
+    contactEmail: 'lihua@jsne.com',
+    address: '南京市江北新区新能源大道88号',
+    establishedYear: 2008,
+    employeeCount: 2000,
+    agreements: [
+      {
+        id: 'ea003',
+        name: '实习实训基地共建协议',
+        type: '实习实训协议',
+        startDate: new Date('2022-09-01'),
+        endDate: new Date('2025-08-31'),
+        status: 'active',
+        content: '在企业建立校外实习实训基地，每年接收学生实习不少于100人次。',
+        attachments: ['协议正文.pdf'],
+        createdAt: new Date('2022-08-10'),
+      },
+    ],
+    ratingRecord: {
+      rating: 'deep',
+      evaluatedAt: new Date('2024-05-15'),
+      evaluator: '学校产教融合办公室',
+      remark: '合作稳定，实习就业输送量大',
+    },
+    createdAt: new Date('2022-03-10'),
+    updatedAt: new Date('2024-05-15'),
+  },
+  {
+    id: 'e003',
+    enterpriseType: 'school-based',
+    name: '华东职院智能制造产业学院',
+    industry: '智能制造',
+    region: '江苏省苏州市',
+    description: '由学校与苏州智能制造企业共建的产业学院，开展订单班培养、技术研发等深度合作。',
+    logo: '/placeholder.svg?height=64&width=64',
+    status: 'active',
+    rating: 'strategic',
+    cooperationTypes: ['人才培养', '课程共建', '师资培训', '技术研发'],
+    contactPerson: '王强',
+    contactPhone: '13700137003',
+    contactEmail: 'wangqiang@hdvtc.edu.cn',
+    address: '华东职业技术学院产教融合楼',
+    establishedYear: 2021,
+    employeeCount: 50,
+    agreements: [
+      {
+        id: 'ea004',
+        name: '产业学院共建协议',
+        type: '产业学院协议',
+        startDate: new Date('2021-09-01'),
+        endDate: new Date('2026-08-31'),
+        status: 'active',
+        content: '共建智能制造产业学院，开展订单班培养、课程开发、师资互聘等合作。',
+        attachments: ['共建协议.pdf', '实施细则.pdf'],
+        createdAt: new Date('2021-08-15'),
+      },
+    ],
+    ratingRecord: {
+      rating: 'strategic',
+      evaluatedAt: new Date('2024-06-01'),
+      evaluator: '学校产教融合办公室',
+      remark: '校本企业，合作最为紧密',
+    },
+    createdAt: new Date('2021-08-15'),
+    updatedAt: new Date('2024-06-01'),
+  },
+  {
+    id: 'e004',
+    enterpriseType: 'platform',
+    name: '上海云智科技股份有限公司',
+    industry: '信息技术',
+    region: '上海市',
+    description: '专注于云计算和企业数字化转型服务的上市公司。',
+    logo: '/placeholder.svg?height=64&width=64',
+    status: 'active',
+    rating: 'general',
+    cooperationTypes: ['人才培养', '实习实训'],
+    contactPerson: '赵磊',
+    contactPhone: '13400134006',
+    contactEmail: 'zhaolei@shyztech.com',
+    address: '上海市浦东新区张江高科技园区',
+    establishedYear: 2012,
+    employeeCount: 800,
+    createdAt: new Date('2023-06-10'),
+    updatedAt: new Date('2024-01-20'),
+  },
+  {
+    id: 'e005',
+    enterpriseType: 'school-based',
+    name: '华东职院数字文创工作室',
+    industry: '文化创意',
+    region: '江苏省苏州市',
+    description: '学校与企业共建的数字文创工作室，承接真实项目，培养学生实践能力。',
+    logo: '/placeholder.svg?height=64&width=64',
+    status: 'active',
+    rating: 'deep',
+    cooperationTypes: ['人才培养', '实习实训', '创新创业'],
+    contactPerson: '孙悦',
+    contactPhone: '12900129011',
+    contactEmail: 'sunyue@hdvtc.edu.cn',
+    address: '华东职业技术学院文创楼',
+    establishedYear: 2022,
+    employeeCount: 30,
+    createdAt: new Date('2022-09-01'),
+    updatedAt: new Date('2024-04-15'),
+  },
+]
+
+// 合作主体数据（兼容旧数据）
 export const partners: Partner[] = [
   {
     id: 'p001',
@@ -1200,7 +1373,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach001',
     name: 'AI应用技术产业学院',
-    type: 'joint-build',
+    type: 'custom',
     partnerId: 'p001',
     partnerName: '苏州智联科技有限公司',
     projectId: 'proj001',
@@ -1216,7 +1389,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach002',
     name: '新能源技术校外实训基地',
-    type: 'training-base',
+    type: 'scene',
     partnerId: 'p002',
     partnerName: '江苏新能源集团',
     projectId: 'proj003',
@@ -1232,7 +1405,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach003',
     name: '人工智能应用技术专业教学标准',
-    type: 'education-reform',
+    type: 'course',
     partnerId: 'p005',
     partnerName: '中国职业教育发展研究院',
     description: '联合研制人工智能应用技术专业教学标准，已通过省级评审并在全省推广应用。',
@@ -1246,7 +1419,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach004',
     name: '产教融合育人模式创新实践',
-    type: 'case-study',
+    type: 'custom',
     partnerId: 'p001',
     partnerName: '苏州智联科技有限公司',
     description: '以AI应用技术产业学院建设为载体，探索形成"双主体、双导师、双证书"的产教融合育人模式，入选省级典型案例。',
@@ -1260,7 +1433,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach005',
     name: '基于深度学习的工业视觉检测系统',
-    type: 'patent',
+    type: 'job',
     partnerId: 'p001',
     partnerName: '苏州智联科技有限公司',
     projectId: 'proj002',
@@ -1276,7 +1449,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach006',
     name: '省级产教融合实训基地',
-    type: 'award',
+    type: 'custom',
     partnerId: 'p004',
     partnerName: '苏州工业园区人工智能产业园',
     description: '与苏州工业园区人工智能产业园共建的实训基地被评为省级产教融合实训基地，获得专项建设经费500万元。',
@@ -1290,7 +1463,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach007',
     name: '电商直播运营实训室',
-    type: 'training-base',
+    type: 'scene',
     partnerId: 'p012',
     partnerName: '江苏省电子商务协会',
     description: '共建电商直播运营实训室，配备专业直播间、短视频制作设备和数据分析平台。',
@@ -1304,7 +1477,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach008',
     name: '软件人才定向培养模式创新',
-    type: 'case-study',
+    type: 'custom',
     partnerId: 'p013',
     partnerName: '南京软件谷',
     description: '探索"2+1"校企联合培养模式，学生前两年在校学习，第三年进入企业顶岗实习和项目实战。',
@@ -1318,7 +1491,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach009',
     name: '生物医药检测技术课程群',
-    type: 'education-reform',
+    type: 'course',
     partnerId: 'p009',
     partnerName: '南京生物医药有限公司',
     description: '联合开发生物医药检测技术课程群，涵盖药物分析、质量检测、仪器操作等核心内容。',
@@ -1332,7 +1505,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach010',
     name: '文创产品设计方案集',
-    type: 'patent',
+    type: 'job',
     partnerId: 'p011',
     partnerName: '苏州文化创意集团',
     description: '校企联合设计的苏州特色文创产品系列，已获得外观设计专利授权。',
@@ -1346,7 +1519,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach011',
     name: '现代服务业师资培训基地',
-    type: 'award',
+    type: 'custom',
     partnerId: 'p010',
     partnerName: '江苏省现代服务业研究院',
     description: '与现代服务业研究院共建的师资培训基地被评为省级双师型教师培养培训基地。',
@@ -1360,7 +1533,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach012',
     name: '智能制造视觉引导系统',
-    type: 'patent',
+    type: 'job',
     partnerId: 'p014',
     partnerName: '无锡智能制造装备有限公司',
     description: '校企联合研发的工业机器人视觉引导系统，获得国家发明专利授权。',
@@ -1374,7 +1547,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach013',
     name: 'AI科普进社区系列活动',
-    type: 'case-study',
+    type: 'custom',
     partnerId: 'p015',
     partnerName: '陈明远',
     description: '面向社区居民和中小学生开展人工智能科普活动，覆盖10个社区，受益人群超3000人。',
@@ -1388,7 +1561,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach014',
     name: '跨境电商运营实战项目',
-    type: 'joint-build',
+    type: 'custom',
     partnerId: 'p012',
     partnerName: '江苏省电子商务协会',
     description: '共建跨境电商运营实战项目，学生在校期间即可参与真实店铺运营，积累实战经验。',
@@ -1402,7 +1575,7 @@ export const achievements: Achievement[] = [
   {
     id: 'ach015',
     name: '文化创意产业学院',
-    type: 'joint-build',
+    type: 'custom',
     partnerId: 'p011',
     partnerName: '苏州文化创意集团',
     description: '校企共建文化创意产业学院，整合设计、营销、技术等资源，培养文创产业复合型人才。',
@@ -1487,6 +1660,10 @@ export const dashboardStats: DashboardStats = {
 }
 
 // 辅助函数：根据ID获取数据
+export function getEnterpriseById(id: string): Enterprise | undefined {
+  return enterprises.find(e => e.id === id)
+}
+
 export function getPartnerById(id: string): Partner | undefined {
   return partners.find(p => p.id === id)
 }
@@ -1527,6 +1704,60 @@ export function getExpertsByPartnerId(partnerId: string): Expert[] {
 export function getAchievementsByPartnerId(partnerId: string): Achievement[] {
   return achievements.filter(a => a.partnerId === partnerId)
 }
+
+// 权限配置数据
+export const permissionConfigs: PermissionConfig[] = [
+  {
+    id: 'perm001',
+    subjectType: 'enterprise',
+    subjectId: 'platform',
+    subjectName: '平台企业',
+    permissions: ['job_manage', 'scene_manage', 'course_manage'],
+    enabled: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-06-01'),
+  },
+  {
+    id: 'perm002',
+    subjectType: 'enterprise',
+    subjectId: 'school-based',
+    subjectName: '校本企业',
+    permissions: ['job_manage', 'scene_manage'],
+    enabled: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-06-01'),
+  },
+  {
+    id: 'perm003',
+    subjectType: 'expert',
+    subjectId: 'gold',
+    subjectName: '金牌专家',
+    permissions: ['course_manage', 'scene_manage'],
+    enabled: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-06-01'),
+  },
+  {
+    id: 'perm004',
+    subjectType: 'expert',
+    subjectId: 'silver',
+    subjectName: '银牌专家',
+    permissions: ['course_manage'],
+    enabled: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-06-01'),
+  },
+  {
+    id: 'perm005',
+    subjectType: 'expert',
+    subjectId: 'bronze',
+    subjectName: '铜牌专家',
+    permissions: ['scene_manage'],
+    enabled: false,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-06-01'),
+  },
+]
 
 // ==================== 品牌运营管理数据 ====================
 
@@ -2586,7 +2817,7 @@ export const cultureBrands: CultureBrand[] = [
   {
     id: 'cb004',
     name: '课程思政示范课',
-    type: 'award',
+    type: 'custom',
     description: '《人工智能伦理与社会》获评省级课程思政示范课，探索AI专业课程思政建设新路径。',
     content: '该课程将人工智能伦理、社会责任、职业道德等思政元素有机融入AI专业知识教学，引导学生思考技术发展与社会进步的关系，培养学生的社会责任感。课程获评2024年省级课程思政示范课。',
     images: ['/placeholder.svg?height=300&width=400'],
@@ -2641,7 +2872,7 @@ export const cultureBrands: CultureBrand[] = [
   {
     id: 'cb008',
     name: '志愿服务品牌项目',
-    type: 'award',
+    type: 'custom',
     description: '学校志愿服务团队获评省级优秀志愿服务组织，累计服务时长超10万小时。',
     content: '学校青年志愿者协会成立于2005年，现有注册志愿者3000余人。团队长期开展社区服务、环保宣传、支教助学、助老助残等志愿服务活动，累计服务时长超10万小时，受益群众超5万人次。',
     images: ['/placeholder.svg?height=300&width=400'],

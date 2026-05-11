@@ -1,0 +1,374 @@
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  CooperationStatusBadge,
+  CooperationRatingBadge,
+  AgreementStatusBadge,
+} from '@/components/shared/status-badge'
+import {
+  ArrowLeft,
+  Pencil,
+  Building2,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Users,
+  FileText,
+  Star,
+  Award,
+} from 'lucide-react'
+import { getEnterpriseById, getProjectsByPartnerId, getAchievementsByPartnerId } from '@/lib/mock-data'
+import { ENTERPRISE_TYPE_LABELS, COOPERATION_TYPES } from '@/lib/types'
+
+interface PageProps {
+  params: Promise<{ id: string }>
+}
+
+export default async function EnterpriseDetailPage({ params }: PageProps) {
+  const { id } = await params
+  const enterprise = getEnterpriseById(id)
+
+  if (!enterprise) {
+    notFound()
+  }
+
+  const projects = getProjectsByPartnerId(id)
+  const achievements = getAchievementsByPartnerId(id)
+
+  return (
+    <div>
+      <div className="mb-6">
+        <Link href="/admin/enterprises">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            返回列表
+          </Button>
+        </Link>
+      </div>
+
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start gap-4">
+          <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+            <Building2 className="w-8 h-8 text-gray-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{enterprise.name}</h1>
+            <p className="text-muted-foreground">
+              {ENTERPRISE_TYPE_LABELS[enterprise.enterpriseType]} · {enterprise.industry}
+            </p>
+            <div className="flex items-center gap-2 mt-2">
+              <CooperationStatusBadge status={enterprise.status} />
+              <CooperationRatingBadge rating={enterprise.rating} />
+            </div>
+          </div>
+        </div>
+        <Link href={`/admin/enterprises/${id}/edit`}>
+          <Button>
+            <Pencil className="h-4 w-4 mr-2" />
+            编辑信息
+          </Button>
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <FileText className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{enterprise.agreements?.length || 0}</p>
+                <p className="text-xs text-muted-foreground">合作协议</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <Award className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{projects.length}</p>
+                <p className="text-xs text-muted-foreground">合作项目</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Star className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{achievements.length}</p>
+                <p className="text-xs text-muted-foreground">合作成果</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Users className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{enterprise.employeeCount?.toLocaleString() || '-'}</p>
+                <p className="text-xs text-muted-foreground">员工规模</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="info" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="info">基本信息</TabsTrigger>
+          <TabsTrigger value="agreements">合作协议 ({enterprise.agreements?.length || 0})</TabsTrigger>
+          <TabsTrigger value="projects">合作项目 ({projects.length})</TabsTrigger>
+          <TabsTrigger value="achievements">合作成果 ({achievements.length})</TabsTrigger>
+          <TabsTrigger value="rating">评级记录</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="info">
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">企业简介</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 leading-relaxed">{enterprise.description}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">联系信息</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {enterprise.contactPerson && (
+                  <div className="flex items-center gap-3">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">联系人：{enterprise.contactPerson}</span>
+                  </div>
+                )}
+                {enterprise.contactPhone && (
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{enterprise.contactPhone}</span>
+                  </div>
+                )}
+                {enterprise.contactEmail && (
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{enterprise.contactEmail}</span>
+                  </div>
+                )}
+                {enterprise.address && (
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{enterprise.address}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">合作类型</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {enterprise.cooperationTypes.map((type) => (
+                    <Badge key={type} variant="secondary">
+                      {type}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">其他信息</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">企业类型</span>
+                  <span className="text-sm">{ENTERPRISE_TYPE_LABELS[enterprise.enterpriseType]}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">成立年份</span>
+                  <span className="text-sm">{enterprise.establishedYear || '-'}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">员工规模</span>
+                  <span className="text-sm">{enterprise.employeeCount?.toLocaleString() || '-'} 人</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">创建时间</span>
+                  <span className="text-sm">{enterprise.createdAt.toLocaleDateString('zh-CN')}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">更新时间</span>
+                  <span className="text-sm">{enterprise.updatedAt.toLocaleDateString('zh-CN')}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="agreements">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base">企业合作协议</CardTitle>
+                <CardDescription>与该企业的所有合作协议</CardDescription>
+              </div>
+              <Button size="sm">新增协议</Button>
+            </CardHeader>
+            <CardContent>
+              {enterprise.agreements && enterprise.agreements.length > 0 ? (
+                <div className="space-y-4">
+                  {enterprise.agreements.map((agreement) => (
+                    <div
+                      key={agreement.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">{agreement.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {agreement.type} · 有效期至 {agreement.endDate.toLocaleDateString('zh-CN')}
+                        </p>
+                      </div>
+                      <AgreementStatusBadge status={agreement.status} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  暂无合作协议
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="projects">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">合作项目</CardTitle>
+              <CardDescription>与该企业开展的所有合作项目</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {projects.length > 0 ? (
+                <div className="space-y-4">
+                  {projects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <Link
+                          href={`/admin/projects/${project.id}`}
+                          className="font-medium hover:underline"
+                        >
+                          {project.name}
+                        </Link>
+                        <p className="text-sm text-muted-foreground">
+                          {project.type} · {project.startDate.toLocaleDateString('zh-CN')} - {project.endDate.toLocaleDateString('zh-CN')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  暂无合作项目
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="achievements">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">合作成果</CardTitle>
+              <CardDescription>与该企业合作产生的成果</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {achievements.length > 0 ? (
+                <div className="space-y-4">
+                  {achievements.map((achievement) => (
+                    <div
+                      key={achievement.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">{achievement.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {achievement.publishDate.toLocaleDateString('zh-CN')} 发布
+                        </p>
+                      </div>
+                      <Badge variant="secondary">{achievement.type}</Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  暂无合作成果
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="rating">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">评级记录</CardTitle>
+              <CardDescription>该企业的合作深度评级历史</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {enterprise.ratingRecord ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">{COOPERATION_RATING_LABELS[enterprise.ratingRecord.rating]}</p>
+                      <p className="text-sm text-muted-foreground">
+                        评定时间：{enterprise.ratingRecord.evaluatedAt.toLocaleDateString('zh-CN')}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        评定人：{enterprise.ratingRecord.evaluator}
+                      </p>
+                      {enterprise.ratingRecord.remark && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          备注：{enterprise.ratingRecord.remark}
+                        </p>
+                      )}
+                    </div>
+                    <CooperationRatingBadge rating={enterprise.ratingRecord.rating} />
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  暂无评级记录
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}

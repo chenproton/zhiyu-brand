@@ -148,12 +148,10 @@ interface AchievementTypeBadgeProps {
 
 export function AchievementTypeBadge({ type, className }: AchievementTypeBadgeProps) {
   const variants: Record<AchievementType, string> = {
-    'joint-build': 'bg-blue-100 text-blue-800 border-blue-200',
-    'training-base': 'bg-green-100 text-green-800 border-green-200',
-    'education-reform': 'bg-purple-100 text-purple-800 border-purple-200',
-    'case-study': 'bg-orange-100 text-orange-800 border-orange-200',
-    patent: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-    award: 'bg-amber-100 text-amber-800 border-amber-200',
+    job: 'bg-blue-100 text-blue-800 border-blue-200',
+    scene: 'bg-green-100 text-green-800 border-green-200',
+    course: 'bg-purple-100 text-purple-800 border-purple-200',
+    custom: 'bg-orange-100 text-orange-800 border-orange-200',
   }
 
   return (

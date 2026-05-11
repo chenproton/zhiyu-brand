@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Plus, Search, Eye, Edit, Trash2, FileText, Award, BookOpen, Building2, GraduationCap, FileCheck } from "lucide-react"
+import { Plus, Search, Eye, Edit, Trash2, Briefcase, Map, BookOpen, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,21 +15,17 @@ import { ACHIEVEMENT_TYPE_LABELS } from "@/lib/types"
 import type { Achievement, AchievementType } from "@/lib/types"
 
 const typeIcons: Record<AchievementType, React.ReactNode> = {
-  "joint-build": <Building2 className="h-4 w-4" />,
-  "training-base": <GraduationCap className="h-4 w-4" />,
-  "education-reform": <BookOpen className="h-4 w-4" />,
-  "case-study": <FileText className="h-4 w-4" />,
-  patent: <FileCheck className="h-4 w-4" />,
-  award: <Award className="h-4 w-4" />,
+  job: <Briefcase className="h-4 w-4" />,
+  scene: <Map className="h-4 w-4" />,
+  course: <BookOpen className="h-4 w-4" />,
+  custom: <Tag className="h-4 w-4" />,
 }
 
 const typeColors: Record<AchievementType, string> = {
-  "joint-build": "bg-blue-100 text-blue-800",
-  "training-base": "bg-green-100 text-green-800",
-  "education-reform": "bg-purple-100 text-purple-800",
-  "case-study": "bg-orange-100 text-orange-800",
-  patent: "bg-cyan-100 text-cyan-800",
-  award: "bg-yellow-100 text-yellow-800",
+  job: "bg-blue-100 text-blue-800",
+  scene: "bg-green-100 text-green-800",
+  course: "bg-purple-100 text-purple-800",
+  custom: "bg-orange-100 text-orange-800",
 }
 
 export default function AchievementsPage() {
@@ -52,12 +48,10 @@ export default function AchievementsPage() {
   }
 
   const handleDeleteConfirm = () => {
-    // In a real app, this would call an API
     setDeleteDialogOpen(false)
     setSelectedAchievement(null)
   }
 
-  // Stats by type
   const statsByType = Object.entries(ACHIEVEMENT_TYPE_LABELS).map(([type, label]) => ({
     type,
     label,
@@ -71,7 +65,7 @@ export default function AchievementsPage() {
         <div>
           <h1 className="text-2xl font-semibold text-foreground">成果管理</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            管理共建成果、实训基地、教改成果、典型案例、专利成果、获奖成果等各类成果
+            管理岗位成果、场景成果、课程成果及自定义成果
           </p>
         </div>
         <Button asChild>
@@ -83,7 +77,7 @@ export default function AchievementsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statsByType.map((stat) => (
           <Card key={stat.type}>
             <CardContent className="p-4">
