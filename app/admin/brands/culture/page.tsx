@@ -42,7 +42,6 @@ const emptyForm = {
   name: "",
   type: "case" as CultureBrand["type"],
   description: "",
-  content: "",
   relatedMajor: "",
   status: "draft" as BrandStatus,
 }
@@ -89,7 +88,6 @@ export default function CultureBrandPage() {
       name: culture.name,
       type: culture.type,
       description: culture.description,
-      content: culture.content,
       relatedMajor: culture.relatedMajor || "",
       status: culture.status,
     })
@@ -116,7 +114,7 @@ export default function CultureBrandPage() {
         name: form.name,
         type: form.type,
         description: form.description,
-        content: form.content,
+        content: "",
         relatedMajor: form.relatedMajor || undefined,
         coverImage: "/placeholder.svg?height=200&width=300",
         status: form.status,
@@ -307,17 +305,7 @@ export default function CultureBrandPage() {
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="请输入内容描述"
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="c-content">正文内容</Label>
-              <Textarea
-                id="c-content"
-                value={form.content}
-                onChange={(e) => setForm({ ...form, content: e.target.value })}
-                placeholder="请输入正文内容"
-                rows={4}
+                rows={3}
               />
             </div>
             <div className="space-y-2">

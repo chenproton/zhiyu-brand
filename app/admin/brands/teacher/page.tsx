@@ -42,7 +42,6 @@ const emptyTeacherForm = {
   type: "dual-qualified" as TeacherBrand["type"],
   introduction: "",
   researchFields: "",
-  courses: "",
   awards: "",
   isFeatured: false,
   status: "draft" as BrandStatus,
@@ -55,6 +54,8 @@ const emptyExpertForm = {
   specialties: "",
   roles: "",
   experience: "",
+  rating: "gold" as Expert["rating"],
+  achievements: "",
 }
 
 export default function TeacherBrandPage() {
@@ -101,7 +102,6 @@ export default function TeacherBrandPage() {
       type: teacher.type,
       introduction: teacher.introduction,
       researchFields: teacher.researchFields.join("，"),
-      courses: teacher.courses.join("，"),
       awards: teacher.awards.join("，"),
       isFeatured: teacher.isFeatured,
       status: teacher.status,
@@ -111,10 +111,6 @@ export default function TeacherBrandPage() {
 
   function handleSaveTeacher() {
     const researchFields = teacherForm.researchFields
-      .split(/,|，/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-    const courses = teacherForm.courses
       .split(/,|，/)
       .map((s) => s.trim())
       .filter(Boolean)
@@ -131,7 +127,7 @@ export default function TeacherBrandPage() {
                 ...t,
                 ...teacherForm,
                 researchFields,
-                courses,
+                courses: [],
                 awards,
                 updatedAt: new Date(),
               }
@@ -149,7 +145,7 @@ export default function TeacherBrandPage() {
         introduction: teacherForm.introduction,
         researchFields,
         achievements: [],
-        courses,
+        courses: [],
         awards,
         isFeatured: teacherForm.isFeatured,
         status: teacherForm.status,
@@ -185,6 +181,8 @@ export default function TeacherBrandPage() {
       specialties: expert.specialties.join("，"),
       roles: expert.roles.join("，"),
       experience: String(expert.experience),
+      rating: expert.rating,
+      achievements: expert.achievements?.join("，") || "",
     })
     setExpertDialogOpen(true)
   }
@@ -200,6 +198,8 @@ export default function TeacherBrandPage() {
         specialties: expert.specialties.join("，"),
         roles: expert.roles.join("，"),
         experience: String(expert.experience),
+        rating: expert.rating,
+        achievements: expert.achievements?.join("，") || "",
       })
     }
   }
@@ -214,6 +214,10 @@ export default function TeacherBrandPage() {
       .map((s) => s.trim())
       .filter(Boolean)
     const experience = Number(expertForm.experience) || 0
+    const achievements = expertForm.achievements
+      .split(/,|，/)
+      .map((s) => s.trim())
+      .filter(Boolean)
 
     if (editingExpert) {
       setDisplayedExperts((prev) =>
@@ -227,6 +231,8 @@ export default function TeacherBrandPage() {
                 specialties,
                 roles,
                 experience,
+                rating: expertForm.rating,
+                achievements,
                 updatedAt: new Date(),
               }
             : e
@@ -243,6 +249,8 @@ export default function TeacherBrandPage() {
         specialties,
         roles,
         experience,
+        rating: expertForm.rating,
+        achievements,
         updatedAt: new Date(),
         createdAt: new Date(),
       }
@@ -551,15 +559,6 @@ export default function TeacherBrandPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="t-courses">主讲课程（逗号分隔）</Label>
-              <Input
-                id="t-courses"
-                value={teacherForm.courses}
-                onChange={(e) => setTeacherForm({ ...teacherForm, courses: e.target.value })}
-                placeholder="例如：Python程序设计，机器学习"
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="t-awards">获奖荣誉（逗号分隔）</Label>
               <Input
                 id="t-awards"
@@ -680,6 +679,22 @@ export default function TeacherBrandPage() {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="e-rating">专家评级</Label>
+              <Select
+                value={expertForm.rating}
+                onValueChange={(v) => setExpertForm({ ...expertForm, rating: v as Expert["rating"] })}
+              >
+                <SelectTrigger id="e-rating">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gold">金牌专家</SelectItem>
+                  <SelectItem value="silver">银牌专家</SelectItem>
+                  <SelectItem value="bronze">铜牌专家</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="e-experience">行业经验（年）</Label>
               <Input
                 id="e-experience"
@@ -687,6 +702,16 @@ export default function TeacherBrandPage() {
                 value={expertForm.experience}
                 onChange={(e) => setExpertForm({ ...expertForm, experience: e.target.value })}
                 placeholder="请输入行业经验年数"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="e-achievements">成果荣誉（逗号分隔）</Label>
+              <Textarea
+                id="e-achievements"
+                value={expertForm.achievements}
+                onChange={(e) => setExpertForm({ ...expertForm, achievements: e.target.value })}
+                placeholder="例如：发明专利5项，省级科技进步奖"
+                rows={2}
               />
             </div>
           </div>

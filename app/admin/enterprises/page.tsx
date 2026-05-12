@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -18,13 +18,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
 import { FilterBar } from '@/components/shared/filter-bar'
 import {
   CooperationStatusBadge,
   CooperationRatingBadge,
 } from '@/components/shared/status-badge'
-import { Plus, MoreHorizontal, Eye, Pencil, Trash2, Building2, FileText, Download, Tag, Settings, FolderKanban, Award } from 'lucide-react'
+import { Plus, MoreHorizontal, Eye, Pencil, Trash2, Building2, FileText, Download, Tag, Settings, FolderKanban, Award, Upload, Users } from 'lucide-react'
 import { enterprises } from '@/lib/mock-data'
 
 import {
@@ -47,6 +48,10 @@ export default function EnterprisesListPage() {
   })
   const [cooperationTypeDialogOpen, setCooperationTypeDialogOpen] = useState(false)
   const [cooperationRatingDialogOpen, setCooperationRatingDialogOpen] = useState(false)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [importStep, setImportStep] = useState<'upload' | 'preview'>('upload')
+  const [importedData, setImportedData] = useState<{ enterprises: any[]; experts: any[] } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const filteredEnterprises = useMemo(() => {
     return enterprises.filter((enterprise) => {
@@ -117,6 +122,10 @@ export default function EnterprisesListPage() {
           <Button variant="outline" size="sm" onClick={() => setCooperationRatingDialogOpen(true)}>
             <Settings className="h-4 w-4 mr-1" />
             合作评级管理
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => { setImportDialogOpen(true); setImportStep('upload') }}>
+            <Upload className="h-4 w-4 mr-1" />
+            导入平台企业
           </Button>
           <Link href="/admin/enterprises/new">
             <Button size="sm">
@@ -248,6 +257,130 @@ export default function EnterprisesListPage() {
             <DialogDescription>维护合作深度评级的字典定义</DialogDescription>
           </DialogHeader>
           <CooperationRatingManager />
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Platform Enterprises Dialog */}
+      <Dialog open={importDialogOpen} onOpenChange={(open) => { setImportDialogOpen(open); if (!open) { setImportStep('upload'); setImportedData(null) } }}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>导入平台企业</DialogTitle>
+            <DialogDescription>
+              {importStep === 'upload' ? '上传企业数据文件，系统将自动解析并导入企业及其关联的专家列表' : '预览解析结果，确认后完成导入'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {importStep === 'upload' ? (
+            <div className="space-y-6">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls,.csv,.json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    // 模拟解析
+                    setTimeout(() => {
+                      setImportedData({
+                        enterprises: [
+                          { name: '示例平台企业A', industry: '信息技术', region: '苏州', expertsCount: 3 },
+                          { name: '示例平台企业B', industry: '智能制造', region: '南京', expertsCount: 2 },
+                        ],
+                        experts: [
+                          { name: '张三', title: '技术总监', enterprise: '示例平台企业A' },
+                          { name: '李四', title: '产品经理', enterprise: '示例平台企业A' },
+                          { name: '王五', title: '算法专家', enterprise: '示例平台企业A' },
+                          { name: '赵六', title: '生产主管', enterprise: '示例平台企业B' },
+                          { name: '孙七', title: '质量工程师', enterprise: '示例平台企业B' },
+                        ],
+                      })
+                      setImportStep('preview')
+                    }, 800)
+                  }
+                  if (fileInputRef.current) fileInputRef.current.value = ''
+                }}
+              />
+              <div
+                className="border-2 border-dashed rounded-lg p-10 text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
+                <p className="text-sm font-medium">点击上传或拖拽文件到此处</p>
+                <p className="text-xs text-muted-foreground mt-1">支持 .xlsx, .xls, .csv, .json 格式</p>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-4 text-sm space-y-2">
+                <p className="font-medium">导入说明：</p>
+                <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                  <li>文件需包含企业基本信息（名称、行业、地区等）</li>
+                  <li>如包含专家信息，将同时导入到专家资源库</li>
+                  <li>重复的企业将根据统一社会信用代码去重</li>
+                </ul>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {importedData && (
+                <>
+                  <div>
+                    <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <Building2 className="h-4 w-4" />
+                      待导入企业（{importedData.enterprises.length} 家）
+                    </h4>
+                    <div className="border rounded-lg divide-y">
+                      {importedData.enterprises.map((ent, idx) => (
+                        <div key={idx} className="flex items-center justify-between px-3 py-2 text-sm">
+                          <span className="font-medium">{ent.name}</span>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <span>{ent.industry}</span>
+                            <span>·</span>
+                            <span>{ent.region}</span>
+                            <Badge variant="secondary" className="text-xs">{ent.expertsCount} 位专家</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      待导入专家（{importedData.experts.length} 位）
+                    </h4>
+                    <div className="border rounded-lg divide-y max-h-48 overflow-y-auto">
+                      {importedData.experts.map((exp, idx) => (
+                        <div key={idx} className="flex items-center justify-between px-3 py-2 text-sm">
+                          <span>{exp.name}</span>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <span>{exp.title}</span>
+                            <span>·</span>
+                            <span className="text-xs">{exp.enterprise}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            {importStep === 'preview' && (
+              <>
+                <Button variant="outline" onClick={() => setImportStep('upload')}>
+                  重新上传
+                </Button>
+                <Button onClick={() => { alert('导入成功（演示）'); setImportDialogOpen(false); setImportStep('upload'); setImportedData(null) }}>
+                  确认导入
+                </Button>
+              </>
+            )}
+            {importStep === 'upload' && (
+              <Button variant="outline" onClick={() => setImportDialogOpen(false)}>
+                取消
+              </Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

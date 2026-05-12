@@ -1,18 +1,18 @@
-"use client"
+'use client'
 
-import { useState, useMemo } from "react"
-import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
+import { useState, useMemo } from 'react'
+import Link from 'next/link'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -20,58 +20,83 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { 
-  Search, 
-  Plus, 
-  MoreHorizontal, 
-  Eye, 
-  Edit,
-  Pause,
-  Play,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Search,
+  Plus,
+  Pencil,
   Trash2,
-  MapPin,
-  Building2,
-  Sparkles,
-} from "lucide-react"
-import { jobs, jobRecommendations } from "@/lib/mock-data"
-import { JOB_STATUS_LABELS, JOB_TYPE_LABELS, type JobStatus, type JobType } from "@/lib/types"
-import { usePartner } from "../partner-context"
+  Send,
+} from 'lucide-react'
+import { jobs, jobBrands } from '@/lib/mock-data'
+import {
+  JOB_STATUS_LABELS,
+  JOB_CATEGORY_LABELS,
+  type JobStatus,
+} from '@/lib/types'
+import { usePartner } from '../partner-context'
 
 const statusColors: Record<JobStatus, string> = {
-  draft: "bg-gray-100 text-gray-800",
-  published: "bg-green-100 text-green-800",
-  paused: "bg-yellow-100 text-yellow-800",
-  closed: "bg-red-100 text-red-800",
-  filled: "bg-blue-100 text-blue-800",
+  draft: 'bg-gray-100 text-gray-800',
+  published: 'bg-green-100 text-green-800',
+  paused: 'bg-yellow-100 text-yellow-800',
+  closed: 'bg-red-100 text-red-800',
+  filled: 'bg-blue-100 text-blue-800',
 }
 
 export default function PartnerJobsPage() {
   const { selectedEnterpriseId } = usePartner()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const filteredJobs = useMemo(() => {
     if (!selectedEnterpriseId) return []
     return jobs.filter((job) => {
-      const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch =
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.partnerName.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesStatus = statusFilter === "all" || job.status === statusFilter
-      const matchesType = typeFilter === "all" || job.type === typeFilter
+      const matchesStatus = statusFilter === 'all' || job.status === statusFilter
+      const matchesCategory =
+        categoryFilter === 'all' || job.jobCategory === categoryFilter
       const matchesPartner = job.partnerId === selectedEnterpriseId
-      return matchesSearch && matchesStatus && matchesType && matchesPartner
+      return matchesSearch && matchesStatus && matchesCategory && matchesPartner
     })
-  }, [searchTerm, statusFilter, typeFilter, selectedEnterpriseId])
+  }, [searchTerm, statusFilter, categoryFilter, selectedEnterpriseId])
 
-  const getRecommendationCount = (jobId: string) => {
-    return jobRecommendations.filter(r => r.jobId === jobId && r.partnerId === selectedEnterpriseId).length
+  const handlePublish = (jobId: string) => {
+    const job = jobs.find((j) => j.id === jobId)
+    if (job) {
+      job.status = 'published'
+      job.updatedAt = new Date()
+    }
+  }
+
+  const handleDelete = () => {
+    if (deleteId) {
+      const index = jobs.findIndex((j) => j.id === deleteId)
+      if (index !== -1) {
+        jobs.splice(index, 1)
+      }
+      setDeleteId(null)
+    }
+  }
+
+  const getIndustry = (job: (typeof jobs)[0]) => {
+    if (job.jobCategory === 'teaching' && job.jobBrandId) {
+      const brand = jobBrands.find((b) => b.id === job.jobBrandId)
+      return brand?.industry || '-'
+    }
+    return job.industry || '-'
   }
 
   return (
@@ -80,12 +105,12 @@ export default function PartnerJobsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">岗位管理</h1>
-          <p className="text-muted-foreground">基于岗位成果发布和管理招聘岗位</p>
+          <p className="text-muted-foreground">发布和管理企业招聘岗位</p>
         </div>
         <Button asChild>
           <Link href="/partner/jobs/new">
             <Plus className="h-4 w-4 mr-2" />
-            发布岗位
+            新建岗位
           </Link>
         </Button>
       </div>
@@ -93,9 +118,18 @@ export default function PartnerJobsPage() {
       {/* 统计卡片 */}
       <div className="grid gap-4 md:grid-cols-5">
         {Object.entries(JOB_STATUS_LABELS).map(([status, label]) => {
-          const count = jobs.filter(j => j.status === status && j.partnerId === selectedEnterpriseId).length
+          const count = jobs.filter(
+            (j) => j.status === status && j.partnerId === selectedEnterpriseId
+          ).length
           return (
-            <Card key={status} className={statusFilter === status ? "ring-2 ring-primary" : ""}>
+            <Card
+              key={status}
+              className={statusFilter === status ? 'ring-2 ring-primary' : ''}
+              onClick={() =>
+                setStatusFilter(statusFilter === status ? 'all' : status)
+              }
+              style={{ cursor: 'pointer' }}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">{label}</CardTitle>
               </CardHeader>
@@ -127,19 +161,20 @@ export default function PartnerJobsPage() {
               <SelectContent>
                 <SelectItem value="all">全部状态</SelectItem>
                 {Object.entries(JOB_STATUS_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="岗位类型" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部类型</SelectItem>
-                {Object.entries(JOB_TYPE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
+                <SelectItem value="teaching">教学岗位</SelectItem>
+                <SelectItem value="non-teaching">非教学岗位</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -152,101 +187,89 @@ export default function PartnerJobsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[280px]">岗位信息</TableHead>
-                <TableHead>薪资</TableHead>
+                <TableHead>岗位名称</TableHead>
+                <TableHead>岗位类型</TableHead>
+                <TableHead>薪资范围</TableHead>
+                <TableHead>岗位介绍</TableHead>
+                <TableHead>关联专业</TableHead>
+                <TableHead>所属行业</TableHead>
                 <TableHead>状态</TableHead>
-                <TableHead className="text-center">浏览/推荐</TableHead>
                 <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredJobs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                  <TableCell
+                    colSpan={8}
+                    className="text-center py-12 text-muted-foreground"
+                  >
                     没有找到符合条件的岗位
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredJobs.map((job) => (
                   <TableRow key={job.id}>
+                    <TableCell className="font-medium">{job.title}</TableCell>
                     <TableCell>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{job.title}</p>
-                          {job.isUrgent && <Badge variant="destructive" className="text-xs">急招</Badge>}
-                          {job.isRecommended && <Badge variant="secondary" className="text-xs">推荐</Badge>}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                          <MapPin className="h-3 w-3" />
-                          {job.location}
-                          {job.jobBrandName && (
-                            <>
-                              <span className="mx-1">·</span>
-                              <span>基于: {job.jobBrandName}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
+                      {job.jobCategory ? (
+                        <Badge variant="outline">
+                          {JOB_CATEGORY_LABELS[job.jobCategory]}
+                        </Badge>
+                      ) : (
+                        '-'
+                      )}
                     </TableCell>
                     <TableCell>
                       <span className="text-sm font-medium text-primary">
-                        {job.salaryMin && job.salaryMax 
-                          ? `${job.salaryMin}-${job.salaryMax}K` 
+                        {job.salaryMin && job.salaryMax
+                          ? `${job.salaryMin}-${job.salaryMax}K`
                           : '面议'}
                       </span>
                     </TableCell>
+                    <TableCell>
+                      <p className="text-sm text-muted-foreground max-w-[200px] truncate">
+                        {job.description}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-sm text-muted-foreground max-w-[120px] truncate">
+                        {job.suitableMajors.join('、')}
+                      </p>
+                    </TableCell>
+                    <TableCell>{getIndustry(job)}</TableCell>
                     <TableCell>
                       <Badge className={statusColors[job.status]}>
                         {JOB_STATUS_LABELS[job.status]}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          {job.viewCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Sparkles className="h-3 w-3" />
-                          {getRecommendationCount(job.id)}
-                        </span>
-                      </div>
-                    </TableCell>
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link href={`/partner/jobs/${job.id}/edit`}>
+                            <Pencil className="h-4 w-4 mr-1" />
+                            编辑
+                          </Link>
+                        </Button>
+                        {job.status === 'draft' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePublish(job.id)}
+                          >
+                            <Send className="h-4 w-4 mr-1" />
+                            发布
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/partner/jobs/${job.id}`}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              查看详情
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => alert('编辑岗位功能开发中')}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            编辑岗位
-                          </DropdownMenuItem>
-                          {job.status === "published" ? (
-                            <DropdownMenuItem onClick={() => alert('暂停招聘功能开发中')}>
-                              <Pause className="h-4 w-4 mr-2" />
-                              暂停招聘
-                            </DropdownMenuItem>
-                          ) : job.status === "paused" ? (
-                            <DropdownMenuItem onClick={() => alert('恢复招聘功能开发中')}>
-                              <Play className="h-4 w-4 mr-2" />
-                              恢复招聘
-                            </DropdownMenuItem>
-                          ) : null}
-                          <DropdownMenuItem className="text-destructive" onClick={() => { if (confirm('确定要删除该岗位吗？')) alert('删除岗位功能开发中') }}>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            删除岗位
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteId(job.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          删除
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -255,6 +278,24 @@ export default function PartnerJobsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* 删除确认对话框 */}
+      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>删除后无法恢复，是否继续？</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>
+              取消
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              确认删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

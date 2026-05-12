@@ -24,6 +24,7 @@ import type {
   EmploymentProject,
   EmploymentStats,
   JobRecommendation,
+  AbilityLibraryItem,
 } from './types'
 
 // 学校基本信息
@@ -7357,6 +7358,8 @@ export const jobs: Job[] = [
   partnerId: "e004",
   partnerName: "上海云智科技股份有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "智能制造",
+  jobCategory: "teaching",
   jobBrandId: "jb001",
   jobBrandName: "AI算法工程师",
   type: "full-time",
@@ -7416,6 +7419,8 @@ export const jobs: Job[] = [
   partnerId: "e005",
   partnerName: "华东职院数字文创工作室",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "hybrid",
   department: "技术部",
@@ -7474,6 +7479,8 @@ export const jobs: Job[] = [
   partnerId: "e003",
   partnerName: "华东职院智能制造产业学院",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "智能制造",
+  jobCategory: "teaching",
   jobBrandId: "jb002",
   jobBrandName: "全栈开发工程师",
   type: "full-time",
@@ -7534,6 +7541,8 @@ export const jobs: Job[] = [
   partnerId: "e001",
   partnerName: "苏州智联科技有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "hybrid",
   department: "研发部",
@@ -7542,16 +7551,18 @@ export const jobs: Job[] = [
   salaryMax: 20,
   salaryUnit: "month",
   requirements: [
-    "相关专业",
-    "良好的沟通能力",
-    "熟练使用办公软件",
-    "1年以上经验"
+    "计算机相关专业本科及以上学历，3年以上全栈开发经验",
+    "精通JavaScript/TypeScript，熟练使用React、Node.js等主流技术栈",
+    "熟悉MySQL、MongoDB等数据库，具备数据库设计与优化能力",
+    "具备良好的编码习惯和团队协作能力，有开源项目经验者优先",
+    "对新技术保持敏感，有较强的学习能力和问题解决能力",
   ],
   responsibilities: [
-    "客户需求对接",
-    "参与项目设计",
-    "质量把控",
-    "负责产品开发"
+    "负责Web应用的前端开发，使用React/Vue等框架构建高性能用户界面",
+    "设计和开发RESTful API及后端服务，确保系统稳定性和可扩展性",
+    "参与数据库设计和优化，编写高效的SQL查询语句",
+    "与产品、设计团队紧密协作，推动产品迭代与功能完善",
+    "编写技术文档，进行代码评审，保障代码质量",
   ],
   benefits: [
     "五险一金",
@@ -7571,7 +7582,7 @@ export const jobs: Job[] = [
     "专业技能2",
     "专业技能1"
   ],
-  description: "招聘全栈开发工程师，要求具备相关专业背景和实践经验，欢迎有志之士加入。",
+  description: "负责公司核心产品的全栈开发与维护，涵盖前端交互设计、后端API开发及数据库架构优化。需要具备扎实的计算机基础，熟悉主流Web技术栈，能够独立完成从需求分析到上线的完整开发流程。",
   contactPerson: "张明",
   contactPhone: "13800138001",
   contactEmail: "hr@e001.com",
@@ -7590,6 +7601,8 @@ export const jobs: Job[] = [
   partnerId: "e001",
   partnerName: "苏州智联科技有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "人工智能",
+  jobCategory: "teaching",
   jobBrandId: "jb003",
   jobBrandName: "工业机器人工程师",
   type: "full-time",
@@ -7651,6 +7664,8 @@ export const jobs: Job[] = [
   partnerId: "e005",
   partnerName: "华东职院数字文创工作室",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "文化创意",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "on-site",
   department: "技术部",
@@ -7659,16 +7674,18 @@ export const jobs: Job[] = [
   salaryMax: 14,
   salaryUnit: "month",
   requirements: [
-    "1年以上经验",
-    "相关专业",
-    "熟练使用办公软件",
-    "本科及以上"
+    "设计类相关专业本科及以上学历，2年以上UI设计工作经验",
+    "精通Figma、Sketch、Photoshop、Illustrator等设计工具",
+    "具备良好的审美能力和视觉表现力，对色彩、排版、布局有深刻理解",
+    "熟悉iOS/Android设计规范，有完整的产品设计案例",
+    "具备良好的沟通能力和团队协作精神，能接受设计评审与迭代",
   ],
   responsibilities: [
-    "客户需求对接",
-    "编写技术文档",
-    "质量把控",
-    "参与项目设计"
+    "负责移动APP和Web产品的UI视觉设计，制定设计规范和组件库",
+    "参与产品需求讨论，提供交互流程和用户体验优化方案",
+    "制作高保真原型和设计稿，输出完整的切图和设计标注",
+    "跟踪设计上线效果，收集用户反馈并持续优化视觉体验",
+    "关注设计趋势，推动团队设计能力和效率的提升",
   ],
   benefits: [
     "培训机会",
@@ -7690,7 +7707,7 @@ export const jobs: Job[] = [
     "专业技能3",
     "专业技能1"
   ],
-  description: "招聘UI设计师，要求具备相关专业背景和实践经验，欢迎有志之士加入。",
+  description: "负责公司移动端及Web端产品的UI设计工作，包括视觉风格定义、交互流程设计、设计规范制定等。需要深入理解用户需求，创造美观、易用的界面体验，同时与开发团队紧密配合确保设计还原度。",
   contactPerson: "孙悦",
   contactPhone: "12900129011",
   contactEmail: "hr@e005.com",
@@ -7709,6 +7726,8 @@ export const jobs: Job[] = [
   partnerId: "e004",
   partnerName: "上海云智科技股份有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "teaching",
   jobBrandId: "jb004",
   jobBrandName: "新能源技术员",
   type: "full-time",
@@ -7764,6 +7783,8 @@ export const jobs: Job[] = [
   partnerId: "e005",
   partnerName: "华东职院数字文创工作室",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "hybrid",
   department: "研发部",
@@ -7772,14 +7793,18 @@ export const jobs: Job[] = [
   salaryMax: 20,
   salaryUnit: "month",
   requirements: [
-    "1年以上经验",
-    "本科及以上",
-    "相关专业"
+    "计算机相关专业本科及以上学历，5年以上全栈开发经验",
+    "精通React/Next.js前端框架及Node.js/Java后端开发",
+    "熟悉Docker、Kubernetes等容器化技术，有云原生开发经验",
+    "具备大型分布式系统设计与开发经验，了解微服务架构",
+    "有技术博客、开源贡献或技术分享经验者优先",
   ],
   responsibilities: [
-    "质量把控",
-    "编写技术文档",
-    "负责产品开发"
+    "负责企业级SaaS平台的前端架构设计与核心功能开发",
+    "搭建和维护微服务架构下的后端服务，处理高并发业务场景",
+    "优化系统性能，解决复杂技术难题，提升用户体验",
+    "参与技术选型与架构评审，推动团队技术能力升级",
+    "指导初级开发人员，推动代码规范与最佳实践的落地",
   ],
   benefits: [
     "晋升通道",
@@ -7800,7 +7825,7 @@ export const jobs: Job[] = [
     "专业技能4",
     "专业技能3"
   ],
-  description: "招聘全栈开发工程师，要求具备相关专业背景和实践经验，欢迎有志之士加入。",
+  description: "参与企业级SaaS平台的全栈开发工作，专注于高并发场景下的系统架构设计与实现。需要具备前后端技术全面能力，能够主导核心模块开发，推动技术方案落地，保障系统高性能和高可用性。",
   contactPerson: "孙悦",
   contactPhone: "12900129011",
   contactEmail: "hr@e005.com",
@@ -7819,6 +7844,8 @@ export const jobs: Job[] = [
   partnerId: "e003",
   partnerName: "华东职院智能制造产业学院",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "文化创意",
+  jobCategory: "teaching",
   jobBrandId: "jb005",
   jobBrandName: "电商运营专员",
   type: "full-time",
@@ -7877,6 +7904,8 @@ export const jobs: Job[] = [
   partnerId: "e004",
   partnerName: "上海云智科技股份有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "智能制造",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "on-site",
   department: "研发部",
@@ -7885,17 +7914,18 @@ export const jobs: Job[] = [
   salaryMax: 18,
   salaryUnit: "month",
   requirements: [
-    "相关专业",
-    "良好的沟通能力",
-    "本科及以上",
-    "1年以上经验"
+    "机电一体化、自动化或相关专业本科及以上学历",
+    "熟悉ABB、FANUC、KUKA等主流工业机器人编程与操作",
+    "具备机器视觉系统（如Halcon、OpenCV）集成经验",
+    "熟悉PLC编程及电气控制原理，能看懂电气图纸",
+    "具备良好的沟通能力和现场问题解决能力，能适应出差",
   ],
   responsibilities: [
-    "编写技术文档",
-    "参与项目设计",
-    "质量把控",
-    "客户需求对接",
-    "负责产品开发"
+    "负责工业机器人的编程、调试及离线仿真工作",
+    "设计和实施机器视觉系统集成方案，提升自动化检测精度",
+    "参与自动化产线方案设计，完成技术文档和项目报告",
+    "负责机器人系统的日常维护、故障诊断与性能优化",
+    "为客户提供技术培训与现场技术支持服务",
   ],
   benefits: [
     "晋升通道",
@@ -7916,7 +7946,7 @@ export const jobs: Job[] = [
     "专业技能3",
     "专业技能4"
   ],
-  description: "招聘工业机器人工程师，要求具备相关专业背景和实践经验，欢迎有志之士加入。",
+  description: "负责工业机器人系统的集成、调试与维护工作，包括机器人程序编写、视觉系统集成、自动化产线方案设计等。需要具备机电一体化综合能力，能够独立完成机器人工作站的技术方案设计与现场调试。",
   contactPerson: "赵磊",
   contactPhone: "13400134006",
   contactEmail: "hr@e004.com",
@@ -7934,6 +7964,8 @@ export const jobs: Job[] = [
   partnerId: "e003",
   partnerName: "华东职院智能制造产业学院",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "新能源",
+  jobCategory: "teaching",
   jobBrandId: "jb006",
   jobBrandName: "生物医药研究员",
   type: "full-time",
@@ -7993,6 +8025,8 @@ export const jobs: Job[] = [
   partnerId: "e003",
   partnerName: "华东职院智能制造产业学院",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "hybrid",
   department: "研发部",
@@ -8049,6 +8083,8 @@ export const jobs: Job[] = [
   partnerId: "e002",
   partnerName: "江苏新能源集团",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "新能源",
+  jobCategory: "teaching",
   jobBrandId: "jb007",
   jobBrandName: "数据分析师",
   type: "full-time",
@@ -8108,6 +8144,8 @@ export const jobs: Job[] = [
   partnerId: "e005",
   partnerName: "华东职院数字文创工作室",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "hybrid",
   department: "设计部",
@@ -8166,6 +8204,8 @@ export const jobs: Job[] = [
   partnerId: "e005",
   partnerName: "华东职院数字文创工作室",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "teaching",
   jobBrandId: "jb008",
   jobBrandName: "文创产品设计师",
   type: "full-time",
@@ -8226,6 +8266,8 @@ export const jobs: Job[] = [
   partnerId: "e001",
   partnerName: "苏州智联科技有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "文化创意",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "on-site",
   department: "运营部",
@@ -8286,6 +8328,8 @@ export const jobs: Job[] = [
   partnerId: "e003",
   partnerName: "华东职院智能制造产业学院",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "teaching",
   jobBrandId: "jb009",
   jobBrandName: "云计算运维工程师",
   type: "full-time",
@@ -8344,6 +8388,8 @@ export const jobs: Job[] = [
   partnerId: "e002",
   partnerName: "江苏新能源集团",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "hybrid",
   department: "运营部",
@@ -8399,6 +8445,8 @@ export const jobs: Job[] = [
   partnerId: "e004",
   partnerName: "上海云智科技股份有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "teaching",
   jobBrandId: "jb010",
   jobBrandName: "前端开发工程师",
   type: "full-time",
@@ -8456,6 +8504,8 @@ export const jobs: Job[] = [
   partnerId: "e003",
   partnerName: "华东职院智能制造产业学院",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "hybrid",
   department: "设计部",
@@ -8513,6 +8563,8 @@ export const jobs: Job[] = [
   partnerId: "e005",
   partnerName: "华东职院数字文创工作室",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "teaching",
   jobBrandId: "jb011",
   jobBrandName: "PLC编程工程师",
   type: "full-time",
@@ -8571,6 +8623,8 @@ export const jobs: Job[] = [
   partnerId: "e001",
   partnerName: "苏州智联科技有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "文化创意",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "on-site",
   department: "技术部",
@@ -8625,6 +8679,8 @@ export const jobs: Job[] = [
   partnerId: "e004",
   partnerName: "上海云智科技股份有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "人工智能",
+  jobCategory: "teaching",
   jobBrandId: "jb012",
   jobBrandName: "光伏系统工程师",
   type: "full-time",
@@ -8682,6 +8738,8 @@ export const jobs: Job[] = [
   partnerId: "e003",
   partnerName: "华东职院智能制造产业学院",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "hybrid",
   department: "设计部",
@@ -8739,6 +8797,8 @@ export const jobs: Job[] = [
   partnerId: "e002",
   partnerName: "江苏新能源集团",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "teaching",
   jobBrandId: "jb013",
   jobBrandName: "UI设计师",
   type: "full-time",
@@ -8798,6 +8858,8 @@ export const jobs: Job[] = [
   partnerId: "e003",
   partnerName: "华东职院智能制造产业学院",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "智能制造",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "on-site",
   department: "研发部",
@@ -8856,6 +8918,8 @@ export const jobs: Job[] = [
   partnerId: "e005",
   partnerName: "华东职院数字文创工作室",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "信息技术",
+  jobCategory: "teaching",
   jobBrandId: "jb014",
   jobBrandName: "测试工程师",
   type: "full-time",
@@ -8913,6 +8977,8 @@ export const jobs: Job[] = [
   partnerId: "e004",
   partnerName: "上海云智科技股份有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "新能源",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "on-site",
   department: "技术部",
@@ -8969,6 +9035,8 @@ export const jobs: Job[] = [
   partnerId: "e004",
   partnerName: "上海云智科技股份有限公司",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "人工智能",
+  jobCategory: "teaching",
   jobBrandId: "jb015",
   jobBrandName: "嵌入式开发工程师",
   type: "full-time",
@@ -9028,6 +9096,8 @@ export const jobs: Job[] = [
   partnerId: "e002",
   partnerName: "江苏新能源集团",
   partnerLogo: "/placeholder.svg?height=64&width=64",
+  industry: "人工智能",
+  jobCategory: "non-teaching",
   type: "full-time",
   workNature: "on-site",
   department: "技术部",
@@ -11429,14 +11499,13 @@ export const employmentProjects: EmploymentProject[] = [
 {
   id: "ep001",
   name: "就业项目1",
-  type: "专场招聘",
-  season: "2024秋季",
+  type: "other",
   partnerIds: [
     "e005",
     "e001",
     "e002"
   ],
-  targetStudents: "应届毕业生",
+  targetStudentGroups: ["全部", "2024届", "2025届"],
   startDate: new Date('2024-03-01'),
   endDate: new Date('2024-10-28'),
   status: "preparing",
@@ -11450,13 +11519,12 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep002",
   name: "就业项目2",
   type: "autumn",
-  season: "2024春季",
   partnerIds: [
     "e001",
     "e005",
     "e003"
   ],
-  targetStudents: "应届毕业生",
+  targetStudentGroups: ["全部", "2024届", "2025届"],
   startDate: new Date('2024-04-01'),
   endDate: new Date('2024-12-28'),
   status: "preparing",
@@ -11470,13 +11538,12 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep003",
   name: "就业项目3",
   type: "autumn",
-  season: "2024秋季",
   partnerIds: [
     "e005",
     "e003",
     "e002"
   ],
-  targetStudents: "全校学生",
+  targetStudentGroups: ["全部"],
   startDate: new Date('2024-04-01'),
   endDate: new Date('2024-11-28'),
   status: "ongoing",
@@ -11489,14 +11556,13 @@ export const employmentProjects: EmploymentProject[] = [
 {
   id: "ep004",
   name: "就业项目4",
-  type: "专场招聘",
-  season: "2025春季",
+  type: "other",
   partnerIds: [
     "e004",
     "e002",
     "e005"
   ],
-  targetStudents: "全校学生",
+  targetStudentGroups: ["全部"],
   startDate: new Date('2024-05-01'),
   endDate: new Date('2024-10-28'),
   status: "ongoing",
@@ -11510,11 +11576,10 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep005",
   name: "就业项目5",
   type: "autumn",
-  season: "2025春季",
   partnerIds: [
     "e002"
   ],
-  targetStudents: "大三学生",
+  targetStudentGroups: ["2025届"],
   startDate: new Date('2024-06-01'),
   endDate: new Date('2024-08-28'),
   status: "preparing",
@@ -11528,12 +11593,11 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep006",
   name: "就业项目6",
   type: "spring",
-  season: "2024春季",
   partnerIds: [
     "e001",
     "e005"
   ],
-  targetStudents: "应届毕业生",
+  targetStudentGroups: ["全部", "2024届", "2025届"],
   startDate: new Date('2024-04-01'),
   endDate: new Date('2024-11-28'),
   status: "ongoing",
@@ -11547,12 +11611,11 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep007",
   name: "就业项目7",
   type: "spring",
-  season: "2025春季",
   partnerIds: [
     "e004",
     "e003"
   ],
-  targetStudents: "全校学生",
+  targetStudentGroups: ["全部"],
   startDate: new Date('2024-05-01'),
   endDate: new Date('2024-07-28'),
   status: "preparing",
@@ -11566,11 +11629,10 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep008",
   name: "就业项目8",
   type: "定向招聘",
-  season: "2024春季",
   partnerIds: [
     "e005"
   ],
-  targetStudents: "全校学生",
+  targetStudentGroups: ["全部"],
   startDate: new Date('2024-05-01'),
   endDate: new Date('2024-12-28'),
   status: "preparing",
@@ -11584,11 +11646,10 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep009",
   name: "就业项目9",
   type: "spring",
-  season: "2024春季",
   partnerIds: [
     "e003"
   ],
-  targetStudents: "大三学生",
+  targetStudentGroups: ["2025届"],
   startDate: new Date('2024-03-01'),
   endDate: new Date('2024-12-28'),
   status: "ongoing",
@@ -11602,13 +11663,12 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep010",
   name: "就业项目10",
   type: "spring",
-  season: "2024春季",
   partnerIds: [
     "e003",
     "e005",
     "e002"
   ],
-  targetStudents: "大三学生",
+  targetStudentGroups: ["2025届"],
   startDate: new Date('2024-02-01'),
   endDate: new Date('2024-11-28'),
   status: "preparing",
@@ -11621,12 +11681,11 @@ export const employmentProjects: EmploymentProject[] = [
 {
   id: "ep011",
   name: "就业项目11",
-  type: "专场招聘",
-  season: "2025春季",
+  type: "other",
   partnerIds: [
     "e005"
   ],
-  targetStudents: "应届毕业生",
+  targetStudentGroups: ["全部", "2024届", "2025届"],
   startDate: new Date('2024-05-01'),
   endDate: new Date('2024-09-28'),
   status: "ongoing",
@@ -11640,12 +11699,11 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep012",
   name: "就业项目12",
   type: "定向招聘",
-  season: "2025春季",
   partnerIds: [
     "e004",
     "e005"
   ],
-  targetStudents: "应届毕业生",
+  targetStudentGroups: ["全部", "2024届", "2025届"],
   startDate: new Date('2024-03-01'),
   endDate: new Date('2024-10-28'),
   status: "ended",
@@ -11659,13 +11717,12 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep013",
   name: "就业项目13",
   type: "spring",
-  season: "2024秋季",
   partnerIds: [
     "e002",
     "e005",
     "e004"
   ],
-  targetStudents: "大三学生",
+  targetStudentGroups: ["2025届"],
   startDate: new Date('2024-03-01'),
   endDate: new Date('2024-11-28'),
   status: "ended",
@@ -11678,14 +11735,13 @@ export const employmentProjects: EmploymentProject[] = [
 {
   id: "ep014",
   name: "就业项目14",
-  type: "专场招聘",
-  season: "2025春季",
+  type: "other",
   partnerIds: [
     "e003",
     "e001",
     "e005"
   ],
-  targetStudents: "应届毕业生",
+  targetStudentGroups: ["全部", "2024届", "2025届"],
   startDate: new Date('2024-04-01'),
   endDate: new Date('2024-09-28'),
   status: "ongoing",
@@ -11699,13 +11755,12 @@ export const employmentProjects: EmploymentProject[] = [
   id: "ep015",
   name: "就业项目15",
   type: "autumn",
-  season: "2024秋季",
   partnerIds: [
     "e002",
     "e005",
     "e003"
   ],
-  targetStudents: "应届毕业生",
+  targetStudentGroups: ["全部", "2024届", "2025届"],
   startDate: new Date('2024-03-01'),
   endDate: new Date('2024-08-28'),
   status: "preparing",
@@ -11752,4 +11807,56 @@ export function getRecommendationsByStudentId(studentId: string): JobRecommendat
 
 export function getRecommendationById(id: string): JobRecommendation | undefined {
   return jobRecommendations.find(r => r.id === id)
+}
+
+
+export const abilityLibrary: AbilityLibraryItem[] = [
+  // 行业与岗位认知
+  { id: "al-001", name: "互联网产品思维", desc: "理解互联网产品的设计逻辑和用户体验原则，能够从用户角度思考产品功能。", category: "行业与岗位认知", type: "knowledge" },
+  { id: "al-002", name: "前端技术生态与演进", desc: "了解前端技术栈的发展趋势和主流框架的演进路径。", category: "行业与岗位认知", type: "knowledge" },
+  { id: "al-003", name: "业务需求分析能力", desc: "能够准确理解和分析业务需求，将业务目标转化为技术实现方案。", category: "行业与岗位认知", type: "skill" },
+  { id: "al-004", name: "智能制造系统架构", desc: "掌握智能制造领域的基本系统架构和关键技术原理。", category: "行业与岗位认知", type: "knowledge" },
+  { id: "al-005", name: "新能源产业链认知", desc: "了解新能源产业链的上下游关系和核心工艺流程。", category: "行业与岗位认知", type: "knowledge" },
+  // 专业知识
+  { id: "al-006", name: "HTML5/CSS3基础知识", desc: "掌握语义化标签、CSS布局、响应式设计等前端基础技术。", category: "专业知识", type: "knowledge" },
+  { id: "al-007", name: "JavaScript核心原理", desc: "深入理解闭包、原型链、事件循环、异步编程等JS核心机制。", category: "专业知识", type: "knowledge" },
+  { id: "al-008", name: "计算机网络与HTTP协议", desc: "理解TCP/IP协议栈、HTTP/HTTPS协议原理及常见网络问题排查。", category: "专业知识", type: "knowledge" },
+  { id: "al-009", name: "数据结构与常见算法", desc: "掌握常用数据结构和算法，具备基本的算法分析和优化能力。", category: "专业知识", type: "knowledge" },
+  { id: "al-010", name: "Python数据分析基础", desc: "熟练使用Python进行数据清洗、统计分析和可视化展示。", category: "专业知识", type: "knowledge" },
+  { id: "al-011", name: "机器学习基础理论", desc: "理解常见机器学习算法的原理、适用场景和调优方法。", category: "专业知识", type: "knowledge" },
+  { id: "al-012", name: "工业机器人编程基础", desc: "掌握工业机器人编程语言和基本运动控制指令。", category: "专业知识", type: "knowledge" },
+  // 专业技能
+  { id: "al-013", name: "响应式页面开发", desc: "能够使用Flex/Grid布局实现适配多端的响应式页面。", category: "专业技能", type: "skill" },
+  { id: "al-014", name: "Vue3/React组件化开发", desc: "熟练使用Vue3或React进行组件化开发，掌握Hooks/Composition API。", category: "专业技能", type: "skill" },
+  { id: "al-015", name: "状态管理与路由配置", desc: "熟练使用Pinia/Vuex或Redux进行状态管理，掌握前端路由配置。", category: "专业技能", type: "skill" },
+  { id: "al-016", name: "前端性能优化实践", desc: "能够分析页面性能瓶颈并实施代码分割、懒加载等优化策略。", category: "专业技能", type: "skill" },
+  { id: "al-017", name: "前端工程化与构建部署", desc: "熟练使用Webpack/Vite等构建工具，掌握CI/CD流程配置。", category: "专业技能", type: "skill" },
+  { id: "al-018", name: "深度学习模型训练", desc: "能够使用PyTorch/TensorFlow搭建和训练深度学习模型。", category: "专业技能", type: "skill" },
+  { id: "al-019", name: "工业机器人调试运维", desc: "具备工业机器人的现场调试、故障排查和日常维护能力。", category: "专业技能", type: "skill" },
+  { id: "al-020", name: "电商数据分析与运营", desc: "能够通过数据分析指导电商运营决策，优化转化率。", category: "专业技能", type: "skill" },
+  // 通用能力
+  { id: "al-021", name: "团队协作与沟通", desc: "具备良好的团队协作意识，能够高效进行跨部门沟通。", category: "通用能力", type: "skill" },
+  { id: "al-022", name: "复杂线上问题排查", desc: "能够系统性地定位和解决线上复杂技术问题。", category: "通用能力", type: "skill" },
+  { id: "al-023", name: "技术文档编写能力", desc: "能够编写清晰、规范的技术文档和接口文档。", category: "通用能力", type: "skill" },
+  { id: "al-024", name: "项目管理基础", desc: "掌握基本的项目管理方法，能够协调资源推进项目落地。", category: "通用能力", type: "skill" },
+  // 职业素养
+  { id: "al-025", name: "持续学习与技术视野", desc: "保持对新技术的好奇心和学习热情，持续关注行业动态。", category: "职业素养", type: "quality" },
+  { id: "al-026", name: "工作责任心与抗压", desc: "对工作认真负责，能够在压力下保持高效产出。", category: "职业素养", type: "quality" },
+  { id: "al-027", name: "极致体验追求", desc: "追求产品和技术的极致体验，注重细节和用户感受。", category: "职业素养", type: "quality" },
+  { id: "al-028", name: "数据安全意识", desc: "具备数据安全和隐私保护意识，遵守相关法规和公司制度。", category: "职业素养", type: "quality" },
+]
+
+export function getAbilityItemsByCategory(category: string): AbilityLibraryItem[] {
+  return abilityLibrary.filter((item) => item.category === category)
+}
+
+export function searchAbilityLibrary(keyword: string): AbilityLibraryItem[] {
+  if (!keyword) return abilityLibrary
+  const term = keyword.toLowerCase()
+  return abilityLibrary.filter(
+    (item) =>
+      item.name.toLowerCase().includes(term) ||
+      item.desc.toLowerCase().includes(term) ||
+      item.category.toLowerCase().includes(term)
+  )
 }

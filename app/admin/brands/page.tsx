@@ -21,7 +21,6 @@ import {
   majorBrands,
   teacherBrands,
   cultureBrands,
-  brandTopics,
   partners,
   experts,
 } from "@/lib/mock-data"
@@ -99,18 +98,6 @@ const brandModules = [
     ],
     color: "bg-pink-500",
   },
-  {
-    id: "topic",
-    title: "品牌专题页",
-    description: "品牌专题页创建与管理",
-    icon: FileText,
-    href: "/admin/brands/topics",
-    stats: [
-      { label: "专题页", value: brandTopics.length },
-      { label: "首页推荐", value: brandTopics.filter(t => t.isRecommended).length },
-    ],
-    color: "bg-cyan-500",
-  },
 ]
 
 // 计算总浏览量
@@ -120,7 +107,7 @@ const totalViews =
   majorBrands.reduce((sum, m) => sum + m.viewCount, 0) +
   teacherBrands.reduce((sum, t) => sum + t.viewCount, 0) +
   cultureBrands.reduce((sum, c) => sum + c.viewCount, 0) +
-  brandTopics.reduce((sum, b) => sum + b.viewCount, 0)
+  0
 
 export default function BrandsPage() {
   return (
@@ -174,8 +161,8 @@ export default function BrandsPage() {
                 <FileText className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">专题页</p>
-                <p className="text-2xl font-semibold">{brandTopics.length}</p>
+                <p className="text-sm text-muted-foreground">文化思政</p>
+                <p className="text-2xl font-semibold">{cultureBrands.length}</p>
               </div>
             </div>
           </CardContent>

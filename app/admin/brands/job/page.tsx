@@ -65,6 +65,7 @@ export default function JobBrandPage() {
     suitableMajors: [],
     averageSalary: "",
     demandCount: 0,
+    abilityModel: [],
   })
 
   const [editForm, setEditForm] = useState<Partial<JobBrand>>({})
@@ -120,6 +121,7 @@ export default function JobBrandPage() {
       suitableMajors: [],
       averageSalary: "",
       demandCount: 0,
+      abilityModel: [],
     })
   }
 
@@ -131,7 +133,7 @@ export default function JobBrandPage() {
       industry: quoteForm.industry || "",
       level: (quoteForm.level as JobBrand["level"]) || "standard",
       description: quoteForm.description || "",
-      abilityModel: [],
+      abilityModel: quoteForm.abilityModel || [],
       suitableMajors: quoteForm.suitableMajors || [],
       averageSalary: quoteForm.averageSalary,
       demandCount: quoteForm.demandCount || 0,
@@ -445,6 +447,16 @@ export default function JobBrandPage() {
                 placeholder="如 发展空间大, 技术前沿"
               />
             </div>
+            <div className="space-y-2">
+              <Label>能力要求（逗号分隔）</Label>
+              <Input
+                value={quoteForm.abilityModel?.join(", ") || ""}
+                onChange={(e) =>
+                  setQuoteForm((prev) => ({ ...prev, abilityModel: splitByComma(e.target.value) }))
+                }
+                placeholder="如 团队协作, 问题解决, 学习能力"
+              />
+            </div>
 
             <div className="col-span-2 space-y-2">
               <Label>岗位描述</Label>
@@ -566,6 +578,15 @@ export default function JobBrandPage() {
                 value={editForm.featureTags?.join(", ") || ""}
                 onChange={(e) =>
                   setEditForm((prev) => ({ ...prev, featureTags: splitByComma(e.target.value) }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>能力要求（逗号分隔）</Label>
+              <Input
+                value={editForm.abilityModel?.join(", ") || ""}
+                onChange={(e) =>
+                  setEditForm((prev) => ({ ...prev, abilityModel: splitByComma(e.target.value) }))
                 }
               />
             </div>

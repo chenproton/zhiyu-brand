@@ -50,7 +50,6 @@ export default function MajorBrandPage() {
     department: "",
     level: "standard",
     introduction: "",
-    cultivationGoal: "",
     studentCount: 0,
     employmentRate: 0,
     coreCourses: [],
@@ -87,7 +86,6 @@ export default function MajorBrandPage() {
       department: "",
       level: "standard",
       introduction: "",
-      cultivationGoal: "",
       studentCount: 0,
       employmentRate: 0,
       coreCourses: [],
@@ -106,7 +104,7 @@ export default function MajorBrandPage() {
       department: quoteForm.department || "",
       level: (quoteForm.level as MajorBrand["level"]) || "standard",
       introduction: quoteForm.introduction || "",
-      cultivationGoal: quoteForm.cultivationGoal || "",
+      cultivationGoal: "",
       coreCourses: quoteForm.coreCourses || [],
       employmentDirections: quoteForm.employmentDirections || [],
       cooperationPartners: quoteForm.cooperationPartners || [],
@@ -414,15 +412,6 @@ export default function MajorBrandPage() {
                 placeholder="请输入专业简介..."
               />
             </div>
-            <div className="col-span-2 space-y-2">
-              <Label>培养目标</Label>
-              <Textarea
-                value={quoteForm.cultivationGoal || ""}
-                onChange={(e) => setQuoteForm((prev) => ({ ...prev, cultivationGoal: e.target.value }))}
-                rows={3}
-                placeholder="请输入培养目标..."
-              />
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setIsQuoteOpen(false); resetQuoteForm(); }}>
@@ -564,14 +553,6 @@ export default function MajorBrandPage() {
               <Textarea
                 value={editForm.introduction || ""}
                 onChange={(e) => setEditForm((prev) => ({ ...prev, introduction: e.target.value }))}
-                rows={3}
-              />
-            </div>
-            <div className="col-span-2 space-y-2">
-              <Label>培养目标</Label>
-              <Textarea
-                value={editForm.cultivationGoal || ""}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, cultivationGoal: e.target.value }))}
                 rows={3}
               />
             </div>

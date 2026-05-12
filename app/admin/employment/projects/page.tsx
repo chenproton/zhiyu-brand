@@ -1,13 +1,22 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar, Briefcase, Users, FileText, Plus, Eye } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Calendar, Briefcase, Users, FileText, Plus, Pencil, Trash2 } from 'lucide-react'
 import { employmentProjects } from '@/lib/mock-data'
 import { EMPLOYMENT_PROJECT_TYPE_LABELS, EMPLOYMENT_PROJECT_STATUS_LABELS } from '@/lib/types'
 
@@ -21,6 +30,7 @@ export default function EmploymentProjectsPage() {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     return employmentProjects.filter((ep) => {
@@ -31,16 +41,29 @@ export default function EmploymentProjectsPage() {
     })
   }, [search, typeFilter, statusFilter])
 
+  const handleDelete = () => {
+    if (deleteId) {
+      // 实际项目中这里调用 API 删除
+      const index = employmentProjects.findIndex((ep) => ep.id === deleteId)
+      if (index !== -1) {
+        employmentProjects.splice(index, 1)
+      }
+      setDeleteId(null)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">就业项目管理</h1>
-          <p className="text-muted-foreground">春招/秋招/定向招聘/专场招聘的项目化管理</p>
+          <p className="text-muted-foreground">春招/秋招/定向招聘/其他的项目化管理</p>
         </div>
-        <Button onClick={() => alert('新建项目功能开发中')}>
-          <Plus className="h-4 w-4 mr-2" />
-          新建项目
+        <Button asChild>
+          <Link href="/admin/employment/projects/new">
+            <Plus className="h-4 w-4 mr-2" />
+            新建项目
+          </Link>
         </Button>
       </div>
 
@@ -125,7 +148,7 @@ export default function EmploymentProjectsPage() {
             <SelectItem value="spring">春季招聘</SelectItem>
             <SelectItem value="autumn">秋季招聘</SelectItem>
             <SelectItem value="定向招聘">定向招聘</SelectItem>
-            <SelectItem value="专场招聘">专场招聘</SelectItem>
+            <SelectItem value="other">其他</SelectItem>
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -153,7 +176,6 @@ export default function EmploymentProjectsPage() {
               <TableRow>
                 <TableHead>项目名称</TableHead>
                 <TableHead>类型</TableHead>
-                <TableHead>招聘季</TableHead>
                 <TableHead>面向学生</TableHead>
                 <TableHead>时间范围</TableHead>
                 <TableHead>状态</TableHead>
@@ -166,8 +188,7 @@ export default function EmploymentProjectsPage() {
                 <TableRow key={ep.id}>
                   <TableCell className="font-medium">{ep.name}</TableCell>
                   <TableCell>{EMPLOYMENT_PROJECT_TYPE_LABELS[ep.type]}</TableCell>
-                  <TableCell>{ep.season}</TableCell>
-                  <TableCell>{ep.targetStudents}</TableCell>
+                  <TableCell>{ep.targetStudentGroups.join('、')}</TableCell>
                   <TableCell>
                     <div className="text-sm text-muted-foreground">
                       {ep.startDate.toLocaleDateString('zh-CN')} ~ {ep.endDate.toLocaleDateString('zh-CN')}
@@ -188,10 +209,18 @@ export default function EmploymentProjectsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => alert('查看功能开发中')}>
-                      <Eye className="h-4 w-4 mr-1" />
-                      查看
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/admin/employment/projects/${ep.id}`}>
+                          <Pencil className="h-4 w-4 mr-1" />
+                          编辑
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(ep.id)}>
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        删除
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -199,6 +228,26 @@ export default function EmploymentProjectsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* 删除确认对话框 */}
+      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>
+              删除后无法恢复，是否继续？
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>
+              取消
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              确认删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

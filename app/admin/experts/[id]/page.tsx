@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ExpertRatingBadge } from '@/components/shared/status-badge'
 import {
   ArrowLeft,
   Pencil,
@@ -12,7 +11,6 @@ import {
   Phone,
   Building2,
   GraduationCap,
-  Award,
   Clock,
   Briefcase,
   EyeOff,
@@ -55,17 +53,12 @@ export default async function ExpertDetailPage({ params }: PageProps) {
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-gray-900">{expert.name}</h1>
-                <ExpertRatingBadge rating={expert.rating} />
               </div>
               <p className="text-muted-foreground">{expert.title}</p>
               <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <User className="h-4 w-4" />
                   {expert.gender === 'male' ? '男' : expert.gender === 'female' ? '女' : '未设置'}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Briefcase className="h-4 w-4" />
-                  {expert.field}
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
@@ -90,26 +83,10 @@ export default async function ExpertDetailPage({ params }: PageProps) {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Roles */}
+            {/* Related Industries */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">专家角色</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {expert.roles.map((role) => (
-                    <Badge key={role} variant="secondary" className="text-sm py-1 px-3">
-                      {role}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Specialties */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">专业特长</CardTitle>
+                <CardTitle className="text-base">关联行业</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
@@ -122,21 +99,32 @@ export default async function ExpertDetailPage({ params }: PageProps) {
               </CardContent>
             </Card>
 
-            {/* Achievements */}
-            {expert.achievements && expert.achievements.length > 0 && (
+            {/* Work Experience */}
+            {expert.workExperience && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">主要成就</CardTitle>
+                  <CardTitle className="text-base">工作经验</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-3">
-                    {expert.achievements.map((achievement, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <Award className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-600">{achievement}</span>
-                      </li>
+                  <p className="text-sm text-gray-600 whitespace-pre-line">{expert.workExperience}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Related Positions */}
+            {expert.relatedPositions && expert.relatedPositions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">关联岗位</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {expert.relatedPositions.map((pos) => (
+                      <Badge key={pos} variant="secondary" className="text-sm py-1 px-3">
+                        {pos}
+                      </Badge>
                     ))}
-                  </ul>
+                  </div>
                 </CardContent>
               </Card>
             )}

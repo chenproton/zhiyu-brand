@@ -126,7 +126,7 @@ export default function ExpertsListPage() {
       {/* 左侧导航 */}
       <div className="w-64 shrink-0 flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-muted-foreground">所属企业</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground">所属单位</h2>
           <span className="text-xs text-muted-foreground">{totalCount} 位</span>
         </div>
 
@@ -270,7 +270,7 @@ export default function ExpertsListPage() {
                   <th className="text-left px-4 py-3 font-medium">性别</th>
                   <th className="text-left px-4 py-3 font-medium">职称</th>
                   <th className="text-left px-4 py-3 font-medium">专家类型</th>
-                  <th className="text-left px-4 py-3 font-medium">所属企业</th>
+                  <th className="text-left px-4 py-3 font-medium">所属单位</th>
                   <th className="text-left px-4 py-3 font-medium">领域</th>
                   <th className="text-left px-4 py-3 font-medium">经验</th>
                   <th className="text-left px-4 py-3 font-medium">评级</th>

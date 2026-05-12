@@ -1,18 +1,18 @@
 import Link from "next/link"
-import { ArrowRight, Building2, FolderKanban, Users, Trophy, Calendar, Handshake, Target, TrendingUp, Briefcase, Star, Flame, MapPin, Heart, GraduationCap, UserCircle, Sparkles } from "lucide-react"
+import { ArrowRight, Building2, FolderKanban, Users, Trophy, Calendar, Handshake, Target, TrendingUp, Briefcase, Star, Heart, GraduationCap, UserCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { partners, projects, experts, achievements, activities, jobs, employmentCases, majorBrands, talentProfiles, jobBrands, teacherBrands, cultureBrands, schoolInfo } from "@/lib/mock-data"
-import { PARTNER_TYPE_LABELS, PROJECT_PHASE_LABELS, JOB_TYPE_LABELS, ACHIEVEMENT_TYPE_LABELS, EXPERT_RATING_LABELS, TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS } from "@/lib/types"
+import { partners, projects, experts, achievements, activities, employmentCases, majorBrands, talentProfiles, jobBrands, teacherBrands, cultureBrands, schoolInfo, employmentProjects, enterprises } from "@/lib/mock-data"
+import { PARTNER_TYPE_LABELS, PROJECT_PHASE_LABELS, JOB_TYPE_LABELS, ACHIEVEMENT_TYPE_LABELS, EXPERT_RATING_LABELS, TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS, EMPLOYMENT_PROJECT_TYPE_LABELS, EMPLOYMENT_PROJECT_STATUS_LABELS } from "@/lib/types"
 
 const stats = [
   { label: "合作主体", value: partners.filter(p => p.status === "active").length, icon: Building2, href: "/partners" },
   { label: "合作项目", value: projects.filter(p => p.publishStatus === "published").length, icon: FolderKanban, href: "/projects" },
   { label: "专家资源", value: experts.length, icon: Users, href: "/experts" },
   { label: "成果产出", value: achievements.length, icon: Trophy, href: "/achievements" },
-  { label: "在招岗位", value: jobs.filter(j => j.status === "published").length, icon: Briefcase, href: "/jobs" },
+  { label: "就业项目", value: employmentProjects.length, icon: Briefcase, href: "/jobs" },
   { label: "品牌内容", value: talentProfiles.length + jobBrands.length + majorBrands.length + teacherBrands.length + cultureBrands.length + employmentCases.length, icon: Star, href: "/brands" },
 ]
 
@@ -37,13 +37,9 @@ export default function HomePage() {
   const upcomingActivities = activities.filter(a => a.status === "published").slice(0, 3)
   const featuredAchievements = achievements.filter(a => a.status === "published").slice(0, 3)
   const featuredExperts = experts.filter(e => e.status === "active").slice(0, 5)
-  const publishedJobs = jobs.filter(j => j.status === "published")
-  const recommendedJobs = publishedJobs.filter(j => j.isRecommended).slice(0, 3)
-  const urgentJobs = publishedJobs.filter(j => j.isUrgent).slice(0, 3)
   const featuredJobBrands = jobBrands.filter(j => j.level === "recommended").slice(0, 3)
   const featuredTeachers = teacherBrands.filter(t => t.isFeatured && t.status === "published").slice(0, 4)
   const featuredCultureBrands = cultureBrands.filter(c => c.status === "published").slice(0, 3)
-  const featuredTalents = talentProfiles.filter(t => t.isFeatured).slice(0, 4)
 
   return (
     <div className="flex flex-col">
@@ -233,28 +229,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Upcoming Activities */}
-          <div>
-            <h3 className="text-base font-semibold mb-4">近期活动</h3>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {upcomingActivities.map((activity) => (
-                <Card key={activity.id} className="hover:shadow-md transition-all hover:-translate-y-0.5 border-0 shadow-sm">
-                  <CardContent className="p-5">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                      <Calendar className="h-4 w-4" />
-                      {activity.date.toLocaleDateString('zh-CN')}
-                    </div>
-                    <h4 className="font-semibold line-clamp-1 mb-2">{activity.name}</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed mb-3">{activity.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">{activity.location}</span>
-                      <Badge variant="default" className="text-xs">报名中</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          {/* Upcoming Activities removed */}
         </div>
       </section>
 
@@ -445,26 +420,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 岗位大厅 Section */}
+      {/* 就业项目 Section */}
       <section className="py-16 lg:py-20 bg-muted/20">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-bold mb-1">岗位大厅</h2>
-              <p className="text-sm text-muted-foreground">汇聚优质企业资源，助力职业发展起航</p>
+              <h2 className="text-2xl font-bold mb-1">就业项目</h2>
+              <p className="text-sm text-muted-foreground">校企合作就业项目，汇聚优质岗位资源</p>
             </div>
             <Button variant="outline" asChild>
               <Link href="/jobs">查看全部 <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
 
-          {/* Job Stats */}
+          {/* Project Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
-              { label: "在招岗位", value: publishedJobs.length },
-              { label: "招聘企业", value: new Set(publishedJobs.map(j => j.partnerId)).size },
-              { label: "招聘人数", value: publishedJobs.reduce((sum, j) => sum + j.headcount, 0) },
-              { label: "急招岗位", value: publishedJobs.filter(j => j.isUrgent).length },
+              { label: "就业项目", value: employmentProjects.length },
+              { label: "进行中", value: employmentProjects.filter(p => p.status === 'ongoing').length },
+              { label: "在招岗位", value: employmentProjects.reduce((sum, p) => sum + p.jobCount, 0) },
+              { label: "合作企业", value: new Set(employmentProjects.flatMap(p => p.partnerIds)).size },
             ].map((s) => (
               <Card key={s.label} className="text-center border-0 shadow-sm">
                 <CardContent className="py-6">
@@ -475,125 +450,53 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Featured Talents */}
-          <div className="mb-10">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold">优质毕业生推荐</h3>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/brands/talent">查看全部</Link>
-              </Button>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {featuredTalents.map((talent) => (
-                <Card key={talent.id} className="border-0 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={talent.avatar || "/placeholder.svg?height=48&width=48"}
-                        alt={talent.studentName}
-                        className="w-11 h-11 rounded-full object-cover shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <h4 className="font-semibold text-sm truncate">{talent.studentName}</h4>
-                        <p className="text-xs text-muted-foreground">{talent.major}</p>
+          {/* Featured Employment Projects */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {employmentProjects.slice(0, 6).map((project) => {
+              const partnerNames = project.partnerIds
+                .map((id) => enterprises.find((e) => e.id === id)?.name)
+                .filter(Boolean)
+                .slice(0, 2)
+              const remainingCount = project.partnerIds.length - partnerNames.length
+
+              return (
+                <Link key={project.id} href={`/jobs/project/${project.id}`}>
+                  <Card className="h-full hover:shadow-md transition-all hover:-translate-y-0.5 border-0 shadow-sm">
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Badge className={project.status === 'preparing' ? 'bg-yellow-100 text-yellow-800' : project.status === 'ongoing' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                          {EMPLOYMENT_PROJECT_STATUS_LABELS[project.status]}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {EMPLOYMENT_PROJECT_TYPE_LABELS[project.type]}
+                        </Badge>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                      <span className="text-xs text-muted-foreground">能力分 <strong>{talent.abilityScore}</strong></span>
-                      {talent.employmentCompany ? (
-                        <span className="text-xs text-emerald-600 truncate max-w-[55%]">{talent.employmentCompany}</span>
-                      ) : (
-                        <Badge variant="outline" className="text-[10px]">求职中</Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Recommended & Urgent Jobs */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Recommended Jobs */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Star className="h-5 w-5 text-yellow-500" />
-                <h3 className="text-base font-semibold">推荐岗位</h3>
-              </div>
-              <div className="space-y-3">
-                {recommendedJobs.map((job) => (
-                  <Link key={job.id} href={`/jobs/${job.id}`}>
-                    <Card className="hover:shadow-md transition-all hover:-translate-y-0.5 border-0 shadow-sm">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <Avatar className="h-10 w-10 shrink-0">
-                              <AvatarImage src={job.partnerLogo} />
-                              <AvatarFallback className="text-xs bg-muted">{job.partnerName[0]}</AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0">
-                              <h4 className="text-sm font-semibold truncate">{job.title}</h4>
-                              <p className="text-xs text-muted-foreground truncate">{job.partnerName}</p>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-primary font-semibold">
-                              {job.salaryMin && job.salaryMax ? `${job.salaryMin/1000}-${job.salaryMax/1000}K` : '面议'}
-                            </p>
-                            <p className="text-xs text-muted-foreground flex items-center justify-end gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {job.location.split('省')[1]?.slice(0, 3) || job.location.slice(0, 5)}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Urgent Jobs */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Flame className="h-5 w-5 text-red-500" />
-                <h3 className="text-base font-semibold">急招岗位</h3>
-              </div>
-              <div className="space-y-3">
-                {urgentJobs.map((job) => (
-                  <Link key={job.id} href={`/jobs/${job.id}`}>
-                    <Card className="hover:shadow-md transition-all hover:-translate-y-0.5 border-0 shadow-sm">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <Avatar className="h-10 w-10 shrink-0">
-                              <AvatarImage src={job.partnerLogo} />
-                              <AvatarFallback className="text-xs bg-muted">{job.partnerName[0]}</AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-sm font-semibold truncate">{job.title}</h4>
-                                <Badge variant="destructive" className="text-[10px] h-4 px-1">急招</Badge>
-                              </div>
-                              <p className="text-xs text-muted-foreground truncate">{job.partnerName}</p>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-primary font-semibold">
-                              {job.salaryMin && job.salaryMax ? `${job.salaryMin/1000}-${job.salaryMax/1000}K` : '面议'}
-                            </p>
-                            <p className="text-xs text-muted-foreground flex items-center justify-end gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {job.location.split('省')[1]?.slice(0, 3) || job.location.slice(0, 5)}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            </div>
+                      <h4 className="font-semibold line-clamp-1 mb-2">{project.name}</h4>
+                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed mb-3">
+                        {project.description || `面向${project.targetStudentGroups.join('、')}学生，提供丰富的就业岗位。`}
+                      </p>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {project.startDate.toLocaleDateString('zh-CN')} 起
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Briefcase className="h-3.5 w-3.5" />
+                          {project.jobCount} 个岗位
+                        </span>
+                      </div>
+                      <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Building2 className="h-3.5 w-3.5" />
+                          {partnerNames.join('、')}
+                          {remainingCount > 0 && ` 等 ${project.partnerIds.length} 家企业`}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>

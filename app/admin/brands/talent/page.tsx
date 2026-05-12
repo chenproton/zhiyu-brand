@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
   DialogContent,
@@ -34,57 +33,82 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ArrowLeft, Search, Star, Eye, Plus, MoreHorizontal, RefreshCw, Trash2, Pencil, Link2 } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { ArrowLeft, Search, Eye, Plus, Trash2, Pencil, Settings, X } from "lucide-react"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { talentProfiles as initialTalentProfiles, employmentCases as initialEmploymentCases, experts } from "@/lib/mock-data"
+  talentProfiles as initialTalentProfiles,
+  employmentCases as initialEmploymentCases,
+  enterprises,
+  jobs,
+} from "@/lib/mock-data"
 import { BRAND_STATUS_LABELS, type BrandStatus, type TalentProfile, type EmploymentCase } from "@/lib/types"
+
+interface MajorRankingConfig {
+  major: string
+  enabled: boolean
+  limit: number
+}
 
 export default function TalentBrandPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [majorFilter, setMajorFilter] = useState("all")
 
   const [talentProfiles, setTalentProfiles] = useState<TalentProfile[]>(initialTalentProfiles)
   const [employmentCases, setEmploymentCases] = useState<EmploymentCase[]>(initialEmploymentCases)
 
-  // Profile dialogs
-  const [profileDialogOpen, setProfileDialogOpen] = useState(false)
+  // Major ranking configs
+  const allMajors = useMemo(
+    () => [...new Set(initialTalentProfiles.map((t) => t.major))].sort(),
+    []
+  )
+  const [majorConfigs, setMajorConfigs] = useState<MajorRankingConfig[]>(
+    allMajors.map((m) => ({ major: m, enabled: true, limit: 10 }))
+  )
+  const [configDialogOpen, setConfigDialogOpen] = useState(false)
+  const [editingConfigs, setEditingConfigs] = useState<MajorRankingConfig[]>([])
+
+  const enabledMajors = useMemo(
+    () => majorConfigs.filter((c) => c.enabled).map((c) => c.major),
+    [majorConfigs]
+  )
+  const [activeMajorTab, setActiveMajorTab] = useState<string>(enabledMajors[0] || "")
+
+  // Profile edit
   const [profileEditDialogOpen, setProfileEditDialogOpen] = useState(false)
   const [editingProfile, setEditingProfile] = useState<TalentProfile | null>(null)
+  const [editCertificationLevel, setEditCertificationLevel] = useState("")
+  const [editAbilityTags, setEditAbilityTags] = useState("")
 
-  // Profile form state
-  const [selectedExpertId, setSelectedExpertId] = useState("")
-  const [profileAbilityScore, setProfileAbilityScore] = useState("")
-  const [profileCertificationLevel, setProfileCertificationLevel] = useState("")
-  const [profileAbilityTags, setProfileAbilityTags] = useState("")
-  const [profileIsFeatured, setProfileIsFeatured] = useState(false)
-
-  // Case dialogs
+  // Case add/edit
   const [caseDialogOpen, setCaseDialogOpen] = useState(false)
   const [caseEditDialogOpen, setCaseEditDialogOpen] = useState(false)
   const [editingCase, setEditingCase] = useState<EmploymentCase | null>(null)
 
-  // Case form state
+  // Case form
   const [selectedStudentId, setSelectedStudentId] = useState("")
+  const [studentSearch, setStudentSearch] = useState("")
   const [caseCompany, setCaseCompany] = useState("")
   const [casePosition, setCasePosition] = useState("")
   const [caseSalary, setCaseSalary] = useState("")
   const [caseStory, setCaseStory] = useState("")
   const [caseStatus, setCaseStatus] = useState<BrandStatus>("draft")
 
-  const majors = [...new Set(talentProfiles.map((t) => t.major))]
+  const companyOptions = useMemo(() => enterprises.map((e) => e.name), [])
+  const positionOptions = useMemo(() => [...new Set(jobs.map((j) => j.title))], [])
 
-  const filteredProfiles = talentProfiles.filter((profile) => {
-    const matchesSearch =
-      profile.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      profile.studentId.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesMajor = majorFilter === "all" || profile.major === majorFilter
-    return matchesSearch && matchesMajor
-  })
+  const getMajorProfiles = (major: string) => {
+    const config = majorConfigs.find((c) => c.major === major)
+    if (!config) return []
+    return talentProfiles
+      .filter((p) => p.major === major)
+      .filter(
+        (p) =>
+          p.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.studentId.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .sort((a, b) => b.abilityScore - a.abilityScore)
+      .slice(0, config.limit)
+      .map((p, idx) => ({ ...p, rank: idx + 1 }))
+  }
 
   const filteredCases = employmentCases.filter(
     (case_) =>
@@ -92,71 +116,22 @@ export default function TalentBrandPage() {
       case_.company.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const resetProfileForm = () => {
-    setSelectedExpertId("")
-    setProfileAbilityScore("")
-    setProfileCertificationLevel("")
-    setProfileAbilityTags("")
-    setProfileIsFeatured(false)
-  }
-
-  const resetCaseForm = () => {
-    setSelectedStudentId("")
-    setCaseCompany("")
-    setCasePosition("")
-    setCaseSalary("")
-    setCaseStory("")
-    setCaseStatus("draft")
-  }
+  const searchedStudents = useMemo(() => {
+    if (!studentSearch.trim()) return []
+    const term = studentSearch.toLowerCase()
+    return talentProfiles.filter(
+      (s) =>
+        s.studentName.toLowerCase().includes(term) ||
+        s.studentId.toLowerCase().includes(term) ||
+        s.major.toLowerCase().includes(term)
+    )
+  }, [talentProfiles, studentSearch])
 
   const openProfileEdit = (profile: TalentProfile) => {
     setEditingProfile(profile)
-    setProfileAbilityScore(String(profile.abilityScore))
-    setProfileCertificationLevel(profile.certificationLevel)
-    setProfileAbilityTags(profile.abilityTags.join(","))
-    setProfileIsFeatured(profile.isFeatured)
+    setEditCertificationLevel(profile.certificationLevel)
+    setEditAbilityTags(profile.abilityTags.join(","))
     setProfileEditDialogOpen(true)
-  }
-
-  const openCaseEdit = (caseItem: EmploymentCase) => {
-    setEditingCase(caseItem)
-    setCaseCompany(caseItem.company)
-    setCasePosition(caseItem.position)
-    setCaseSalary(caseItem.salary || "")
-    setCaseStory(caseItem.story)
-    setCaseStatus(caseItem.status)
-    setCaseEditDialogOpen(true)
-  }
-
-  const handleAddProfile = () => {
-    const expert = experts.find((e) => e.id === selectedExpertId)
-    if (!expert) return
-
-    const maxRank = talentProfiles.length > 0
-      ? Math.max(...talentProfiles.map((p) => p.comprehensiveRank))
-      : 0
-
-    const newProfile: TalentProfile = {
-      id: `tp-${Date.now()}`,
-      studentId: `S${Date.now()}`,
-      studentName: expert.name,
-      major: expert.field,
-      department: expert.partnerName || "",
-      grade: "",
-      avatar: expert.avatar,
-      abilityScore: Number(profileAbilityScore) || 0,
-      certificationLevel: profileCertificationLevel,
-      taskCompletionRate: 0,
-      comprehensiveRank: maxRank + 1,
-      abilityTags: profileAbilityTags.split(",").map((t) => t.trim()).filter(Boolean),
-      employmentStatus: "studying",
-      isFeatured: profileIsFeatured,
-      updatedAt: new Date(),
-    }
-
-    setTalentProfiles((prev) => [...prev, newProfile])
-    resetProfileForm()
-    setProfileDialogOpen(false)
   }
 
   const handleUpdateProfile = () => {
@@ -166,10 +141,8 @@ export default function TalentBrandPage() {
         p.id === editingProfile.id
           ? {
               ...p,
-              abilityScore: Number(profileAbilityScore) || 0,
-              certificationLevel: profileCertificationLevel,
-              abilityTags: profileAbilityTags.split(",").map((t) => t.trim()).filter(Boolean),
-              isFeatured: profileIsFeatured,
+              certificationLevel: editCertificationLevel,
+              abilityTags: editAbilityTags.split(",").map((t) => t.trim()).filter(Boolean),
               updatedAt: new Date(),
             }
           : p
@@ -183,6 +156,26 @@ export default function TalentBrandPage() {
     if (confirm("确定要删除该人才画像吗？")) {
       setTalentProfiles((prev) => prev.filter((p) => p.id !== id))
     }
+  }
+
+  const resetCaseForm = () => {
+    setSelectedStudentId("")
+    setStudentSearch("")
+    setCaseCompany("")
+    setCasePosition("")
+    setCaseSalary("")
+    setCaseStory("")
+    setCaseStatus("draft")
+  }
+
+  const openCaseEdit = (caseItem: EmploymentCase) => {
+    setEditingCase(caseItem)
+    setCaseCompany(caseItem.company)
+    setCasePosition(caseItem.position)
+    setCaseSalary(caseItem.salary || "")
+    setCaseStory(caseItem.story)
+    setCaseStatus(caseItem.status)
+    setCaseEditDialogOpen(true)
   }
 
   const handleAddCase = () => {
@@ -239,6 +232,21 @@ export default function TalentBrandPage() {
     }
   }
 
+  const openConfigDialog = () => {
+    setEditingConfigs([...majorConfigs])
+    setConfigDialogOpen(true)
+  }
+
+  const handleSaveConfigs = () => {
+    setMajorConfigs([...editingConfigs])
+    setConfigDialogOpen(false)
+  }
+
+  const selectedStudent = useMemo(
+    () => talentProfiles.find((s) => s.id === selectedStudentId) || null,
+    [talentProfiles, selectedStudentId]
+  )
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -249,14 +257,14 @@ export default function TalentBrandPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-semibold text-foreground">人才品牌管理</h1>
-          <p className="text-muted-foreground">管理学生能力画像排名和典型就业案例</p>
+          <p className="text-muted-foreground">管理学生能力画像排名和就业案例</p>
         </div>
       </div>
 
       <Tabs defaultValue="profiles" className="space-y-6">
         <TabsList>
           <TabsTrigger value="profiles">人才画像排名</TabsTrigger>
-          <TabsTrigger value="cases">典型就业案例</TabsTrigger>
+          <TabsTrigger value="cases">就业案例</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profiles" className="space-y-4">
@@ -267,9 +275,9 @@ export default function TalentBrandPage() {
                   <CardTitle>人才画像排名</CardTitle>
                   <CardDescription>基于能力认证结果的学生综合排名</CardDescription>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setProfileDialogOpen(true)}>
-                  <Link2 className="h-4 w-4 mr-2" />
-                  引用人才
+                <Button variant="outline" size="sm" onClick={openConfigDialog}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  专业排名启用管理
                 </Button>
               </div>
             </CardHeader>
@@ -284,136 +292,144 @@ export default function TalentBrandPage() {
                     className="pl-10"
                   />
                 </div>
-                <Select value={majorFilter} onValueChange={setMajorFilter}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="选择专业" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">全部专业</SelectItem>
-                    {majors.map((major) => (
-                      <SelectItem key={major} value={major}>
-                        {major}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px]">排名</TableHead>
-                    <TableHead>学生信息</TableHead>
-                    <TableHead>专业</TableHead>
-                    <TableHead>能力分数</TableHead>
-                    <TableHead>认证等级</TableHead>
-                    <TableHead>能力标签</TableHead>
-                    <TableHead>就业状态</TableHead>
-                    <TableHead>特色展示</TableHead>
-                    <TableHead className="w-[120px]">操作</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProfiles.map((profile) => (
-                    <TableRow key={profile.id}>
-                      <TableCell>
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted font-semibold">
-                          {profile.comprehensiveRank}
+              {enabledMajors.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  请在"专业排名启用管理"中启用至少一个专业
+                </div>
+              ) : (
+                <Tabs
+                  value={activeMajorTab}
+                  onValueChange={setActiveMajorTab}
+                >
+                  <TabsList className="mb-4 flex flex-wrap h-auto">
+                    {enabledMajors.map((major) => (
+                      <TabsTrigger key={major} value={major}>
+                        {major}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {enabledMajors.map((major) => {
+                    const profiles = getMajorProfiles(major)
+                    const config = majorConfigs.find((c) => c.major === major)
+                    return (
+                      <TabsContent key={major} value={major}>
+                        <div className="mb-2 text-sm text-muted-foreground">
+                          展示范围：前 {config?.limit || 0} 名 · 当前显示 {profiles.length} 人
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={profile.avatar} />
-                            <AvatarFallback>{profile.studentName[0]}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{profile.studentName}</p>
-                            <p className="text-sm text-muted-foreground">{profile.studentId}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p>{profile.major}</p>
-                          <p className="text-sm text-muted-foreground">{profile.grade}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-semibold text-lg">{profile.abilityScore}</span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            profile.certificationLevel === "高级"
-                              ? "default"
-                              : profile.certificationLevel === "中级"
-                              ? "secondary"
-                              : "outline"
-                          }
-                        >
-                          {profile.certificationLevel}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {profile.abilityTags.slice(0, 2).map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                          {profile.abilityTags.length > 2 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{profile.abilityTags.length - 2}
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            profile.employmentStatus === "employed"
-                              ? "default"
-                              : profile.employmentStatus === "seeking"
-                              ? "secondary"
-                              : "outline"
-                          }
-                        >
-                          {profile.employmentStatus === "employed"
-                            ? "已就业"
-                            : profile.employmentStatus === "seeking"
-                            ? "求职中"
-                            : "在读"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {profile.isFeatured ? (
-                          <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
-                        ) : (
-                          <Star className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openProfileEdit(profile)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteProfile(profile.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredProfiles.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
-                        没有找到符合条件的人才画像
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[80px]">排名</TableHead>
+                              <TableHead>学生信息</TableHead>
+                              <TableHead>专业</TableHead>
+                              <TableHead>能力分数</TableHead>
+                              <TableHead>认证等级</TableHead>
+                              <TableHead>能力标签</TableHead>
+                              <TableHead>就业状态</TableHead>
+                              <TableHead className="w-[120px]">操作</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {profiles.map((profile) => (
+                              <TableRow key={profile.id}>
+                                <TableCell>
+                                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted font-semibold">
+                                    {profile.rank}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-3">
+                                    <Avatar>
+                                      <AvatarImage src={profile.avatar} />
+                                      <AvatarFallback>{profile.studentName[0]}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <p className="font-medium">{profile.studentName}</p>
+                                      <p className="text-sm text-muted-foreground">{profile.studentId}</p>
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>
+                                    <p>{profile.major}</p>
+                                    <p className="text-sm text-muted-foreground">{profile.grade}</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <span className="font-semibold text-lg">{profile.abilityScore}</span>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant={
+                                      profile.certificationLevel === "高级"
+                                        ? "default"
+                                        : profile.certificationLevel === "中级"
+                                        ? "secondary"
+                                        : "outline"
+                                    }
+                                  >
+                                    {profile.certificationLevel}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex flex-wrap gap-1">
+                                    {profile.abilityTags.slice(0, 2).map((tag) => (
+                                      <Badge key={tag} variant="outline" className="text-xs">
+                                        {tag}
+                                      </Badge>
+                                    ))}
+                                    {profile.abilityTags.length > 2 && (
+                                      <Badge variant="outline" className="text-xs">
+                                        +{profile.abilityTags.length - 2}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant={
+                                      profile.employmentStatus === "employed"
+                                        ? "default"
+                                        : profile.employmentStatus === "seeking"
+                                        ? "secondary"
+                                        : "outline"
+                                    }
+                                  >
+                                    {profile.employmentStatus === "employed"
+                                      ? "已就业"
+                                      : profile.employmentStatus === "seeking"
+                                      ? "求职中"
+                                      : "在读"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    <Button variant="ghost" size="icon" onClick={() => openProfileEdit(profile)}>
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteProfile(profile.id)}>
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            {profiles.length === 0 && (
+                              <TableRow>
+                                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                                  没有找到符合条件的人才画像
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </TabsContent>
+                    )
+                  })}
+                </Tabs>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -423,12 +439,12 @@ export default function TalentBrandPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>典型就业案例</CardTitle>
+                  <CardTitle>就业案例</CardTitle>
                   <CardDescription>展示优秀毕业生的就业故事</CardDescription>
                 </div>
                 <Button onClick={() => setCaseDialogOpen(true)}>
-                  <Link2 className="h-4 w-4 mr-2" />
-                  引用就业案例
+                  <Plus className="h-4 w-4 mr-2" />
+                  新增就业案例
                 </Button>
               </div>
             </CardHeader>
@@ -519,76 +535,57 @@ export default function TalentBrandPage() {
         </TabsContent>
       </Tabs>
 
-      {/* 引用人才 Dialog */}
-      <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
-        <DialogContent className="max-w-lg">
+      {/* 专业排名启用管理 Dialog */}
+      <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>引用人才</DialogTitle>
-            <DialogDescription>从专家库中选择人才并填写品牌展示字段</DialogDescription>
+            <DialogTitle>专业排名启用管理</DialogTitle>
+            <DialogDescription>配置各专业的排名展示范围</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>选择专家</Label>
-              <Select value={selectedExpertId} onValueChange={setSelectedExpertId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择专家" />
-                </SelectTrigger>
-                <SelectContent>
-                  {experts.map((expert) => (
-                    <SelectItem key={expert.id} value={expert.id}>
-                      {expert.name} — {expert.field} — {expert.partnerName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="abilityScore">能力分数</Label>
-              <Input
-                id="abilityScore"
-                type="number"
-                placeholder="请输入能力分数"
-                value={profileAbilityScore}
-                onChange={(e) => setProfileAbilityScore(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="certificationLevel">认证等级</Label>
-              <Input
-                id="certificationLevel"
-                placeholder="如：高级、中级、初级"
-                value={profileCertificationLevel}
-                onChange={(e) => setProfileCertificationLevel(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="abilityTags">能力标签（逗号分隔）</Label>
-              <Input
-                id="abilityTags"
-                placeholder="如：机器学习, 深度学习, Python"
-                value={profileAbilityTags}
-                onChange={(e) => setProfileAbilityTags(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div className="space-y-0.5">
-                <Label htmlFor="isFeatured">设为特色展示</Label>
-                <p className="text-sm text-muted-foreground">开启后该人才将在首页特色展示</p>
+          <div className="space-y-3 py-2">
+            {editingConfigs.map((config, idx) => (
+              <div key={config.major} className="flex items-center gap-3 rounded-lg border p-3">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{config.major}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Label className="text-xs whitespace-nowrap text-muted-foreground">排名范围</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={100}
+                    className="w-16 h-8 text-center"
+                    value={config.limit}
+                    onChange={(e) => {
+                      const val = Number(e.target.value)
+                      if (val < 1) return
+                      const newConfigs = [...editingConfigs]
+                      newConfigs[idx] = { ...newConfigs[idx], limit: val }
+                      setEditingConfigs(newConfigs)
+                    }}
+                    disabled={!config.enabled}
+                  />
+                  <Label className="text-xs whitespace-nowrap text-muted-foreground">名</Label>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Label className="text-xs whitespace-nowrap">{config.enabled ? "已启用" : "未启用"}</Label>
+                  <Switch
+                    checked={config.enabled}
+                    onCheckedChange={(checked) => {
+                      const newConfigs = [...editingConfigs]
+                      newConfigs[idx] = { ...newConfigs[idx], enabled: checked }
+                      setEditingConfigs(newConfigs)
+                    }}
+                  />
+                </div>
               </div>
-              <Switch
-                id="isFeatured"
-                checked={profileIsFeatured}
-                onCheckedChange={setProfileIsFeatured}
-              />
-            </div>
+            ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { resetProfileForm(); setProfileDialogOpen(false) }}>
+            <Button variant="outline" onClick={() => setConfigDialogOpen(false)}>
               取消
             </Button>
-            <Button onClick={handleAddProfile} disabled={!selectedExpertId}>
-              确认引用
-            </Button>
+            <Button onClick={handleSaveConfigs}>保存</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -606,39 +603,24 @@ export default function TalentBrandPage() {
               <Input value={editingProfile?.studentName || ""} disabled />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="editAbilityScore">能力分数</Label>
-              <Input
-                id="editAbilityScore"
-                type="number"
-                value={profileAbilityScore}
-                onChange={(e) => setProfileAbilityScore(e.target.value)}
-              />
+              <Label>能力分数</Label>
+              <Input type="number" value={editingProfile?.abilityScore || ""} disabled />
+              <p className="text-xs text-muted-foreground">能力分数由系统数据自动计算，不可编辑</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="editCertificationLevel">认证等级</Label>
               <Input
                 id="editCertificationLevel"
-                value={profileCertificationLevel}
-                onChange={(e) => setProfileCertificationLevel(e.target.value)}
+                value={editCertificationLevel}
+                onChange={(e) => setEditCertificationLevel(e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="editAbilityTags">能力标签（逗号分隔）</Label>
               <Input
                 id="editAbilityTags"
-                value={profileAbilityTags}
-                onChange={(e) => setProfileAbilityTags(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div className="space-y-0.5">
-                <Label htmlFor="editIsFeatured">设为特色展示</Label>
-                <p className="text-sm text-muted-foreground">开启后该人才将在首页特色展示</p>
-              </div>
-              <Switch
-                id="editIsFeatured"
-                checked={profileIsFeatured}
-                onCheckedChange={setProfileIsFeatured}
+                value={editAbilityTags}
+                onChange={(e) => setEditAbilityTags(e.target.value)}
               />
             </div>
           </div>
@@ -651,46 +633,97 @@ export default function TalentBrandPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 引用就业案例 Dialog */}
+      {/* 新增就业案例 Dialog */}
       <Dialog open={caseDialogOpen} onOpenChange={setCaseDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>引用就业案例</DialogTitle>
+            <DialogTitle>新增就业案例</DialogTitle>
             <DialogDescription>选择人才并填写就业案例信息</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>选择学生</Label>
-              <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="搜索学生姓名、学号或专业..."
+                  value={studentSearch}
+                  onChange={(e) => {
+                    setStudentSearch(e.target.value)
+                    if (selectedStudentId) setSelectedStudentId("")
+                  }}
+                  className="pl-10"
+                />
+                {selectedStudentId && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+                    onClick={() => {
+                      setSelectedStudentId("")
+                      setStudentSearch("")
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              {!selectedStudentId && studentSearch.trim() && searchedStudents.length > 0 && (
+                <div className="border rounded-lg max-h-40 overflow-y-auto">
+                  {searchedStudents.map((student) => (
+                    <div
+                      key={student.id}
+                      className="p-2 cursor-pointer hover:bg-muted text-sm border-b last:border-b-0"
+                      onClick={() => {
+                        setSelectedStudentId(student.id)
+                        setStudentSearch(`${student.studentName} — ${student.studentId} — ${student.major}`)
+                      }}
+                    >
+                      <span className="font-medium">{student.studentName}</span>
+                      <span className="text-muted-foreground ml-2">{student.studentId}</span>
+                      <span className="text-muted-foreground ml-2">{student.major}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {!selectedStudentId && studentSearch.trim() && searchedStudents.length === 0 && (
+                <p className="text-xs text-muted-foreground">未找到匹配的学生</p>
+              )}
+              {selectedStudent && (
+                <div className="flex items-center gap-2 text-sm text-emerald-600">
+                  <span>已选择：{selectedStudent.studentName}（{selectedStudent.studentId}，{selectedStudent.major}）</span>
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>就业企业</Label>
+              <Select value={caseCompany} onValueChange={setCaseCompany}>
                 <SelectTrigger>
-                  <SelectValue placeholder="请选择学生" />
+                  <SelectValue placeholder="请选择企业" />
                 </SelectTrigger>
                 <SelectContent>
-                  {talentProfiles.map((profile) => (
-                    <SelectItem key={profile.id} value={profile.id}>
-                      {profile.studentName} — {profile.major}
+                  {companyOptions.map((company) => (
+                    <SelectItem key={company} value={company}>
+                      {company}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="caseCompany">就业企业</Label>
-              <Input
-                id="caseCompany"
-                placeholder="请输入企业名称"
-                value={caseCompany}
-                onChange={(e) => setCaseCompany(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="casePosition">岗位</Label>
-              <Input
-                id="casePosition"
-                placeholder="请输入岗位名称"
-                value={casePosition}
-                onChange={(e) => setCasePosition(e.target.value)}
-              />
+              <Label>岗位</Label>
+              <Select value={casePosition} onValueChange={setCasePosition}>
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择岗位" />
+                </SelectTrigger>
+                <SelectContent>
+                  {positionOptions.map((position) => (
+                    <SelectItem key={position} value={position}>
+                      {position}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="caseSalary">薪资</Label>
@@ -730,8 +763,8 @@ export default function TalentBrandPage() {
             <Button variant="outline" onClick={() => { resetCaseForm(); setCaseDialogOpen(false) }}>
               取消
             </Button>
-            <Button onClick={handleAddCase} disabled={!selectedStudentId}>
-              确认引用
+            <Button onClick={handleAddCase} disabled={!selectedStudentId || !caseCompany || !casePosition}>
+              确认新增
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -750,20 +783,34 @@ export default function TalentBrandPage() {
               <Input value={editingCase?.studentName || ""} disabled />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="editCaseCompany">就业企业</Label>
-              <Input
-                id="editCaseCompany"
-                value={caseCompany}
-                onChange={(e) => setCaseCompany(e.target.value)}
-              />
+              <Label>就业企业</Label>
+              <Select value={caseCompany} onValueChange={setCaseCompany}>
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择企业" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companyOptions.map((company) => (
+                    <SelectItem key={company} value={company}>
+                      {company}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="editCasePosition">岗位</Label>
-              <Input
-                id="editCasePosition"
-                value={casePosition}
-                onChange={(e) => setCasePosition(e.target.value)}
-              />
+              <Label>岗位</Label>
+              <Select value={casePosition} onValueChange={setCasePosition}>
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择岗位" />
+                </SelectTrigger>
+                <SelectContent>
+                  {positionOptions.map((position) => (
+                    <SelectItem key={position} value={position}>
+                      {position}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="editCaseSalary">薪资</Label>

@@ -23,8 +23,9 @@ import { Input } from '@/components/ui/input'
 import React from 'react'
 import {
   Plus, Pencil, Trash2, Shield, Building2, User, Eye, MapPin,
-  Briefcase, BookOpen, CheckSquare, X, ChevronDown, ChevronUp,
+  Briefcase, BookOpen, CheckSquare, X, ChevronDown, ChevronUp, Check,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { permissionGrants, cooperationAccounts, enterprises, experts } from '@/lib/mock-data'
 import {
   COOPERATION_ACCOUNT_TYPE_LABELS,
@@ -43,14 +44,38 @@ import type {
   PlatformType,
 } from '@/lib/types'
 
-// 批次选项
-const BATCH_OPTIONS: Record<ResourceType, string[]> = {
-  position: ['2025年春季上线岗位', '2025年秋季上线岗位', '2024年存量岗位', '2024年秋季上线岗位'],
-  scene: ['2025年AI实训场景', '2025年生物医药实训场景', '2025年智能制造实训场景', '2024年存量场景'],
-  course: ['2025年新课程开发', '2024年存量课程', '2025年春季课程', '2025年秋季课程'],
+// 批次与子项映射
+const BATCH_ITEMS: Record<ResourceType, Record<string, string[]>> = {
+  position: {
+    '2025年春季上线岗位': ['前端开发工程师', 'Java后端工程师', '产品经理', 'UI设计师'],
+    '2025年秋季上线岗位': ['算法工程师', '数据分析师', '测试工程师'],
+    '2024年存量岗位': ['运维工程师', '项目经理'],
+    '2024年秋季上线岗位': ['全栈工程师', 'DevOps工程师'],
+  },
+  scene: {
+    '2025年AI实训场景': ['机器学习实训室', '深度学习实验室', '计算机视觉工坊'],
+    '2025年生物医药实训场景': ['生物制药实验室', '医疗器械实训室'],
+    '2025年智能制造实训场景': ['工业机器人实训室', '智能工厂模拟中心', 'PLC编程实验室'],
+    '2024年存量场景': ['传统制造实训室', '电子装配工坊'],
+  },
+  course: {
+    '2025年新课程开发': ['人工智能导论', 'Python编程基础', '工业互联网技术'],
+    '2024年存量课程': ['计算机基础', '数据库原理'],
+    '2025年春季课程': ['Web前端开发', 'Java程序设计'],
+    '2025年秋季课程': ['大数据技术', '云计算基础'],
+  },
 }
 
-const OPERATIONS: OperationType[] = ['view', 'edit', 'review', 'publish', 'delete']
+const BATCH_OPTIONS: Record<ResourceType, string[]> = {
+  position: Object.keys(BATCH_ITEMS.position),
+  scene: Object.keys(BATCH_ITEMS.scene),
+  course: Object.keys(BATCH_ITEMS.course),
+}
+
+const ALL_RESOURCE_TYPES: ResourceType[] = ['position', 'scene', 'course']
+
+const OPERATIONS: OperationType[] = ['view', 'edit', 'review', 'publish', 'delete', 'create']
+const SCENE_OPERATIONS: OperationType[] = ['view', 'edit', 'review', 'publish', 'delete', 'create', 'assess']
 const ASSESSMENTS: AssessmentType[] = ['on_site_qa', 'on_site_review', 'question_bank', 'exam_paper']
 const PLATFORMS: PlatformType[] = ['job', 'scene', 'brand']
 
@@ -60,8 +85,24 @@ const resourceIcons: Record<ResourceType, React.ReactNode> = {
   course: <BookOpen className="h-3.5 w-3.5" />,
 }
 
+const batchSelectLabels: Record<ResourceType, string> = {
+  position: '批次与岗位选择',
+  scene: '批次与场景选择',
+  course: '批次与课程选择',
+}
+
 function generateId(prefix = 'id') {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+}
+
+function createDefaultResourcePermissions(): ResourcePermissionItem[] {
+  return ALL_RESOURCE_TYPES.map((rt) => ({
+    id: generateId('rp'),
+    resourceType: rt,
+    batchName: '',
+    operations: [],
+    selectedItems: [],
+  }))
 }
 
 export default function PermissionsPage() {
@@ -84,7 +125,7 @@ export default function PermissionsPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   // 权限
-  const [resourcePermissions, setResourcePermissions] = useState<ResourcePermissionItem[]>([])
+  const [resourcePermissions, setResourcePermissions] = useState<ResourcePermissionItem[]>(createDefaultResourcePermissions())
   const [assessmentPermissions, setAssessmentPermissions] = useState<AssessmentType[]>([])
   const [authorizedPlatforms, setAuthorizedPlatforms] = useState<PlatformType[]>([])
   const [enabled, setEnabled] = useState(true)
@@ -103,7 +144,7 @@ export default function PermissionsPage() {
     setAccountName('')
     setUsername('')
     setPassword('')
-    setResourcePermissions([])
+    setResourcePermissions(createDefaultResourcePermissions())
     setAssessmentPermissions([])
     setAuthorizedPlatforms([])
     setEnabled(true)
@@ -127,7 +168,24 @@ export default function PermissionsPage() {
       setUsername(account.username)
       setPassword('') // 编辑时不显示密码
     }
-    setResourcePermissions(grant.resourcePermissions.map(rp => ({ ...rp })))
+    // 规范化 resourcePermissions，确保三种资源类型都有
+    const normalized: ResourcePermissionItem[] = ALL_RESOURCE_TYPES.map((rt) => {
+      const existing = grant.resourcePermissions.find(rp => rp.resourceType === rt)
+      if (existing) {
+        return {
+          ...existing,
+          selectedItems: existing.selectedItems || [],
+        }
+      }
+      return {
+        id: generateId('rp'),
+        resourceType: rt,
+        batchName: '',
+        operations: [],
+        selectedItems: [],
+      }
+    })
+    setResourcePermissions(normalized)
     setAssessmentPermissions([...grant.assessmentPermissions])
     setAuthorizedPlatforms([...grant.authorizedPlatforms])
     setEnabled(grant.enabled)
@@ -194,11 +252,27 @@ export default function PermissionsPage() {
       if (password) {
         account = { ...account, password, updatedAt: new Date() }
       }
+      // 如果所属主体发生变化，同步更新
+      if (selectedOwner && (ownerId !== account.ownerId || ownerEntityType !== account.ownerEntityType)) {
+        const newAccountType: CooperationAccount['accountType'] = ownerEntityType === 'enterprise' ? 'enterprise_public' : 'expert_personal'
+        account = {
+          ...account,
+          ownerId,
+          ownerName: selectedOwner.name,
+          ownerEntityType,
+          accountType: newAccountType,
+          contactPerson: selectedOwner.contact,
+          contactPhone: selectedOwner.phone,
+          updatedAt: new Date(),
+        }
+      }
       setAccounts(prev => prev.map(a => a.id === account!.id ? account! : a))
 
       const updatedGrant: PermissionGrant = {
         ...editingGrant,
         accountName: account.accountName,
+        accountType: account.accountType,
+        ownerName: account.ownerName,
         resourcePermissions: resourcePermissions.map(rp => ({ ...rp })),
         assessmentPermissions: [...assessmentPermissions],
         authorizedPlatforms: [...authorizedPlatforms],
@@ -250,42 +324,22 @@ export default function PermissionsPage() {
     resetForm()
   }
 
-  const addResourcePermission = () => {
-    setResourcePermissions([
-      ...resourcePermissions,
-      {
-        id: generateId('rp'),
-        resourceType: 'position',
-        batchName: BATCH_OPTIONS.position[0],
-        operations: ['view'],
-      },
-    ])
-  }
-
   const updateResourcePermission = (index: number, updates: Partial<ResourcePermissionItem>) => {
     setResourcePermissions(prev => {
       const next = [...prev]
       next[index] = { ...next[index], ...updates }
-      if (updates.resourceType && updates.resourceType !== prev[index].resourceType) {
-        next[index].batchName = BATCH_OPTIONS[updates.resourceType][0]
-      }
       return next
     })
   }
 
-  const removeResourcePermission = (index: number) => {
-    setResourcePermissions(prev => prev.filter((_, i) => i !== index))
-  }
-
   const toggleOperation = (index: number, op: OperationType) => {
     setResourcePermissions(prev => {
+      const rp = prev[index]
+      const nextOps = rp.operations.includes(op)
+        ? rp.operations.filter(o => o !== op)
+        : [...rp.operations, op]
       const next = [...prev]
-      const item = next[index]
-      if (item.operations.includes(op)) {
-        item.operations = item.operations.filter(o => o !== op)
-      } else {
-        item.operations = [...item.operations, op]
-      }
+      next[index] = { ...rp, operations: nextOps }
       return next
     })
   }
@@ -302,9 +356,51 @@ export default function PermissionsPage() {
     )
   }
 
+  const toggleBatchItem = (rpIndex: number, batchName: string, item: string) => {
+    setResourcePermissions(prev => {
+      const rp = prev[rpIndex]
+      const currentItems = rp.selectedItems || []
+
+      // 如果当前批次不是选中的批次，先切换批次
+      if (rp.batchName !== batchName) {
+        const next = [...prev]
+        next[rpIndex] = { ...rp, batchName, selectedItems: [item] }
+        return next
+      }
+
+      // 在同批次内切换子项
+      const nextItems = currentItems.includes(item)
+        ? currentItems.filter(i => i !== item)
+        : [...currentItems, item]
+      const next = [...prev]
+      next[rpIndex] = { ...rp, selectedItems: nextItems }
+      return next
+    })
+  }
+
+  const toggleWholeBatch = (rpIndex: number, batchName: string) => {
+    setResourcePermissions(prev => {
+      const rp = prev[rpIndex]
+      const batchItems = BATCH_ITEMS[rp.resourceType][batchName] || []
+      const isCurrentlyAllSelected = rp.batchName === batchName && (rp.selectedItems || []).length === batchItems.length
+
+      if (isCurrentlyAllSelected) {
+        // 取消全选
+        const next = [...prev]
+        next[rpIndex] = { ...rp, selectedItems: [] }
+        return next
+      } else {
+        // 全选该批次
+        const next = [...prev]
+        next[rpIndex] = { ...rp, batchName, selectedItems: [...batchItems] }
+        return next
+      }
+    })
+  }
+
   const isFormValid = editingGrant
-    ? accountName.trim() !== '' && resourcePermissions.length > 0
-    : ownerId !== '' && accountName.trim() !== '' && username.trim() !== '' && password.trim() !== '' && resourcePermissions.length > 0
+    ? accountName.trim() !== '' && resourcePermissions.some(rp => rp.batchName && (rp.selectedItems || []).length > 0)
+    : ownerId !== '' && accountName.trim() !== '' && username.trim() !== '' && password.trim() !== '' && resourcePermissions.some(rp => rp.batchName && (rp.selectedItems || []).length > 0)
 
   return (
     <div className="space-y-6">
@@ -485,7 +581,7 @@ export default function PermissionsPage() {
                                       {RESOURCE_TYPE_LABELS[rp.resourceType]}
                                     </Badge>
                                     <span className="text-muted-foreground">·</span>
-                                    <span>{rp.batchName}</span>
+                                    <span>{rp.batchName || '—'}</span>
                                     <span className="text-muted-foreground">·</span>
                                     <div className="flex gap-1">
                                       {rp.operations.map((op) => (
@@ -553,123 +649,89 @@ export default function PermissionsPage() {
             <div className="flex-1 overflow-y-auto mt-4 pr-2 min-h-0">
               {/* 账号信息 */}
               <TabsContent value="account" className="mt-0 space-y-4">
-                {editingGrant ? (
-                  // 编辑模式：只读显示
+                <div className="space-y-2">
+                  <Label>所属主体类型</Label>
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant={ownerEntityType === 'enterprise' ? 'default' : 'outline'}
+                      onClick={() => { setOwnerEntityType('enterprise'); setOwnerId('') }}
+                      className="flex-1"
+                    >
+                      <Building2 className="h-4 w-4 mr-2" />
+                      企业
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={ownerEntityType === 'expert' ? 'default' : 'outline'}
+                      onClick={() => { setOwnerEntityType('expert'); setOwnerId('') }}
+                      className="flex-1"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      专家
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>选择{ownerEntityType === 'enterprise' ? '企业' : '专家'}</Label>
+                  <Select value={ownerId} onValueChange={setOwnerId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={`请选择${ownerEntityType === 'enterprise' ? '企业' : '专家'}`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ownerOptions.map((opt) => (
+                        <SelectItem key={opt.id} value={opt.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{opt.name}</span>
+                            <span className="text-muted-foreground text-xs">({opt.contact} / {opt.phone})</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedOwner && (
                   <Card className="bg-muted/50">
-                    <CardContent className="pt-4 space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">所属主体类型</span>
-                        <Badge variant="outline">
-                          {ownerEntityType === 'enterprise' ? '企业' : '专家'}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">所属主体</span>
-                        <span className="font-medium">{selectedOwner?.name || '-'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">账号名称</span>
-                        <span>{accountName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">登录账号</span>
-                        <span>{username}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">账号类型</span>
-                        <Badge variant="outline" className="text-xs">
-                          {COOPERATION_ACCOUNT_TYPE_LABELS[ownerEntityType === 'enterprise' ? 'enterprise_public' : 'expert_personal']}
-                        </Badge>
+                    <CardContent className="pt-3 pb-3">
+                      <div className="text-sm text-muted-foreground">
+                        已选择：<span className="font-medium text-foreground">{selectedOwner.name}</span>
+                        <span className="mx-1">·</span>
+                        {selectedOwner.contact} / {selectedOwner.phone}
                       </div>
                     </CardContent>
                   </Card>
-                ) : (
-                  // 创建模式：填写表单
-                  <>
-                    <div className="space-y-2">
-                      <Label>所属主体类型</Label>
-                      <div className="flex gap-3">
-                        <Button
-                          type="button"
-                          variant={ownerEntityType === 'enterprise' ? 'default' : 'outline'}
-                          onClick={() => { setOwnerEntityType('enterprise'); setOwnerId('') }}
-                          className="flex-1"
-                        >
-                          <Building2 className="h-4 w-4 mr-2" />
-                          企业
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={ownerEntityType === 'expert' ? 'default' : 'outline'}
-                          onClick={() => { setOwnerEntityType('expert'); setOwnerId('') }}
-                          className="flex-1"
-                        >
-                          <User className="h-4 w-4 mr-2" />
-                          专家
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>选择{ownerEntityType === 'enterprise' ? '企业' : '专家'}</Label>
-                      <Select value={ownerId} onValueChange={setOwnerId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder={`请选择${ownerEntityType === 'enterprise' ? '企业' : '专家'}`} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ownerOptions.map((opt) => (
-                            <SelectItem key={opt.id} value={opt.id}>
-                              <div className="flex items-center gap-2">
-                                <span>{opt.name}</span>
-                                <span className="text-muted-foreground text-xs">({opt.contact} / {opt.phone})</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {selectedOwner && (
-                      <Card className="bg-muted/50">
-                        <CardContent className="pt-3 pb-3">
-                          <div className="text-sm text-muted-foreground">
-                            已选择：<span className="font-medium text-foreground">{selectedOwner.name}</span>
-                            <span className="mx-1">·</span>
-                            {selectedOwner.contact} / {selectedOwner.phone}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    <div className="space-y-2">
-                      <Label>账号名称</Label>
-                      <Input
-                        value={accountName}
-                        onChange={(e) => setAccountName(e.target.value)}
-                        placeholder="如：智联科技-公共账号"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>登录用户名</Label>
-                      <Input
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="如：zltech_admin"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>登录密码</Label>
-                      <Input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="请输入登录密码"
-                      />
-                    </div>
-                  </>
                 )}
+
+                <div className="space-y-2">
+                  <Label>账号名称</Label>
+                  <Input
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    placeholder="如：智联科技-公共账号"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>登录用户名</Label>
+                  <Input
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="如：zltech_admin"
+                    disabled={!!editingGrant}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{editingGrant ? '登录密码（留空则不修改）' : '登录密码'}</Label>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="请输入登录密码"
+                  />
+                </div>
 
                 <div className="flex items-center gap-2 pt-2">
                   <Switch checked={enabled} onCheckedChange={setEnabled} />
@@ -679,84 +741,136 @@ export default function PermissionsPage() {
 
               {/* 功能权限 */}
               <TabsContent value="resource" className="mt-0 space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>资源权限配置</Label>
-                  <Button type="button" size="sm" variant="outline" onClick={addResourcePermission}>
-                    <Plus className="h-3.5 w-3.5 mr-1" />
-                    添加权限项
-                  </Button>
-                </div>
-                {resourcePermissions.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">
-                    暂无权限项，点击上方按钮添加
-                  </div>
-                )}
-                <div className="space-y-3">
-                  {resourcePermissions.map((rp, index) => (
-                    <Card key={rp.id} className="relative">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-red-500"
-                        onClick={() => removeResourcePermission(index)}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
-                      <CardContent className="pt-4 pb-4 space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
+                <Label>资源权限配置</Label>
+                <div className="space-y-4">
+                  {resourcePermissions.map((rp, index) => {
+                    const ops = rp.resourceType === 'scene' ? SCENE_OPERATIONS : OPERATIONS
+                    const batchOptions = BATCH_OPTIONS[rp.resourceType]
+                    const currentBatchItems = rp.batchName ? BATCH_ITEMS[rp.resourceType][rp.batchName] || [] : []
+                    const selectedItems = rp.selectedItems || []
+                    return (
+                      <Card key={rp.id}>
+                        <CardContent className="pt-4 pb-4 space-y-4">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              {resourceIcons[rp.resourceType]}
+                              {RESOURCE_TYPE_LABELS[rp.resourceType]}
+                            </Badge>
+                          </div>
+
+                          {/* 批次与子项选择 */}
+                          <div className="space-y-2">
+                            <Label className="text-xs">{batchSelectLabels[rp.resourceType]}</Label>
+                            <div className="border rounded-md overflow-hidden">
+                              {batchOptions.map((batchName) => {
+                                const items = BATCH_ITEMS[rp.resourceType][batchName] || []
+                                const isExpanded = rp.batchName === batchName
+                                const allSelected = items.length > 0 && items.every((item: string) => selectedItems.includes(item))
+                                return (
+                                  <div key={batchName} className="border-b last:border-b-0">
+                                    <div className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-muted/50">
+                                      <div className="flex items-center gap-2">
+                                        <label className="inline-flex items-center cursor-pointer">
+                                          <input
+                                            type="checkbox"
+                                            className="sr-only"
+                                            checked={allSelected}
+                                            onChange={() => toggleWholeBatch(index, batchName)}
+                                          />
+                                          <div className={cn(
+                                            "size-4 shrink-0 rounded-[4px] border flex items-center justify-center transition-colors",
+                                            allSelected ? "bg-primary border-primary text-primary-foreground" : "bg-background border-input"
+                                          )}>
+                                            {allSelected && <Check className="size-3.5" />}
+                                          </div>
+                                        </label>
+                                        <button
+                                          type="button"
+                                          className="font-medium"
+                                          onClick={() => {
+                                            if (isExpanded) {
+                                              updateResourcePermission(index, { batchName: '', selectedItems: [] })
+                                            } else {
+                                              updateResourcePermission(index, { batchName: batchName, selectedItems: [] })
+                                            }
+                                          }}
+                                        >
+                                          {batchName}
+                                        </button>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        className="ml-2"
+                                        onClick={() => {
+                                          if (isExpanded) {
+                                            updateResourcePermission(index, { batchName: '', selectedItems: [] })
+                                          } else {
+                                            updateResourcePermission(index, { batchName: batchName, selectedItems: [] })
+                                          }
+                                        }}
+                                      >
+                                        {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                                      </button>
+                                    </div>
+                                    {isExpanded && (
+                                      <div className="px-3 pb-2 pl-8 space-y-1">
+                                        {items.map((item: string) => (
+                                          <div key={item} className="flex items-center gap-2">
+                                            <label className="inline-flex items-center cursor-pointer">
+                                              <input
+                                                type="checkbox"
+                                                className="sr-only"
+                                                checked={selectedItems.includes(item)}
+                                                onChange={() => toggleBatchItem(index, batchName, item)}
+                                              />
+                                              <div className={cn(
+                                                "size-4 shrink-0 rounded-[4px] border flex items-center justify-center transition-colors",
+                                                selectedItems.includes(item) ? "bg-primary border-primary text-primary-foreground" : "bg-background border-input"
+                                              )}>
+                                                {selectedItems.includes(item) && <Check className="size-3.5" />}
+                                              </div>
+                                            </label>
+                                            <span className="text-sm text-muted-foreground">{item}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+
                           <div className="space-y-1">
-                            <Label className="text-xs">资源类型</Label>
-                            <Select
-                              value={rp.resourceType}
-                              onValueChange={(val: ResourceType) => updateResourcePermission(index, { resourceType: val })}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="position">岗位管理</SelectItem>
-                                <SelectItem value="scene">场景管理</SelectItem>
-                                <SelectItem value="course">课程管理</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <Label className="text-xs">操作权限</Label>
+                            <div className="flex flex-wrap gap-3">
+                              {ops.map((op) => (
+                                <div key={op} className="flex items-center gap-1.5">
+                                  <label className="inline-flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      className="sr-only"
+                                      checked={rp.operations.includes(op)}
+                                      onChange={() => toggleOperation(index, op)}
+                                    />
+                                    <div className={cn(
+                                      "size-4 shrink-0 rounded-[4px] border flex items-center justify-center transition-colors",
+                                      rp.operations.includes(op) ? "bg-primary border-primary text-primary-foreground" : "bg-background border-input"
+                                    )}>
+                                      {rp.operations.includes(op) && <Check className="size-3.5" />}
+                                    </div>
+                                  </label>
+                                  <span className="text-xs cursor-pointer font-normal" onClick={() => toggleOperation(index, op)}>
+                                    {OPERATION_TYPE_LABELS[op]}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">批次名称</Label>
-                            <Select
-                              value={rp.batchName}
-                              onValueChange={(val) => updateResourcePermission(index, { batchName: val })}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {BATCH_OPTIONS[rp.resourceType].map((batch) => (
-                                  <SelectItem key={batch} value={batch}>{batch}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">操作权限</Label>
-                          <div className="flex flex-wrap gap-3">
-                            {OPERATIONS.map((op) => (
-                              <div key={op} className="flex items-center gap-1.5">
-                                <Checkbox
-                                  id={`${rp.id}-${op}`}
-                                  checked={rp.operations.includes(op)}
-                                  onCheckedChange={() => toggleOperation(index, op)}
-                                />
-                                <Label htmlFor={`${rp.id}-${op}`} className="text-xs cursor-pointer font-normal">
-                                  {OPERATION_TYPE_LABELS[op]}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
                 </div>
               </TabsContent>
 
@@ -771,10 +885,20 @@ export default function PermissionsPage() {
                       onClick={() => toggleAssessment(type)}
                     >
                       <CardContent className="pt-4 pb-4 flex items-center gap-3">
-                        <Checkbox
-                          checked={assessmentPermissions.includes(type)}
-                          onCheckedChange={() => toggleAssessment(type)}
-                        />
+                        <label className="inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={assessmentPermissions.includes(type)}
+                            onChange={() => toggleAssessment(type)}
+                          />
+                          <div className={cn(
+                            "size-4 shrink-0 rounded-[4px] border flex items-center justify-center transition-colors",
+                            assessmentPermissions.includes(type) ? "bg-primary border-primary text-primary-foreground" : "bg-background border-input"
+                          )}>
+                            {assessmentPermissions.includes(type) && <Check className="size-3.5" />}
+                          </div>
+                        </label>
                         <div>
                           <p className="font-medium text-sm">{ASSESSMENT_TYPE_LABELS[type]}</p>
                           <p className="text-xs text-muted-foreground">
@@ -831,7 +955,7 @@ export default function PermissionsPage() {
                         {RESOURCE_TYPE_LABELS[rp.resourceType]}
                       </Badge>
                       <span className="text-muted-foreground">·</span>
-                      <span className="font-medium">{rp.batchName}</span>
+                      <span className="font-medium">{rp.batchName || '—'}</span>
                       <span className="text-muted-foreground">·</span>
                       <div className="flex gap-1 flex-wrap">
                         {rp.operations.map((op) => (

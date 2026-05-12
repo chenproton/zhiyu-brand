@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,8 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, Save, Plus, X, Search } from 'lucide-react'
-import { experts } from '@/lib/mock-data'
+import { ArrowLeft, Save, X, Search } from 'lucide-react'
 import { EXPERT_TYPES, INDUSTRIES } from '@/lib/types'
 import type { ExpertGender, ExpertType } from '@/lib/types'
 
@@ -46,12 +45,9 @@ const MOCK_POSITIONS = [
   '动画设计师',
 ]
 
-export default function EditExpertPage() {
-  const params = useParams()
+export default function NewExpertPage() {
   const router = useRouter()
-  const id = params.id as string
 
-  const [notFound, setNotFound] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [name, setName] = useState('')
@@ -66,56 +62,12 @@ export default function EditExpertPage() {
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
 
   const [specialties, setSpecialties] = useState<string[]>([])
-  const [newSpecialty, setNewSpecialty] = useState('')
 
   const [workExperience, setWorkExperience] = useState('')
 
   const [relatedPositions, setRelatedPositions] = useState<string[]>([])
   const [positionSearch, setPositionSearch] = useState('')
   const [positionDropdownOpen, setPositionDropdownOpen] = useState(false)
-
-  useEffect(() => {
-    const expert = experts.find((e) => e.id === id)
-    if (!expert) {
-      setNotFound(true)
-      return
-    }
-    setName(expert.name)
-    setGender(expert.gender || 'male')
-    setTitle(expert.title)
-    setExpertType(expert.expertType || '')
-    setExperience(String(expert.experience))
-    setEducation(expert.education || '')
-    setContactEmail(expert.contactEmail || '')
-    setContactPhone(expert.contactPhone || '')
-    setIsContactHidden(expert.isContactHidden || false)
-    setStatus(expert.status)
-    setSpecialties(expert.specialties || [])
-    setWorkExperience(expert.workExperience || '')
-    setRelatedPositions(expert.relatedPositions || [])
-  }, [id])
-
-  if (notFound) {
-    return (
-      <div className="text-center py-20">
-        <h1 className="text-2xl font-bold mb-4">专家不存在</h1>
-        <p className="text-muted-foreground mb-6">该专家可能已被删除或 ID 不正确</p>
-        <Link href="/admin/experts">
-          <Button>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            返回列表
-          </Button>
-        </Link>
-      </div>
-    )
-  }
-
-  const handleAddSpecialty = () => {
-    if (newSpecialty.trim() && !specialties.includes(newSpecialty.trim())) {
-      setSpecialties([...specialties, newSpecialty.trim()])
-      setNewSpecialty('')
-    }
-  }
 
   const handleRemoveSpecialty = (index: number) => {
     setSpecialties(specialties.filter((_, i) => i !== index))
@@ -138,21 +90,22 @@ export default function EditExpertPage() {
     setIsSubmitting(true)
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 800))
+    alert('专家信息已保存（演示）')
     setIsSubmitting(false)
-    router.push(`/admin/experts/${id}`)
+    router.push('/admin/experts')
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href={`/admin/experts/${id}`}>
+        <Link href="/admin/experts">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">编辑专家信息</h1>
-          <p className="text-sm text-muted-foreground mt-1">修改专家的基本资料、专业特长及联系方式</p>
+          <h1 className="text-2xl font-semibold text-foreground">新增专家</h1>
+          <p className="text-sm text-muted-foreground mt-1">录入新的专家信息</p>
         </div>
       </div>
 
@@ -242,11 +195,10 @@ export default function EditExpertPage() {
                   <Label>关联行业</Label>
                   <div className="flex gap-2">
                     <Select
-                      value={newSpecialty}
+                      value=""
                       onValueChange={(val) => {
                         if (val && !specialties.includes(val)) {
                           setSpecialties([...specialties, val])
-                          setNewSpecialty('')
                         }
                       }}
                     >
@@ -414,10 +366,10 @@ export default function EditExpertPage() {
               <CardContent className="space-y-3">
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   <Save className="h-4 w-4 mr-2" />
-                  {isSubmitting ? '保存中...' : '保存修改'}
+                  {isSubmitting ? '保存中...' : '保存'}
                 </Button>
                 <Button type="button" variant="outline" className="w-full" asChild>
-                  <Link href={`/admin/experts/${id}`}>取消</Link>
+                  <Link href="/admin/experts">取消</Link>
                 </Button>
               </CardContent>
             </Card>

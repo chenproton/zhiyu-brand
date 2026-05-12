@@ -17,12 +17,11 @@ import {
 } from '@/components/ui/select'
 import { ArrowLeft, Save, Upload, X } from 'lucide-react'
 import {
-  ENTERPRISE_TYPE_LABELS,
   COOPERATION_STATUS_LABELS,
   COOPERATION_RATING_LABELS,
   INDUSTRIES,
 } from '@/lib/types'
-import type { EnterpriseType, CooperationStatus, CooperationRating } from '@/lib/types'
+import type { CooperationStatus, CooperationRating } from '@/lib/types'
 
 export default function NewEnterprisePage() {
   const router = useRouter()
@@ -31,7 +30,7 @@ export default function NewEnterprisePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
-    enterpriseType: 'platform' as EnterpriseType,
+    enterpriseType: 'school-based' as const,
     industry: '',
     status: 'negotiating' as CooperationStatus,
     rating: 'general' as CooperationRating,
@@ -113,22 +112,6 @@ export default function NewEnterprisePage() {
                     placeholder="如：91320594MA1P7XXXX1"
                     required
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>企业类型</Label>
-                  <Select
-                    value={formData.enterpriseType}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, enterpriseType: value as typeof formData.enterpriseType }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(ENTERPRISE_TYPE_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>所属行业</Label>

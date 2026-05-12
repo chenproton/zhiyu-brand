@@ -73,7 +73,6 @@ export const brandNavigationConfig: PlatformNavigationConfig = {
         { id: "brand-major", label: "专业品牌管理", href: "/admin/brands/major", matchers: ["/admin/brands/major"] },
         { id: "brand-teacher", label: "师资品牌管理", href: "/admin/brands/teacher", matchers: ["/admin/brands/teacher"] },
         { id: "brand-culture", label: "文化思政品牌管理", href: "/admin/brands/culture", matchers: ["/admin/brands/culture"] },
-        { id: "brand-topics", label: "专题页管理", href: "/admin/brands/topics", matchers: ["/admin/brands/topics"] },
       ],
     },
     {
@@ -81,7 +80,6 @@ export const brandNavigationConfig: PlatformNavigationConfig = {
       label: "就业服务管理",
       icon: "briefcase",
       children: [
-        { id: "employment-overview", label: "就业概览", href: "/admin/employment", matchers: ["/admin/employment$"] },
         { id: "employment-projects", label: "就业项目", href: "/admin/employment/projects", matchers: ["/admin/employment/projects"] },
       ],
     },

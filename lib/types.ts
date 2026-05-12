@@ -218,6 +218,8 @@ export interface Expert {
   contactPhone?: string
   isContactHidden?: boolean
   status: 'active' | 'inactive'
+  workExperience?: string
+  relatedPositions?: string[]
   createdAt: Date
   updatedAt: Date
 }
@@ -387,6 +389,48 @@ export const INDUSTRIES = [
   '其他',
 ]
 
+export const MAJORS = [
+  '软件技术',
+  '计算机应用',
+  '计算机网络技术',
+  '大数据技术',
+  '人工智能应用技术',
+  '移动应用开发',
+  '电子商务',
+  '机电一体化技术',
+  '电气自动化技术',
+  '工业机器人技术',
+  '新能源技术',
+  '数控技术',
+  '机械设计与制造',
+  '光伏技术',
+  '储能技术',
+  '风电技术',
+  '生物制药技术',
+  '药品生产技术',
+  '数字媒体技术',
+  '广告设计',
+  'UI/UX设计',
+  '产品设计',
+  '交互设计',
+  '云计算运维',
+  '物联网技术',
+  '嵌入式技术',
+  '智能控制技术',
+  '物流管理',
+  '供应链管理',
+  '财务会计',
+  '人力资源管理',
+  '市场营销',
+  '商务英语',
+  '建筑工程技术',
+  '工程造价',
+  '环境监测技术',
+  '汽车电子技术',
+  '新能源汽车技术',
+  '智能网联汽车技术',
+]
+
 // 合作类型列表
 export const COOPERATION_TYPES = [
   '人才培养',
@@ -485,7 +529,7 @@ export const RESOURCE_TYPE_LABELS: Record<ResourceType, string> = {
 }
 
 // 操作类型
-export type OperationType = 'view' | 'edit' | 'review' | 'publish' | 'delete'
+export type OperationType = 'view' | 'edit' | 'review' | 'publish' | 'delete' | 'create' | 'assess'
 
 export const OPERATION_TYPE_LABELS: Record<OperationType, string> = {
   view: '查看',
@@ -493,6 +537,8 @@ export const OPERATION_TYPE_LABELS: Record<OperationType, string> = {
   review: '审核',
   publish: '发布',
   delete: '删除',
+  create: '新建',
+  assess: '测评',
 }
 
 // 资源权限项（资源类型 + 批次 + 操作）
@@ -501,6 +547,7 @@ export interface ResourcePermissionItem {
   resourceType: ResourceType
   batchName: string
   operations: OperationType[]
+  selectedItems?: string[]
 }
 
 // 测评类型
@@ -737,6 +784,38 @@ export type WorkNature = 'on-site' | 'remote' | 'hybrid'
 export type ApplicationStatus = 'pending' | 'viewed' | 'interview' | 'offer' | 'hired' | 'rejected' | 'withdrawn'
 
 // 岗位信息
+export type JobCategory = 'teaching' | 'non-teaching'
+
+export const JOB_CATEGORY_LABELS: Record<JobCategory, string> = {
+  teaching: '教学岗位',
+  'non-teaching': '非教学岗位',
+}
+
+export interface JobAbilityItem {
+  id: string
+  name: string
+  targetLevel: number // 1-5
+  desc: string
+}
+
+export interface JobAbilityGroup {
+  duty: string
+  items: JobAbilityItem[]
+}
+
+export interface JobAbilityConfig {
+  groups: JobAbilityGroup[]
+}
+
+// 全局能力点库（岗位库中的标准能力点）
+export interface AbilityLibraryItem {
+  id: string
+  name: string
+  desc: string
+  category: string // 能力领域分类
+  type: 'knowledge' | 'skill' | 'quality'
+}
+
 export interface Job {
   id: string
   title: string
@@ -746,6 +825,9 @@ export interface Job {
   // 基于岗位成果发布
   jobBrandId?: string
   jobBrandName?: string
+  // 岗位分类：教学岗位/非教学岗位
+  jobCategory?: JobCategory
+  industry?: string
   type: JobType
   workNature: WorkNature
   department: string
@@ -771,6 +853,8 @@ export interface Job {
   viewCount: number
   applicationCount: number
   deadline?: Date
+  // 能力模型配置
+  abilityConfig?: JobAbilityConfig
   createdAt: Date
   updatedAt: Date
 }
@@ -922,7 +1006,7 @@ export const EXPERIENCE_LEVELS = [
 ]
 
 // 就业项目类型
-export type EmploymentProjectType = 'spring' | 'autumn' | '定向招聘' | '专场招聘'
+export type EmploymentProjectType = 'spring' | 'autumn' | '定向招聘' | 'other'
 
 // 就业项目状态
 export type EmploymentProjectStatus = 'preparing' | 'ongoing' | 'ended'
@@ -932,9 +1016,8 @@ export interface EmploymentProject {
   id: string
   name: string
   type: EmploymentProjectType
-  season: string
   partnerIds: string[]
-  targetStudents: string
+  targetStudentGroups: string[]
   startDate: Date
   endDate: Date
   status: EmploymentProjectStatus
@@ -949,7 +1032,7 @@ export const EMPLOYMENT_PROJECT_TYPE_LABELS: Record<EmploymentProjectType, strin
   spring: '春季招聘',
   autumn: '秋季招聘',
   '定向招聘': '定向招聘',
-  '专场招聘': '专场招聘',
+  'other': '其他',
 }
 
 export const EMPLOYMENT_PROJECT_STATUS_LABELS: Record<EmploymentProjectStatus, string> = {
