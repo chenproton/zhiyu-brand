@@ -32,7 +32,7 @@ export type ExpertRating = 'gold' | 'silver' | 'bronze'
 export type ExpertGender = 'male' | 'female'
 
 // 专家类型
-export type ExpertType = '企业导师' | '测评专员' | '教学专家' | '技术顾问' | '创业导师' | '评审专家'
+export type ExpertType = '企业导师' | '测评专员' | '教学专家' | '技术顾问' | '创业导师' | '评审专家' | '独立专家'
 
 // 活动状态
 export type ActivityStatus = 'draft' | 'published' | 'ended'
@@ -433,6 +433,7 @@ export const EXPERT_TYPES: ExpertType[] = [
   '技术顾问',
   '创业导师',
   '评审专家',
+  '独立专家',
 ]
 
 // 活动类型列表

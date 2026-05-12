@@ -15,7 +15,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, X, Search, Link2 } from 'lucide-react'
+import { Plus, X, Search, Link2, Eye, Pencil } from 'lucide-react'
+import Link from 'next/link'
 import { achievements } from '@/lib/mock-data'
 
 const ACHIEVEMENT_TYPE_LABELS: Record<string, string> = {
@@ -162,20 +163,45 @@ export function AchievementManager({
 
       {items.length > 0 && (
         <div className="space-y-2">
-          {items.map((item) => (
-            <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-sm">{item.name}</p>
-                  <Badge variant="secondary" className="text-[10px]">{item.type}</Badge>
+          {items.map((item) => {
+            const libraryAch = achievements.find((a) => a.id === item.id)
+            return (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-sm">{item.name}</p>
+                    <Badge variant="secondary" className="text-[10px]">{item.type}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{item.description}</p>
                 </div>
-                <p className="text-xs text-muted-foreground truncate">{item.description}</p>
+                <div className="flex items-center gap-1 shrink-0">
+                  {libraryAch && (
+                    libraryAch.type === 'custom' ? (
+                      <>
+                        <Link href={`/admin/achievements/${item.id}`}>
+                          <Button type="button" variant="ghost" size="icon" className="h-7 w-7">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Link href={`/admin/achievements/${item.id}/edit`}>
+                          <Button type="button" variant="ghost" size="icon" className="h-7 w-7">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </>
+                    ) : (
+                      <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => alert('跳转到对应系统中查看')}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )
+                  )}
+                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => removeItem(item.id)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => removeItem(item.id)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 

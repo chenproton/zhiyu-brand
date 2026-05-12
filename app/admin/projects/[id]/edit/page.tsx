@@ -170,14 +170,14 @@ export default function EditProjectPage() {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="type">项目类型 *</Label>
+                      <Label htmlFor="type">合作类型 *</Label>
                       <Select
                         value={formData.type}
                         onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value }))}
                         required
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="请选择项目类型" />
+                          <SelectValue placeholder="请选择合作类型" />
                         </SelectTrigger>
                         <SelectContent>
                           {PROJECT_TYPES.map((type) => (

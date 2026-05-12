@@ -145,7 +145,7 @@ export default function ProjectsListPage() {
             <TableRow>
               <TableHead>项目名称</TableHead>
               <TableHead>合作主体</TableHead>
-              <TableHead>项目类型</TableHead>
+              <TableHead>合作类型</TableHead>
               <TableHead>起止时间</TableHead>
               <TableHead>里程碑进度</TableHead>
               <TableHead>阶段</TableHead>

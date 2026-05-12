@@ -214,7 +214,7 @@ export default function ProjectDetailPage() {
               <CardContent>
                 <div className="grid md:grid-cols-4 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">项目类型</p>
+                    <p className="text-sm text-muted-foreground">合作类型</p>
                     <p className="font-medium">{project.type}</p>
                   </div>
                   <div>

@@ -189,14 +189,14 @@ export function NewProjectButton({ defaultPartnerIds }: { defaultPartnerIds?: st
 
                     <div className="grid md:grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label>项目类型 *</Label>
+                        <Label>合作类型 *</Label>
                         <Select
                           value={formData.type}
                           onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value }))}
                           required
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="请选择项目类型" />
+                            <SelectValue placeholder="请选择合作类型" />
                           </SelectTrigger>
                           <SelectContent>
                             {PROJECT_TYPES.map((type) => (

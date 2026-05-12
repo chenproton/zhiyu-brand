@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -13,7 +13,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Search, Eye, Plus, Edit, MoreHorizontal } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { ArrowLeft, Search, Eye, Plus, Edit, Trash2, MoreHorizontal } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,13 +32,31 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cultureBrands } from "@/lib/mock-data"
 import { CULTURE_TYPE_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
-import type { CultureBrand } from "@/lib/types"
+import type { CultureBrand, BrandStatus } from "@/lib/types"
+
+function generateId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+}
+
+const emptyForm = {
+  name: "",
+  type: "case" as CultureBrand["type"],
+  description: "",
+  content: "",
+  relatedMajor: "",
+  status: "draft" as BrandStatus,
+}
 
 export default function CultureBrandPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
+  const [cultures, setCultures] = useState<CultureBrand[]>([...cultureBrands])
 
-  const filteredCultures = cultureBrands.filter((culture) => {
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingCulture, setEditingCulture] = useState<CultureBrand | null>(null)
+  const [form, setForm] = useState(emptyForm)
+
+  const filteredCultures = cultures.filter((culture) => {
     const matchesSearch = culture.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = typeFilter === "all" || culture.type === typeFilter
     return matchesSearch && matchesType
@@ -47,6 +75,73 @@ export default function CultureBrandPage() {
       default:
         return "bg-gray-100 text-gray-700"
     }
+  }
+
+  function openAddDialog() {
+    setEditingCulture(null)
+    setForm(emptyForm)
+    setDialogOpen(true)
+  }
+
+  function openEditDialog(culture: CultureBrand) {
+    setEditingCulture(culture)
+    setForm({
+      name: culture.name,
+      type: culture.type,
+      description: culture.description,
+      content: culture.content,
+      relatedMajor: culture.relatedMajor || "",
+      status: culture.status,
+    })
+    setDialogOpen(true)
+  }
+
+  function handleSave() {
+    if (editingCulture) {
+      setCultures((prev) =>
+        prev.map((c) =>
+          c.id === editingCulture.id
+            ? {
+                ...c,
+                ...form,
+                relatedMajor: form.relatedMajor || undefined,
+                updatedAt: new Date(),
+              }
+            : c
+        )
+      )
+    } else {
+      const newCulture: CultureBrand = {
+        id: generateId("cb"),
+        name: form.name,
+        type: form.type,
+        description: form.description,
+        content: form.content,
+        relatedMajor: form.relatedMajor || undefined,
+        coverImage: "/placeholder.svg?height=200&width=300",
+        status: form.status,
+        viewCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      setCultures((prev) => [...prev, newCulture])
+    }
+    setDialogOpen(false)
+  }
+
+  function handleDelete(id: string) {
+    if (confirm("确定要删除该内容吗？")) {
+      setCultures((prev) => prev.filter((c) => c.id !== id))
+    }
+  }
+
+  function toggleStatus(culture: CultureBrand) {
+    const nextStatus = culture.status === "published" ? "draft" : "published"
+    setCultures((prev) =>
+      prev.map((c) =>
+        c.id === culture.id ? { ...c, status: nextStatus, updatedAt: new Date() } : c
+      )
+    )
   }
 
   return (
@@ -87,7 +182,7 @@ export default function CultureBrandPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={() => alert('新增内容功能开发中')}>
+        <Button onClick={openAddDialog}>
           <Plus className="h-4 w-4 mr-2" />
           新增内容
         </Button>
@@ -129,12 +224,20 @@ export default function CultureBrandPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => alert('编辑功能开发中')}>编辑</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => alert('预览功能开发中')}>预览</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => alert(`${culture.status === "published" ? "下架" : "发布"}功能开发中`)}>
+                    <DropdownMenuItem onClick={() => openEditDialog(culture)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      编辑
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toggleStatus(culture)}>
                       {culture.status === "published" ? "下架" : "发布"}
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive" onClick={() => { if (confirm('确定要删除吗？')) alert('删除功能开发中') }}>删除</DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => handleDelete(culture.id)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      删除
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -160,6 +263,98 @@ export default function CultureBrandPage() {
           </Card>
         ))}
       </div>
+
+      {/* Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingCulture ? "编辑内容" : "新增内容"}</DialogTitle>
+            <DialogDescription>
+              {editingCulture ? "修改文化思政品牌内容" : "填写信息并添加新的品牌内容"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="c-name">名称</Label>
+              <Input
+                id="c-name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="请输入内容名称"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="c-type">类型</Label>
+              <Select
+                value={form.type}
+                onValueChange={(v) => setForm({ ...form, type: v as CultureBrand["type"] })}
+              >
+                <SelectTrigger id="c-type">
+                  <SelectValue placeholder="选择类型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="case">典型案例</SelectItem>
+                  <SelectItem value="resource">思政资源</SelectItem>
+                  <SelectItem value="activity">文化活动</SelectItem>
+                  <SelectItem value="award">获奖成果</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="c-desc">描述</Label>
+              <Textarea
+                id="c-desc"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="请输入内容描述"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="c-content">正文内容</Label>
+              <Textarea
+                id="c-content"
+                value={form.content}
+                onChange={(e) => setForm({ ...form, content: e.target.value })}
+                placeholder="请输入正文内容"
+                rows={4}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="c-major">关联专业</Label>
+              <Input
+                id="c-major"
+                value={form.relatedMajor}
+                onChange={(e) => setForm({ ...form, relatedMajor: e.target.value })}
+                placeholder="请输入关联专业（选填）"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="c-status">状态</Label>
+              <Select
+                value={form.status}
+                onValueChange={(v) => setForm({ ...form, status: v as BrandStatus })}
+              >
+                <SelectTrigger id="c-status">
+                  <SelectValue placeholder="选择状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">草稿</SelectItem>
+                  <SelectItem value="pending">待审核</SelectItem>
+                  <SelectItem value="published">已发布</SelectItem>
+                  <SelectItem value="archived">已归档</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleSave}>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

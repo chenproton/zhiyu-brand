@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -40,8 +40,9 @@ import {
   Building2,
   Sparkles,
 } from "lucide-react"
-import { jobs, jobRecommendations, enterprises } from "@/lib/mock-data"
+import { jobs, jobRecommendations } from "@/lib/mock-data"
 import { JOB_STATUS_LABELS, JOB_TYPE_LABELS, type JobStatus, type JobType } from "@/lib/types"
+import { usePartner } from "../partner-context"
 
 const statusColors: Record<JobStatus, string> = {
   draft: "bg-gray-100 text-gray-800",
@@ -51,39 +52,26 @@ const statusColors: Record<JobStatus, string> = {
   filled: "bg-blue-100 text-blue-800",
 }
 
-const PARTNER_FILTER_KEY = "employment_partner_filter"
-
-export default function JobsPage() {
+export default function PartnerJobsPage() {
+  const { selectedEnterpriseId } = usePartner()
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [typeFilter, setTypeFilter] = useState<string>("all")
-  const [partnerFilter, setPartnerFilter] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(PARTNER_FILTER_KEY) || "all"
-    }
-    return "all"
-  })
-
-  const handlePartnerChange = (value: string) => {
-    setPartnerFilter(value)
-    if (typeof window !== "undefined") {
-      localStorage.setItem(PARTNER_FILTER_KEY, value)
-    }
-  }
 
   const filteredJobs = useMemo(() => {
+    if (!selectedEnterpriseId) return []
     return jobs.filter((job) => {
       const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.partnerName.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus = statusFilter === "all" || job.status === statusFilter
       const matchesType = typeFilter === "all" || job.type === typeFilter
-      const matchesPartner = partnerFilter === "all" || job.partnerId === partnerFilter
+      const matchesPartner = job.partnerId === selectedEnterpriseId
       return matchesSearch && matchesStatus && matchesType && matchesPartner
     })
-  }, [searchTerm, statusFilter, typeFilter, partnerFilter])
+  }, [searchTerm, statusFilter, typeFilter, selectedEnterpriseId])
 
   const getRecommendationCount = (jobId: string) => {
-    return jobRecommendations.filter(r => r.jobId === jobId).length
+    return jobRecommendations.filter(r => r.jobId === jobId && r.partnerId === selectedEnterpriseId).length
   }
 
   return (
@@ -94,32 +82,18 @@ export default function JobsPage() {
           <h1 className="text-2xl font-bold">岗位管理</h1>
           <p className="text-muted-foreground">基于岗位成果发布和管理招聘岗位</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Select value={partnerFilter} onValueChange={handlePartnerChange}>
-            <SelectTrigger className="w-[220px]">
-              <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="选择企业" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部企业</SelectItem>
-              {enterprises.map((e) => (
-                <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button asChild>
-            <Link href="/admin/employment/jobs/new">
-              <Plus className="h-4 w-4 mr-2" />
-              发布岗位
-            </Link>
-          </Button>
-        </div>
+        <Button asChild>
+          <Link href="/partner/jobs/new">
+            <Plus className="h-4 w-4 mr-2" />
+            发布岗位
+          </Link>
+        </Button>
       </div>
 
       {/* 统计卡片 */}
       <div className="grid gap-4 md:grid-cols-5">
         {Object.entries(JOB_STATUS_LABELS).map(([status, label]) => {
-          const count = jobs.filter(j => j.status === status && (partnerFilter === "all" || j.partnerId === partnerFilter)).length
+          const count = jobs.filter(j => j.status === status && j.partnerId === selectedEnterpriseId).length
           return (
             <Card key={status} className={statusFilter === status ? "ring-2 ring-primary" : ""}>
               <CardHeader className="pb-2">
@@ -140,7 +114,7 @@ export default function JobsPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="搜索岗位名称或企业..."
+                placeholder="搜索岗位名称..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -179,7 +153,6 @@ export default function JobsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[280px]">岗位信息</TableHead>
-                <TableHead>企业</TableHead>
                 <TableHead>薪资</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead className="text-center">浏览/推荐</TableHead>
@@ -189,7 +162,7 @@ export default function JobsPage() {
             <TableBody>
               {filteredJobs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                     没有找到符合条件的岗位
                   </TableCell>
                 </TableRow>
@@ -213,12 +186,6 @@ export default function JobsPage() {
                             </>
                           )}
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{job.partnerName}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -254,7 +221,7 @@ export default function JobsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link href={`/admin/employment/jobs/${job.id}`}>
+                            <Link href={`/partner/jobs/${job.id}`}>
                               <Eye className="h-4 w-4 mr-2" />
                               查看详情
                             </Link>

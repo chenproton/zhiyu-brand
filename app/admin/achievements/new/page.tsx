@@ -63,7 +63,7 @@ export default function NewAchievementPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">新增成果</h1>
+          <h1 className="text-2xl font-semibold text-foreground">添加自定义成果</h1>
           <p className="text-sm text-muted-foreground mt-1">
             录入专利、论文、奖项等各类成果信息
           </p>
@@ -91,24 +91,6 @@ export default function NewAchievementPage() {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="type">成果类型 *</Label>
-                    <Select
-                      value={formData.type}
-                      onValueChange={(value) => setFormData({ ...formData, type: value as AchievementType })}
-                      required
-                    >
-                      <SelectTrigger id="type">
-                        <SelectValue placeholder="选择成果类型" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(ACHIEVEMENT_TYPE_LABELS).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>{label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="date">发布/获得日期 *</Label>
                     <Input

@@ -545,11 +545,10 @@ export default function PermissionsPage() {
             </DialogDescription>
           </DialogHeader>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col min-h-0">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="account">账号信息</TabsTrigger>
               <TabsTrigger value="resource">功能权限</TabsTrigger>
               <TabsTrigger value="assessment">测评权限</TabsTrigger>
-              <TabsTrigger value="platform">平台授权</TabsTrigger>
             </TabsList>
             <div className="flex-1 overflow-y-auto mt-4 pr-2 min-h-0">
               {/* 账号信息 */}
@@ -791,32 +790,6 @@ export default function PermissionsPage() {
                 </div>
               </TabsContent>
 
-              {/* 平台授权 */}
-              <TabsContent value="platform" className="mt-0 space-y-4">
-                <Label>授权访问平台（可多选）</Label>
-                <div className="grid grid-cols-3 gap-3">
-                  {PLATFORMS.map((platform) => (
-                    <Card
-                      key={platform}
-                      className={`cursor-pointer transition-colors ${authorizedPlatforms.includes(platform) ? 'border-primary bg-primary/5' : ''}`}
-                      onClick={() => togglePlatform(platform)}
-                    >
-                      <CardContent className="pt-4 pb-4 flex items-center gap-3">
-                        <Checkbox
-                          checked={authorizedPlatforms.includes(platform)}
-                          onCheckedChange={() => togglePlatform(platform)}
-                        />
-                        <div className="flex items-center gap-2">
-                          {platform === 'job' && <Briefcase className="h-4 w-4" />}
-                          {platform === 'scene' && <MapPin className="h-4 w-4" />}
-                          {platform === 'brand' && <Shield className="h-4 w-4" />}
-                          <span className="font-medium text-sm">{PLATFORM_TYPE_LABELS[platform]}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
             </div>
           </Tabs>
           <DialogFooter className="mt-4">

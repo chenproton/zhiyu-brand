@@ -3156,6 +3156,103 @@ export const experts: Expert[] = [
   createdAt: new Date('2022-12-17'),
   updatedAt: new Date('2024-06-15'),
 },
+{
+  id: "ex016",
+  name: "王建国",
+  gender: "male",
+  title: "高级讲师",
+  field: "电子商务",
+  expertType: "独立专家",
+  specialties: [
+    "跨境电商",
+    "数字营销",
+    "供应链管理"
+  ],
+  experience: 10,
+  rating: "silver",
+  avatar: "/placeholder.svg?height=80&width=80",
+  roles: [
+    "产业导师",
+    "评审专家"
+  ],
+  education: "浙江大学硕士",
+  achievements: [
+    "成就1",
+    "成就2",
+    "成就3"
+  ],
+  contactEmail: "王建国@example.com",
+  contactPhone: "13812345678",
+  isContactHidden: false,
+  status: "active",
+  createdAt: new Date('2021-03-15'),
+  updatedAt: new Date('2024-05-20'),
+},
+{
+  id: "ex017",
+  name: "陈晓琳",
+  gender: "female",
+  title: "资深设计师",
+  field: "视觉设计",
+  expertType: "独立专家",
+  specialties: [
+    "UI/UX设计",
+    "品牌视觉",
+    "交互设计"
+  ],
+  experience: 8,
+  rating: "gold",
+  avatar: "/placeholder.svg?height=80&width=80",
+  roles: [
+    "技术顾问",
+    "创业导师"
+  ],
+  education: "中国美术学院硕士",
+  achievements: [
+    "成就1",
+    "成就2"
+  ],
+  contactEmail: "陈晓琳@example.com",
+  contactPhone: "13887654321",
+  isContactHidden: true,
+  status: "active",
+  createdAt: new Date('2020-07-08'),
+  updatedAt: new Date('2024-04-12'),
+},
+{
+  id: "ex018",
+  name: "刘志强",
+  gender: "male",
+  title: "独立咨询师",
+  field: "企业管理",
+  expertType: "独立专家",
+  specialties: [
+    "战略规划",
+    "组织变革",
+    "绩效管理"
+  ],
+  experience: 20,
+  rating: "gold",
+  avatar: "/placeholder.svg?height=80&width=80",
+  roles: [
+    "评审专家",
+    "产业导师",
+    "客座教授"
+  ],
+  education: "北京大学光华管理学院MBA",
+  achievements: [
+    "成就1",
+    "成就2",
+    "成就3",
+    "成就4"
+  ],
+  contactEmail: "刘志强@example.com",
+  contactPhone: "13811112222",
+  isContactHidden: false,
+  status: "active",
+  createdAt: new Date('2019-01-10'),
+  updatedAt: new Date('2024-06-01'),
+},
 ]
 
 // 联盟活动数据

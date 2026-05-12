@@ -41,7 +41,7 @@ const brandModules = [
   },
   {
     id: "partner",
-    title: "合作主体品牌",
+    title: "雇主品牌",
     description: "企业/协会/园区/机构品牌展示",
     icon: Building2,
     href: "/admin/brands/partner",

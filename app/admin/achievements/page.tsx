@@ -87,7 +87,7 @@ export default function AchievementsPage() {
           <Button asChild>
             <Link href="/admin/achievements/new">
               <Plus className="mr-2 h-4 w-4" />
-              新增成果
+              添加自定义成果
             </Link>
           </Button>
         </div>
@@ -207,16 +207,25 @@ export default function AchievementsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/admin/achievements/${achievement.id}`}>
+                            {achievement.type === 'custom' ? (
+                              <DropdownMenuItem asChild>
+                                <Link href={`/admin/achievements/${achievement.id}`}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  查看详情
+                                </Link>
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onClick={() => alert('跳转到对应系统中查看')}>
                                 <Eye className="h-4 w-4 mr-2" />
                                 查看详情
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => alert('编辑功能开发中')}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              编辑
-                            </DropdownMenuItem>
+                              </DropdownMenuItem>
+                            )}
+                            {achievement.type === 'custom' && (
+                              <DropdownMenuItem onClick={() => alert('编辑功能开发中')}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                编辑
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteClick(achievement)}>
                               <Trash2 className="h-4 w-4 mr-2" />
                               删除

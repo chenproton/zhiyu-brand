@@ -29,6 +29,7 @@ import { getEnterpriseById, getProjectsByPartnerId, getAchievementsByPartnerId, 
 import { ENTERPRISE_TYPE_LABELS, COOPERATION_TYPES, COOPERATION_RATING_LABELS } from '@/lib/types'
 import { NewProjectButton } from './enterprise-detail-actions'
 import { EnterpriseAchievementActions } from './enterprise-achievement-actions'
+import { AchievementViewButton } from './achievement-view-button'
 import { partners } from '@/lib/mock-data'
 
 interface PageProps {
@@ -361,6 +362,11 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                           {project.type} · {project.startDate.toLocaleDateString('zh-CN')} - {project.endDate.toLocaleDateString('zh-CN')}
                         </p>
                       </div>
+                      <Link href={`/admin/projects/${project.id}`}>
+                        <Button variant="outline" size="sm">
+                          查看详情
+                        </Button>
+                      </Link>
                     </div>
                   ))}
                 </div>
@@ -396,7 +402,26 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                           {achievement.publishDate.toLocaleDateString('zh-CN')} 发布
                         </p>
                       </div>
-                      <Badge variant="secondary">{achievement.type}</Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">{achievement.type}</Badge>
+                        {achievement.type === 'custom' ? (
+                          <>
+                            <Link href={`/admin/achievements/${achievement.id}`}>
+                              <Button variant="outline" size="sm">
+                                查看详情
+                              </Button>
+                            </Link>
+                            <Link href={`/admin/achievements/${achievement.id}/edit`}>
+                              <Button variant="outline" size="sm">
+                                <Pencil className="h-3 w-3 mr-1" />
+                                编辑
+                              </Button>
+                            </Link>
+                          </>
+                        ) : (
+                          <AchievementViewButton />
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

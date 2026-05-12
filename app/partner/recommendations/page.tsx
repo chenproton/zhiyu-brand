@@ -31,7 +31,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Search, Sparkles, Eye, Building2, Briefcase } from "lucide-react"
-import { jobRecommendations, jobs, studentProfiles, enterprises } from "@/lib/mock-data"
+import { jobRecommendations, jobs, studentProfiles } from "@/lib/mock-data"
+import { usePartner } from "../partner-context"
 
 const recStatusLabels: Record<string, string> = {
   pending: "待查看",
@@ -49,39 +50,25 @@ const recStatusColors: Record<string, string> = {
   rejected: "bg-gray-100 text-gray-800",
 }
 
-const PARTNER_FILTER_KEY = "employment_partner_filter"
-
-export default function RecommendationsPage() {
+export default function PartnerRecommendationsPage() {
+  const { selectedEnterpriseId } = usePartner()
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [jobFilter, setJobFilter] = useState<string>("all")
   const [selectedRec, setSelectedRec] = useState<typeof jobRecommendations[0] | null>(null)
-  const [partnerFilter, setPartnerFilter] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(PARTNER_FILTER_KEY) || "all"
-    }
-    return "all"
-  })
-
-  const handlePartnerChange = (value: string) => {
-    setPartnerFilter(value)
-    if (typeof window !== "undefined") {
-      localStorage.setItem(PARTNER_FILTER_KEY, value)
-    }
-  }
 
   const filtered = useMemo(() => {
+    if (!selectedEnterpriseId) return []
     return jobRecommendations.filter((rec) => {
       const matchesSearch =
         rec.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        rec.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        rec.partnerName.toLowerCase().includes(searchTerm.toLowerCase())
+        rec.jobTitle.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus = statusFilter === "all" || rec.status === statusFilter
       const matchesJob = jobFilter === "all" || rec.jobId === jobFilter
-      const matchesPartner = partnerFilter === "all" || rec.partnerId === partnerFilter
+      const matchesPartner = rec.partnerId === selectedEnterpriseId
       return matchesSearch && matchesStatus && matchesJob && matchesPartner
     })
-  }, [searchTerm, statusFilter, jobFilter, partnerFilter])
+  }, [searchTerm, statusFilter, jobFilter, selectedEnterpriseId])
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {
@@ -92,17 +79,17 @@ export default function RecommendationsPage() {
       rejected: 0,
     }
     jobRecommendations.forEach((rec) => {
-      if (partnerFilter === "all" || rec.partnerId === partnerFilter) {
+      if (rec.partnerId === selectedEnterpriseId) {
         counts[rec.status] = (counts[rec.status] || 0) + 1
       }
     })
     return counts
-  }, [partnerFilter])
+  }, [selectedEnterpriseId])
 
   const partnerJobs = useMemo(() => {
-    if (partnerFilter === "all") return jobs
-    return jobs.filter((j) => j.partnerId === partnerFilter)
-  }, [partnerFilter])
+    if (!selectedEnterpriseId) return []
+    return jobs.filter((j) => j.partnerId === selectedEnterpriseId)
+  }, [selectedEnterpriseId])
 
   const selectedStudent = selectedRec
     ? studentProfiles.find((s) => s.id === selectedRec.studentId)
@@ -118,24 +105,10 @@ export default function RecommendationsPage() {
             基于岗位需求与学生画像的智能匹配推荐
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Select value={partnerFilter} onValueChange={handlePartnerChange}>
-            <SelectTrigger className="w-[220px]">
-              <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="选择企业" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部企业</SelectItem>
-              {enterprises.map((e) => (
-                <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={() => alert('批量生成推荐功能开发中')}>
-            <Sparkles className="h-4 w-4 mr-2" />
-            批量生成推荐
-          </Button>
-        </div>
+        <Button onClick={() => alert('批量生成推荐功能开发中')}>
+          <Sparkles className="h-4 w-4 mr-2" />
+          批量生成推荐
+        </Button>
       </div>
 
       {/* 统计卡片 */}
@@ -168,7 +141,7 @@ export default function RecommendationsPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="搜索学生姓名、岗位或企业..."
+                placeholder="搜索学生姓名或岗位..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -218,7 +191,6 @@ export default function RecommendationsPage() {
               <TableRow>
                 <TableHead>学生信息</TableHead>
                 <TableHead>推荐岗位</TableHead>
-                <TableHead>企业</TableHead>
                 <TableHead>匹配度</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>批次</TableHead>
@@ -229,7 +201,7 @@ export default function RecommendationsPage() {
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={6}
                     className="text-center py-12 text-muted-foreground"
                   >
                     没有找到符合条件的推荐记录
@@ -253,14 +225,11 @@ export default function RecommendationsPage() {
                     </TableCell>
                     <TableCell>
                       <Link
-                        href={`/admin/employment/jobs/${rec.jobId}`}
+                        href={`/partner/jobs/${rec.jobId}`}
                         className="hover:underline font-medium"
                       >
                         {rec.jobTitle}
                       </Link>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{rec.partnerName}</span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
