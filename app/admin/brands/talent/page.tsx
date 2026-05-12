@@ -18,14 +18,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -315,116 +307,87 @@ export default function TalentBrandPage() {
                     const config = majorConfigs.find((c) => c.major === major)
                     return (
                       <TabsContent key={major} value={major}>
-                        <div className="mb-2 text-sm text-muted-foreground">
+                        <div className="mb-3 text-sm text-muted-foreground">
                           展示范围：前 {config?.limit || 0} 名 · 当前显示 {profiles.length} 人
                         </div>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-[80px]">排名</TableHead>
-                              <TableHead>学生信息</TableHead>
-                              <TableHead>专业</TableHead>
-                              <TableHead>能力分数</TableHead>
-                              <TableHead>认证等级</TableHead>
-                              <TableHead>能力标签</TableHead>
-                              <TableHead>就业状态</TableHead>
-                              <TableHead className="w-[120px]">操作</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
+                        {profiles.length === 0 ? (
+                          <div className="text-center py-12 text-muted-foreground">
+                            没有找到符合条件的人才画像
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {profiles.map((profile) => (
-                              <TableRow key={profile.id}>
-                                <TableCell>
-                                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted font-semibold">
-                                    {profile.rank}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-3">
-                                    <Avatar>
+                              <Card key={profile.id} className="overflow-hidden">
+                                <CardContent className="p-4">
+                                  <div className="flex items-start gap-3">
+                                    <div className="flex items-center justify-center w-7 h-7 rounded-full bg-muted text-sm font-semibold shrink-0">
+                                      {profile.rank}
+                                    </div>
+                                    <Avatar className="h-10 w-10 shrink-0">
                                       <AvatarImage src={profile.avatar} />
-                                      <AvatarFallback>{profile.studentName[0]}</AvatarFallback>
+                                      <AvatarFallback className="text-sm">{profile.studentName[0]}</AvatarFallback>
                                     </Avatar>
-                                    <div>
-                                      <p className="font-medium">{profile.studentName}</p>
-                                      <p className="text-sm text-muted-foreground">{profile.studentId}</p>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="font-medium text-sm truncate">{profile.studentName}</span>
+                                        <Badge
+                                          variant="outline"
+                                          className="text-[10px] px-1 py-0 h-4"
+                                        >
+                                          {profile.certificationLevel}
+                                        </Badge>
+                                      </div>
+                                      <p className="text-xs text-muted-foreground">{profile.studentId}</p>
+                                      <p className="text-xs text-muted-foreground">{profile.major} · {profile.grade}</p>
                                     </div>
                                   </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div>
-                                    <p>{profile.major}</p>
-                                    <p className="text-sm text-muted-foreground">{profile.grade}</p>
+
+                                  <div className="grid grid-cols-2 gap-2 mt-3 py-2 border-y">
+                                    <div className="text-center">
+                                      <p className="text-lg font-bold text-foreground">{profile.abilityScore}</p>
+                                      <p className="text-[10px] text-muted-foreground">能力分数</p>
+                                    </div>
+                                    <div className="text-center">
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[10px] px-1 py-0 h-4"
+                                      >
+                                        {profile.employmentStatus === "employed"
+                                          ? "已就业"
+                                          : profile.employmentStatus === "seeking"
+                                          ? "求职中"
+                                          : "在读"}
+                                      </Badge>
+                                      <p className="text-[10px] text-muted-foreground mt-0.5">就业状态</p>
+                                    </div>
                                   </div>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="font-semibold text-lg">{profile.abilityScore}</span>
-                                </TableCell>
-                                <TableCell>
-                                  <Badge
-                                    variant={
-                                      profile.certificationLevel === "高级"
-                                        ? "default"
-                                        : profile.certificationLevel === "中级"
-                                        ? "secondary"
-                                        : "outline"
-                                    }
-                                  >
-                                    {profile.certificationLevel}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex flex-wrap gap-1">
-                                    {profile.abilityTags.slice(0, 2).map((tag) => (
-                                      <Badge key={tag} variant="outline" className="text-xs">
+
+                                  <div className="flex flex-wrap gap-1 mt-3">
+                                    {profile.abilityTags.slice(0, 3).map((tag) => (
+                                      <Badge key={tag} variant="outline" className="text-[10px] px-1 py-0 h-4">
                                         {tag}
                                       </Badge>
                                     ))}
-                                    {profile.abilityTags.length > 2 && (
-                                      <Badge variant="outline" className="text-xs">
-                                        +{profile.abilityTags.length - 2}
+                                    {profile.abilityTags.length > 3 && (
+                                      <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                                        +{profile.abilityTags.length - 3}
                                       </Badge>
                                     )}
                                   </div>
-                                </TableCell>
-                                <TableCell>
-                                  <Badge
-                                    variant={
-                                      profile.employmentStatus === "employed"
-                                        ? "default"
-                                        : profile.employmentStatus === "seeking"
-                                        ? "secondary"
-                                        : "outline"
-                                    }
-                                  >
-                                    {profile.employmentStatus === "employed"
-                                      ? "已就业"
-                                      : profile.employmentStatus === "seeking"
-                                      ? "求职中"
-                                      : "在读"}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-1">
-                                    <Button variant="ghost" size="icon" onClick={() => openProfileEdit(profile)}>
-                                      <Pencil className="h-4 w-4" />
+
+                                  <div className="flex items-center justify-end gap-1 mt-4 pt-4 border-t">
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openProfileEdit(profile)}>
+                                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteProfile(profile.id)}>
-                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteProfile(profile.id)}>
+                                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                                     </Button>
                                   </div>
-                                </TableCell>
-                              </TableRow>
+                                </CardContent>
+                              </Card>
                             ))}
-                            {profiles.length === 0 && (
-                              <TableRow>
-                                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                                  没有找到符合条件的人才画像
-                                </TableCell>
-                              </TableRow>
-                            )}
-                          </TableBody>
-                        </Table>
+                          </div>
+                        )}
                       </TabsContent>
                     )
                   })}
@@ -497,7 +460,7 @@ export default function TalentBrandPage() {
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">薪资</span>
-                          <span className="text-emerald-600 font-medium">{case_.salary}</span>
+                          <span className="text-foreground font-medium">{case_.salary}</span>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-1 mt-3">
@@ -509,7 +472,7 @@ export default function TalentBrandPage() {
                       </div>
                       <div className="flex items-center justify-between mt-4 pt-4 border-t">
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-4 w-4 text-muted-foreground" />
                           <span>{case_.viewCount}</span>
                         </div>
                         <div className="flex gap-2">
@@ -690,7 +653,7 @@ export default function TalentBrandPage() {
                 <p className="text-xs text-muted-foreground">未找到匹配的学生</p>
               )}
               {selectedStudent && (
-                <div className="flex items-center gap-2 text-sm text-emerald-600">
+                <div className="flex items-center gap-2 text-sm text-foreground">
                   <span>已选择：{selectedStudent.studentName}（{selectedStudent.studentId}，{selectedStudent.major}）</span>
                 </div>
               )}

@@ -30,14 +30,14 @@ export default function MajorBrandPage() {
     return matchesSearch && matchesLevel && matchesDepartment && major.status === "published"
   })
 
-  const getLevelBadgeStyle = (level: string) => {
+  const getLevelBadgeVariant = (level: string): "outline" | "secondary" | "default" => {
     switch (level) {
       case "recommended":
-        return "bg-amber-100 text-amber-700"
+        return "secondary"
       case "key":
-        return "bg-blue-100 text-blue-700"
+        return "outline"
       default:
-        return "bg-gray-100 text-gray-700"
+        return "outline"
     }
   }
 
@@ -111,7 +111,7 @@ export default function MajorBrandPage() {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-4 left-4 flex gap-2">
-                    <Badge className={getLevelBadgeStyle(major.level)}>
+                    <Badge variant={getLevelBadgeVariant(major.level)}>
                       {BRAND_LEVEL_LABELS[major.level]}
                     </Badge>
                   </div>
@@ -121,10 +121,10 @@ export default function MajorBrandPage() {
                 <div className="lg:col-span-2 p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h2 className="text-2xl font-bold">{major.name}</h2>
+                      <h2 className="text-base font-semibold text-foreground">{major.name}</h2>
                       <p className="text-muted-foreground">{major.department}</p>
                     </div>
-                    <Button>了解更多</Button>
+                    <Button variant="outline">了解更多</Button>
                   </div>
 
                   <p className="text-muted-foreground mb-6">{major.introduction}</p>
@@ -134,21 +134,21 @@ export default function MajorBrandPage() {
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-2">
                         <Users className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-2xl font-bold">{major.studentCount}</span>
+                        <span className="text-2xl font-bold text-foreground">{major.studentCount}</span>
                       </div>
                       <p className="text-sm text-muted-foreground">在校生</p>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-emerald-500" />
-                        <span className="text-2xl font-bold text-emerald-600">{major.employmentRate}%</span>
+                        <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-2xl font-bold text-foreground">{major.employmentRate}%</span>
                       </div>
                       <p className="text-sm text-muted-foreground">就业率</p>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-2">
                         <Building2 className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-2xl font-bold">{major.cooperationPartners.length}</span>
+                        <span className="text-2xl font-bold text-foreground">{major.cooperationPartners.length}</span>
                       </div>
                       <p className="text-sm text-muted-foreground">合作企业</p>
                     </div>
@@ -193,7 +193,7 @@ export default function MajorBrandPage() {
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {major.cooperationPartners.map((partner) => (
-                          <Badge key={partner} className="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200">
+                          <Badge key={partner} variant="outline" className="text-xs">
                             {partner}
                           </Badge>
                         ))}
@@ -208,7 +208,7 @@ export default function MajorBrandPage() {
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {major.featuredAchievements.map((achievement) => (
-                          <Badge key={achievement} className="text-xs bg-amber-100 text-amber-700 hover:bg-amber-200">
+                          <Badge key={achievement} variant="outline" className="text-xs">
                             {achievement}
                           </Badge>
                         ))}

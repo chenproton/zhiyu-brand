@@ -117,8 +117,8 @@ export default function TalentBrandPage() {
                     </div>
                     {case_.salary && (
                       <div className="flex items-center gap-2 mb-3">
-                        <TrendingUp className="h-4 w-4 text-emerald-500" />
-                        <span className="text-emerald-600 font-medium">{case_.salary}</span>
+                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-foreground font-medium">{case_.salary}</span>
                       </div>
                     )}
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
@@ -149,8 +149,8 @@ export default function TalentBrandPage() {
                           <AvatarFallback className="text-xl">{profile.studentName[0]}</AvatarFallback>
                         </Avatar>
                         {profile.comprehensiveRank <= 3 && (
-                          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center">
-                            <Trophy className="h-3 w-3 text-white" />
+                          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-muted-foreground flex items-center justify-center">
+                            <Trophy className="h-3 w-3 text-background" />
                           </div>
                         )}
                       </div>
@@ -180,11 +180,11 @@ export default function TalentBrandPage() {
                         <p className="text-xs text-muted-foreground">综合排名</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-blue-600">{profile.abilityScore}</p>
+                        <p className="text-2xl font-bold text-foreground">{profile.abilityScore}</p>
                         <p className="text-xs text-muted-foreground">能力分数</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-emerald-600">{profile.taskCompletionRate}%</p>
+                        <p className="text-2xl font-bold text-foreground">{profile.taskCompletionRate}%</p>
                         <p className="text-xs text-muted-foreground">完成率</p>
                       </div>
                     </div>

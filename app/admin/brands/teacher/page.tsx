@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Search, Eye, Plus, Edit, Trash2, Star, RefreshCw } from "lucide-react"
+import { ArrowLeft, Search, Eye, Plus, Edit, Trash2, Star } from "lucide-react"
 import { teacherBrands, experts } from "@/lib/mock-data"
 import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS, EXPERT_RATING_LABELS } from "@/lib/types"
 import type { TeacherBrand, Expert, BrandStatus } from "@/lib/types"
@@ -67,6 +67,7 @@ export default function TeacherBrandPage() {
   const [teacherDialogOpen, setTeacherDialogOpen] = useState(false)
   const [editingTeacher, setEditingTeacher] = useState<TeacherBrand | null>(null)
   const [teacherForm, setTeacherForm] = useState(emptyTeacherForm)
+  const [selectedTeacherId, setSelectedTeacherId] = useState("")
 
   // Expert dialog
   const [expertDialogOpen, setExpertDialogOpen] = useState(false)
@@ -89,7 +90,7 @@ export default function TeacherBrandPage() {
   // Teacher CRUD
   function openAddTeacherDialog() {
     setEditingTeacher(null)
-    setTeacherForm(emptyTeacherForm)
+    setSelectedTeacherId("")
     setTeacherDialogOpen(true)
   }
 
@@ -109,6 +110,20 @@ export default function TeacherBrandPage() {
     setTeacherDialogOpen(true)
   }
 
+  function handleImportTeacher() {
+    const source = teacherBrands.find((t) => t.id === selectedTeacherId)
+    if (!source) return
+    const newTeacher: TeacherBrand = {
+      ...source,
+      id: generateId("tb"),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    setTeachers((prev) => [...prev, newTeacher])
+    setTeacherDialogOpen(false)
+    setSelectedTeacherId("")
+  }
+
   function handleSaveTeacher() {
     const researchFields = teacherForm.researchFields
       .split(/,|，/)
@@ -126,6 +141,7 @@ export default function TeacherBrandPage() {
             ? {
                 ...t,
                 ...teacherForm,
+                name: t.name,
                 researchFields,
                 courses: [],
                 awards,
@@ -167,7 +183,6 @@ export default function TeacherBrandPage() {
   // Expert CRUD
   function openAddExpertDialog() {
     setEditingExpert(null)
-    setExpertForm(emptyExpertForm)
     setSelectedExpertId("")
     setExpertDialogOpen(true)
   }
@@ -187,21 +202,18 @@ export default function TeacherBrandPage() {
     setExpertDialogOpen(true)
   }
 
-  function handleSelectedExpertChange(id: string) {
-    setSelectedExpertId(id)
-    const expert = experts.find((e) => e.id === id)
-    if (expert) {
-      setExpertForm({
-        name: expert.name,
-        title: expert.title,
-        partnerName: expert.partnerName || "",
-        specialties: expert.specialties.join("，"),
-        roles: expert.roles.join("，"),
-        experience: String(expert.experience),
-        rating: expert.rating,
-        achievements: expert.achievements?.join("，") || "",
-      })
+  function handleImportExpert() {
+    const source = experts.find((e) => e.id === selectedExpertId)
+    if (!source) return
+    const newExpert: Expert = {
+      ...source,
+      id: generateId("ex"),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }
+    setDisplayedExperts((prev) => [...prev, newExpert])
+    setExpertDialogOpen(false)
+    setSelectedExpertId("")
   }
 
   function handleSaveExpert() {
@@ -296,48 +308,42 @@ export default function TeacherBrandPage() {
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => alert('同步教务数据功能开发中')}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                同步教务数据
-              </Button>
-              <Button onClick={openAddTeacherDialog}>
-                <Plus className="h-4 w-4 mr-2" />
-                引用教师
-              </Button>
-            </div>
+            <Button onClick={openAddTeacherDialog}>
+              <Plus className="h-4 w-4 mr-2" />
+              引用教师
+            </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredTeachers.map((teacher) => (
               <Card key={teacher.id} className="overflow-hidden">
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-20 w-20">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-14 w-14">
                       <AvatarImage src={teacher.avatar} />
-                      <AvatarFallback className="text-2xl">{teacher.name[0]}</AvatarFallback>
+                      <AvatarFallback className="text-lg">{teacher.name[0]}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lg">{teacher.name}</h3>
+                        <h3 className="font-semibold text-base truncate">{teacher.name}</h3>
                         {teacher.isFeatured && (
-                          <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                          <Star className="h-4 w-4 text-muted-foreground shrink-0" />
                         )}
                       </div>
-                      <p className="text-muted-foreground">{teacher.title}</p>
-                      <p className="text-sm text-muted-foreground">{teacher.department}</p>
-                      <Badge variant="secondary" className="mt-2">
+                      <p className="text-muted-foreground text-sm">{teacher.title}</p>
+                      <p className="text-xs text-muted-foreground">{teacher.department}</p>
+                      <Badge variant="secondary" className="mt-1 text-xs">
                         {TEACHER_TYPE_LABELS[teacher.type]}
                       </Badge>
                     </div>
                   </div>
 
-                  <p className="text-sm text-muted-foreground mt-4 line-clamp-2">
+                  <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
                     {teacher.introduction}
                   </p>
 
-                  <div className="mt-4">
-                    <p className="text-sm font-medium mb-2">研究领域</p>
+                  <div className="mt-3">
+                    <p className="text-sm font-medium mb-1">研究领域</p>
                     <div className="flex flex-wrap gap-1">
                       {teacher.researchFields.map((field) => (
                         <Badge key={field} variant="outline" className="text-xs">
@@ -347,11 +353,11 @@ export default function TeacherBrandPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4">
-                    <p className="text-sm font-medium mb-2">获奖荣誉</p>
+                  <div className="mt-3">
+                    <p className="text-sm font-medium mb-1">获奖荣誉</p>
                     <div className="flex flex-wrap gap-1">
                       {teacher.awards.slice(0, 2).map((award) => (
-                        <Badge key={award} className="text-xs bg-amber-100 text-amber-700 hover:bg-amber-200">
+                        <Badge key={award} variant="secondary" className="text-xs">
                           {award}
                         </Badge>
                       ))}
@@ -359,22 +365,22 @@ export default function TeacherBrandPage() {
                   </div>
 
                   <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-4 w-4 text-muted-foreground" />
                         <span>{teacher.viewCount}</span>
                       </div>
-                      <Badge variant={teacher.status === "published" ? "default" : "secondary"}>
+                      <Badge variant={teacher.status === "published" ? "secondary" : "outline"} className="text-xs">
                         {BRAND_STATUS_LABELS[teacher.status]}
                       </Badge>
                     </div>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => openEditTeacherDialog(teacher)}>
-                        <Edit className="h-4 w-4 mr-1" />
+                        <Edit className="h-3 w-3 mr-1 text-muted-foreground" />
                         编辑
                       </Button>
-                      <Button variant="outline" size="sm" className="text-destructive" onClick={() => handleDeleteTeacher(teacher.id)}>
-                        <Trash2 className="h-4 w-4 mr-1" />
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteTeacher(teacher.id)}>
+                        <Trash2 className="h-3 w-3 mr-1 text-muted-foreground" />
                         删除
                       </Button>
                     </div>
@@ -402,37 +408,29 @@ export default function TeacherBrandPage() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredExperts.map((expert) => (
               <Card key={expert.id} className="overflow-hidden">
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-20 w-20">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-14 w-14">
                       <AvatarImage src={expert.avatar} />
-                      <AvatarFallback className="text-2xl">{expert.name[0]}</AvatarFallback>
+                      <AvatarFallback className="text-lg">{expert.name[0]}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lg">{expert.name}</h3>
-                        <Badge
-                          variant={
-                            expert.rating === "gold"
-                              ? "default"
-                              : expert.rating === "silver"
-                              ? "secondary"
-                              : "outline"
-                          }
-                        >
+                        <h3 className="font-semibold text-base truncate">{expert.name}</h3>
+                        <Badge variant="outline" className="text-xs shrink-0">
                           {EXPERT_RATING_LABELS[expert.rating]}
                         </Badge>
                       </div>
-                      <p className="text-muted-foreground">{expert.title}</p>
-                      <p className="text-sm text-muted-foreground">{expert.partnerName}</p>
+                      <p className="text-muted-foreground text-sm">{expert.title}</p>
+                      <p className="text-xs text-muted-foreground">{expert.partnerName}</p>
                     </div>
                   </div>
 
-                  <div className="mt-4">
-                    <p className="text-sm font-medium mb-2">专业领域</p>
+                  <div className="mt-3">
+                    <p className="text-sm font-medium mb-1">专业领域</p>
                     <div className="flex flex-wrap gap-1">
                       {expert.specialties.map((specialty) => (
                         <Badge key={specialty} variant="outline" className="text-xs">
@@ -442,8 +440,8 @@ export default function TeacherBrandPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4">
-                    <p className="text-sm font-medium mb-2">参与角色</p>
+                  <div className="mt-3">
+                    <p className="text-sm font-medium mb-1">参与角色</p>
                     <div className="flex flex-wrap gap-1">
                       {expert.roles.map((role) => (
                         <Badge key={role} variant="secondary" className="text-xs">
@@ -455,22 +453,22 @@ export default function TeacherBrandPage() {
 
                   <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t text-center">
                     <div>
-                      <p className="text-lg font-semibold">{expert.experience}</p>
+                      <p className="text-base font-semibold">{expert.experience}</p>
                       <p className="text-xs text-muted-foreground">行业经验(年)</p>
                     </div>
                     <div>
-                      <p className="text-lg font-semibold">{expert.achievements?.length || 0}</p>
+                      <p className="text-base font-semibold">{expert.achievements?.length || 0}</p>
                       <p className="text-xs text-muted-foreground">成果数量</p>
                     </div>
                   </div>
 
                   <div className="flex gap-2 mt-4 pt-4 border-t">
                     <Button variant="outline" size="sm" className="flex-1" onClick={() => openEditExpertDialog(expert)}>
-                      <Edit className="h-4 w-4 mr-1" />
+                      <Edit className="h-3 w-3 mr-1 text-muted-foreground" />
                       编辑
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1 text-destructive" onClick={() => handleDeleteExpert(expert.id)}>
-                      <Trash2 className="h-4 w-4 mr-1" />
+                    <Button variant="ghost" size="sm" className="flex-1" onClick={() => handleDeleteExpert(expert.id)}>
+                      <Trash2 className="h-3 w-3 mr-1 text-muted-foreground" />
                       删除
                     </Button>
                   </div>
@@ -487,119 +485,150 @@ export default function TeacherBrandPage() {
           <DialogHeader>
             <DialogTitle>{editingTeacher ? "编辑教师" : "引用教师"}</DialogTitle>
             <DialogDescription>
-              {editingTeacher ? "修改教师品牌展示信息" : "手动填写教师信息并添加到品牌展示"}
+              {editingTeacher ? "修改教师品牌展示信息" : "从教师库选择要引用的教师"}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+
+          {!editingTeacher ? (
+            <div className="py-4">
               <div className="space-y-2">
-                <Label htmlFor="t-name">姓名</Label>
-                <Input
-                  id="t-name"
-                  value={teacherForm.name}
-                  onChange={(e) => setTeacherForm({ ...teacherForm, name: e.target.value })}
-                  placeholder="请输入姓名"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="t-department">院系</Label>
-                <Input
-                  id="t-department"
-                  value={teacherForm.department}
-                  onChange={(e) => setTeacherForm({ ...teacherForm, department: e.target.value })}
-                  placeholder="请输入院系"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="t-title">职称</Label>
-                <Input
-                  id="t-title"
-                  value={teacherForm.title}
-                  onChange={(e) => setTeacherForm({ ...teacherForm, title: e.target.value })}
-                  placeholder="请输入职称"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="t-type">类型</Label>
-                <Select
-                  value={teacherForm.type}
-                  onValueChange={(v) => setTeacherForm({ ...teacherForm, type: v as TeacherBrand["type"] })}
-                >
-                  <SelectTrigger id="t-type">
-                    <SelectValue placeholder="选择类型" />
+                <Label>选择教师</Label>
+                <Select value={selectedTeacherId} onValueChange={setSelectedTeacherId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="请选择要引用的教师" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="dual-qualified">双师型教师</SelectItem>
-                    <SelectItem value="teaching-master">教学名师</SelectItem>
-                    <SelectItem value="backbone">骨干教师</SelectItem>
-                    <SelectItem value="award-winning">获奖教师</SelectItem>
+                    {teacherBrands.map((teacher) => (
+                      <SelectItem key={teacher.id} value={teacher.id}>
+                        {teacher.name} - {teacher.title}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="t-intro">简介</Label>
-              <Textarea
-                id="t-intro"
-                value={teacherForm.introduction}
-                onChange={(e) => setTeacherForm({ ...teacherForm, introduction: e.target.value })}
-                placeholder="请输入教师简介"
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="t-fields">研究领域（逗号分隔）</Label>
-              <Input
-                id="t-fields"
-                value={teacherForm.researchFields}
-                onChange={(e) => setTeacherForm({ ...teacherForm, researchFields: e.target.value })}
-                placeholder="例如：人工智能，大数据，智能制造"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="t-awards">获奖荣誉（逗号分隔）</Label>
-              <Input
-                id="t-awards"
-                value={teacherForm.awards}
-                onChange={(e) => setTeacherForm({ ...teacherForm, awards: e.target.value })}
-                placeholder="例如：省级教学名师，国家级教学成果奖"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4 items-end">
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="t-featured"
-                  checked={teacherForm.isFeatured}
-                  onCheckedChange={(v) => setTeacherForm({ ...teacherForm, isFeatured: v })}
-                />
-                <Label htmlFor="t-featured">重点展示</Label>
+          ) : (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="t-name">姓名</Label>
+                  <Input
+                    id="t-name"
+                    value={teacherForm.name}
+                    disabled
+                    placeholder="请输入姓名"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    教师名称不可修改，修改仅影响品牌展示，不会回写教师库
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="t-department">院系</Label>
+                  <Input
+                    id="t-department"
+                    value={teacherForm.department}
+                    onChange={(e) => setTeacherForm({ ...teacherForm, department: e.target.value })}
+                    placeholder="请输入院系"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="t-title">职称</Label>
+                  <Input
+                    id="t-title"
+                    value={teacherForm.title}
+                    onChange={(e) => setTeacherForm({ ...teacherForm, title: e.target.value })}
+                    placeholder="请输入职称"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="t-type">类型</Label>
+                  <Select
+                    value={teacherForm.type}
+                    onValueChange={(v) => setTeacherForm({ ...teacherForm, type: v as TeacherBrand["type"] })}
+                  >
+                    <SelectTrigger id="t-type">
+                      <SelectValue placeholder="选择类型" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dual-qualified">双师型教师</SelectItem>
+                      <SelectItem value="teaching-master">教学名师</SelectItem>
+                      <SelectItem value="backbone">骨干教师</SelectItem>
+                      <SelectItem value="award-winning">获奖教师</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="t-status">状态</Label>
-                <Select
-                  value={teacherForm.status}
-                  onValueChange={(v) => setTeacherForm({ ...teacherForm, status: v as BrandStatus })}
-                >
-                  <SelectTrigger id="t-status">
-                    <SelectValue placeholder="选择状态" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">草稿</SelectItem>
-                    <SelectItem value="pending">待审核</SelectItem>
-                    <SelectItem value="published">已发布</SelectItem>
-                    <SelectItem value="archived">已归档</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="t-intro">简介</Label>
+                <Textarea
+                  id="t-intro"
+                  value={teacherForm.introduction}
+                  onChange={(e) => setTeacherForm({ ...teacherForm, introduction: e.target.value })}
+                  placeholder="请输入教师简介"
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="t-fields">研究领域（逗号分隔）</Label>
+                <Input
+                  id="t-fields"
+                  value={teacherForm.researchFields}
+                  onChange={(e) => setTeacherForm({ ...teacherForm, researchFields: e.target.value })}
+                  placeholder="例如：人工智能，大数据，智能制造"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="t-awards">获奖荣誉（逗号分隔）</Label>
+                <Input
+                  id="t-awards"
+                  value={teacherForm.awards}
+                  onChange={(e) => setTeacherForm({ ...teacherForm, awards: e.target.value })}
+                  placeholder="例如：省级教学名师，国家级教学成果奖"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4 items-end">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="t-featured"
+                    checked={teacherForm.isFeatured}
+                    onCheckedChange={(v) => setTeacherForm({ ...teacherForm, isFeatured: v })}
+                  />
+                  <Label htmlFor="t-featured">重点展示</Label>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="t-status">状态</Label>
+                  <Select
+                    value={teacherForm.status}
+                    onValueChange={(v) => setTeacherForm({ ...teacherForm, status: v as BrandStatus })}
+                  >
+                    <SelectTrigger id="t-status">
+                      <SelectValue placeholder="选择状态" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">草稿</SelectItem>
+                      <SelectItem value="pending">待审核</SelectItem>
+                      <SelectItem value="published">已发布</SelectItem>
+                      <SelectItem value="archived">已归档</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setTeacherDialogOpen(false)}>
               取消
             </Button>
-            <Button onClick={handleSaveTeacher}>保存</Button>
+            {editingTeacher ? (
+              <Button onClick={handleSaveTeacher}>保存</Button>
+            ) : (
+              <Button onClick={handleImportTeacher} disabled={!selectedTeacherId}>
+                确认引用
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -610,14 +639,15 @@ export default function TeacherBrandPage() {
           <DialogHeader>
             <DialogTitle>{editingExpert ? "编辑专家" : "引用专家"}</DialogTitle>
             <DialogDescription>
-              {editingExpert ? "修改专家品牌展示信息" : "从专家库选择并配置品牌展示字段"}
+              {editingExpert ? "修改专家品牌展示信息" : "从专家库选择要引用的专家"}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            {!editingExpert && (
+
+          {!editingExpert ? (
+            <div className="py-4">
               <div className="space-y-2">
                 <Label>选择专家</Label>
-                <Select value={selectedExpertId} onValueChange={handleSelectedExpertChange}>
+                <Select value={selectedExpertId} onValueChange={setSelectedExpertId}>
                   <SelectTrigger>
                     <SelectValue placeholder="请选择要引用的专家" />
                   </SelectTrigger>
@@ -630,98 +660,106 @@ export default function TeacherBrandPage() {
                   </SelectContent>
                 </Select>
               </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="e-name">姓名</Label>
-              <Input
-                id="e-name"
-                value={expertForm.name}
-                onChange={(e) => setExpertForm({ ...expertForm, name: e.target.value })}
-                placeholder="请输入姓名"
-              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="e-title">职称</Label>
-              <Input
-                id="e-title"
-                value={expertForm.title}
-                onChange={(e) => setExpertForm({ ...expertForm, title: e.target.value })}
-                placeholder="请输入职称"
-              />
+          ) : (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="e-name">姓名</Label>
+                <Input
+                  id="e-name"
+                  value={expertForm.name}
+                  onChange={(e) => setExpertForm({ ...expertForm, name: e.target.value })}
+                  placeholder="请输入姓名"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="e-title">职称</Label>
+                <Input
+                  id="e-title"
+                  value={expertForm.title}
+                  onChange={(e) => setExpertForm({ ...expertForm, title: e.target.value })}
+                  placeholder="请输入职称"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="e-partner">所属机构</Label>
+                <Input
+                  id="e-partner"
+                  value={expertForm.partnerName}
+                  onChange={(e) => setExpertForm({ ...expertForm, partnerName: e.target.value })}
+                  placeholder="请输入所属机构"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="e-specialties">专业领域（逗号分隔）</Label>
+                <Textarea
+                  id="e-specialties"
+                  value={expertForm.specialties}
+                  onChange={(e) => setExpertForm({ ...expertForm, specialties: e.target.value })}
+                  placeholder="例如：人工智能，大数据"
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="e-roles">参与角色（逗号分隔）</Label>
+                <Textarea
+                  id="e-roles"
+                  value={expertForm.roles}
+                  onChange={(e) => setExpertForm({ ...expertForm, roles: e.target.value })}
+                  placeholder="例如：客座教授，产业导师"
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="e-rating">专家评级</Label>
+                <Select
+                  value={expertForm.rating}
+                  onValueChange={(v) => setExpertForm({ ...expertForm, rating: v as Expert["rating"] })}
+                >
+                  <SelectTrigger id="e-rating">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gold">金牌专家</SelectItem>
+                    <SelectItem value="silver">银牌专家</SelectItem>
+                    <SelectItem value="bronze">铜牌专家</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="e-experience">行业经验（年）</Label>
+                <Input
+                  id="e-experience"
+                  type="number"
+                  value={expertForm.experience}
+                  onChange={(e) => setExpertForm({ ...expertForm, experience: e.target.value })}
+                  placeholder="请输入行业经验年数"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="e-achievements">成果荣誉（逗号分隔）</Label>
+                <Textarea
+                  id="e-achievements"
+                  value={expertForm.achievements}
+                  onChange={(e) => setExpertForm({ ...expertForm, achievements: e.target.value })}
+                  placeholder="例如：发明专利5项，省级科技进步奖"
+                  rows={2}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="e-partner">所属机构</Label>
-              <Input
-                id="e-partner"
-                value={expertForm.partnerName}
-                onChange={(e) => setExpertForm({ ...expertForm, partnerName: e.target.value })}
-                placeholder="请输入所属机构"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="e-specialties">专业领域（逗号分隔）</Label>
-              <Textarea
-                id="e-specialties"
-                value={expertForm.specialties}
-                onChange={(e) => setExpertForm({ ...expertForm, specialties: e.target.value })}
-                placeholder="例如：人工智能，大数据"
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="e-roles">参与角色（逗号分隔）</Label>
-              <Textarea
-                id="e-roles"
-                value={expertForm.roles}
-                onChange={(e) => setExpertForm({ ...expertForm, roles: e.target.value })}
-                placeholder="例如：客座教授，产业导师"
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="e-rating">专家评级</Label>
-              <Select
-                value={expertForm.rating}
-                onValueChange={(v) => setExpertForm({ ...expertForm, rating: v as Expert["rating"] })}
-              >
-                <SelectTrigger id="e-rating">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gold">金牌专家</SelectItem>
-                  <SelectItem value="silver">银牌专家</SelectItem>
-                  <SelectItem value="bronze">铜牌专家</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="e-experience">行业经验（年）</Label>
-              <Input
-                id="e-experience"
-                type="number"
-                value={expertForm.experience}
-                onChange={(e) => setExpertForm({ ...expertForm, experience: e.target.value })}
-                placeholder="请输入行业经验年数"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="e-achievements">成果荣誉（逗号分隔）</Label>
-              <Textarea
-                id="e-achievements"
-                value={expertForm.achievements}
-                onChange={(e) => setExpertForm({ ...expertForm, achievements: e.target.value })}
-                placeholder="例如：发明专利5项，省级科技进步奖"
-                rows={2}
-              />
-            </div>
-          </div>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setExpertDialogOpen(false)}>
               取消
             </Button>
-            <Button onClick={handleSaveExpert} disabled={!editingExpert && !selectedExpertId}>
-              保存
-            </Button>
+            {editingExpert ? (
+              <Button onClick={handleSaveExpert}>保存</Button>
+            ) : (
+              <Button onClick={handleImportExpert} disabled={!selectedExpertId}>
+                确认引用
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

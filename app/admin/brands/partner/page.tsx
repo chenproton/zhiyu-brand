@@ -3,11 +3,12 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -31,10 +32,28 @@ import {
   COOPERATION_STATUS_LABELS,
   INDUSTRIES,
 } from "@/lib/types"
-import type { Partner } from "@/lib/types"
+import type { Partner, PartnerType, CooperationRating, CooperationStatus } from "@/lib/types"
+
+const emptyPartner: Omit<Partner, "id" | "createdAt" | "updatedAt"> = {
+  type: "enterprise",
+  name: "",
+  industry: INDUSTRIES[0],
+  region: "",
+  description: "",
+  logo: undefined,
+  status: "active",
+  rating: "general",
+  cooperationTypes: [],
+  contactPerson: undefined,
+  contactPhone: undefined,
+  contactEmail: undefined,
+  address: undefined,
+  establishedYear: undefined,
+  employeeCount: undefined,
+}
 
 export default function PartnerBrandPage() {
-  const [displayedPartners, setDisplayedPartners] = useState<Partner[]>([...partners])
+  const [displayedPartners, setDisplayedPartners] = useState<Partner[]>(partners.slice(0, 3))
   const [searchTerm, setSearchTerm] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
   const [industryFilter, setIndustryFilter] = useState("all")
@@ -42,6 +61,7 @@ export default function PartnerBrandPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null)
   const [selectedPartnerId, setSelectedPartnerId] = useState("")
 
@@ -52,7 +72,11 @@ export default function PartnerBrandPage() {
   const [formContactPhone, setFormContactPhone] = useState("")
   const [formIndustry, setFormIndustry] = useState("")
   const [formRegion, setFormRegion] = useState("")
-  const [formStatus, setFormStatus] = useState<Partner["status"]>("active")
+  const [formStatus, setFormStatus] = useState<Partner["status"]>('active')
+
+  // Create form states
+  const [createForm, setCreateForm] = useState({ ...emptyPartner })
+  const [createCooperationTypes, setCreateCooperationTypes] = useState("")
 
   const filteredPartners = displayedPartners.filter((partner) => {
     const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -62,14 +86,14 @@ export default function PartnerBrandPage() {
     return matchesSearch && matchesType && matchesIndustry && matchesRating
   })
 
-  const getRatingColor = (rating: string) => {
+  const getRatingVariant = (rating: string) => {
     switch (rating) {
       case "strategic":
-        return "bg-amber-100 text-amber-700 border-amber-200"
+        return "outline"
       case "deep":
-        return "bg-blue-100 text-blue-700 border-blue-200"
+        return "secondary"
       default:
-        return "bg-gray-100 text-gray-700 border-gray-200"
+        return "outline"
     }
   }
 
@@ -83,6 +107,12 @@ export default function PartnerBrandPage() {
     setFormRegion(partner.region)
     setFormStatus(partner.status)
     setEditDialogOpen(true)
+  }
+
+  const openCreate = () => {
+    setCreateForm({ ...emptyPartner })
+    setCreateCooperationTypes("")
+    setCreateDialogOpen(true)
   }
 
   const handleUpdate = () => {
@@ -109,6 +139,27 @@ export default function PartnerBrandPage() {
     )
     setEditDialogOpen(false)
     setEditingPartner(null)
+  }
+
+  const handleCreate = () => {
+    const newPartner: Partner = {
+      ...createForm,
+      id: `custom-${Date.now()}`,
+      cooperationTypes: createCooperationTypes
+        .split(/,|，/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+      contactPerson: createForm.contactPerson || undefined,
+      contactPhone: createForm.contactPhone || undefined,
+      contactEmail: createForm.contactEmail || undefined,
+      address: createForm.address || undefined,
+      establishedYear: createForm.establishedYear || undefined,
+      employeeCount: createForm.employeeCount || undefined,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    setDisplayedPartners((prev) => [...prev, newPartner])
+    setCreateDialogOpen(false)
   }
 
   const handleDelete = (id: string) => {
@@ -191,82 +242,92 @@ export default function PartnerBrandPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          引用合作主体
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={openCreate}>
+            <Plus className="h-4 w-4 mr-2" />
+            新增独立雇主品牌
+          </Button>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            引用已有企业
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredPartners.map((partner) => (
           <Card key={partner.id} className="overflow-hidden hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="h-12 w-12 bg-muted rounded-lg flex items-center justify-center shrink-0">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <Avatar className="h-12 w-12 rounded-lg shrink-0">
+                  <AvatarImage src={partner.logo} className="object-cover" />
+                  <AvatarFallback className="rounded-lg">
                     <Building2 className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-base">{partner.name}</CardTitle>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" className="text-xs">
-                        {PARTNER_TYPE_LABELS[partner.type]}
-                      </Badge>
-                      <Badge className={`text-xs ${getRatingColor(partner.rating)}`}>
-                        {COOPERATION_RATING_LABELS[partner.rating]}
-                      </Badge>
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="text-base font-semibold text-foreground truncate">{partner.name}</h3>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          {PARTNER_TYPE_LABELS[partner.type]}
+                        </Badge>
+                        <Badge variant={getRatingVariant(partner.rating)} className="text-[10px] px-1.5 py-0">
+                          {COOPERATION_RATING_LABELS[partner.rating]}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground line-clamp-2">{partner.description}</p>
 
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{partner.description}</p>
+
+              <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="h-3 w-3 text-muted-foreground" />
                   <span>{partner.region}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Briefcase className="h-4 w-4" />
+                  <Briefcase className="h-3 w-3 text-muted-foreground" />
                   <span>{partner.industry}</span>
                 </div>
                 {partner.employeeCount && (
                   <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
+                    <Users className="h-3 w-3 text-muted-foreground" />
                     <span>{partner.employeeCount}人</span>
                   </div>
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-1">
-                {partner.cooperationTypes.slice(0, 4).map((type) => (
-                  <Badge key={type} variant="secondary" className="text-xs">
+              <div className="flex flex-wrap gap-1 mt-3">
+                {partner.cooperationTypes.slice(0, 3).map((type) => (
+                  <Badge key={type} variant="secondary" className="text-[10px] px-1.5 py-0">
                     {type}
                   </Badge>
                 ))}
-                {partner.cooperationTypes.length > 4 && (
-                  <Badge variant="secondary" className="text-xs">
-                    +{partner.cooperationTypes.length - 4}
+                {partner.cooperationTypes.length > 3 && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    +{partner.cooperationTypes.length - 3}
                   </Badge>
                 )}
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t">
+              <div className="flex items-center justify-between pt-4 mt-4 border-t">
                 <Badge
-                  variant={partner.status === "active" ? "default" : "secondary"}
-                  className="text-xs"
+                  variant={partner.status === "active" ? "secondary" : "outline"}
+                  className="text-[10px] px-1.5 py-0"
                 >
                   {COOPERATION_STATUS_LABELS[partner.status]}
                 </Badge>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => openEdit(partner)}>
-                    <Pencil className="h-4 w-4 mr-1" />
+                <div className="flex gap-1.5">
+                  <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => openEdit(partner)}>
+                    <Pencil className="h-3 w-3 mr-1" />
                     编辑
                   </Button>
-                  <Button variant="outline" size="sm" className="text-destructive" onClick={() => handleDelete(partner.id)}>
-                    <Trash2 className="h-4 w-4 mr-1" />
+                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => handleDelete(partner.id)}>
+                    <Trash2 className="h-3 w-3 mr-1" />
                     删除
                   </Button>
                 </div>
@@ -281,24 +342,24 @@ export default function PartnerBrandPage() {
         )}
       </div>
 
-      {/* 引用合作主体 Dialog */}
+      {/* 引用已有企业 Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>引用合作主体</DialogTitle>
+            <DialogTitle>引用已有企业</DialogTitle>
             <DialogDescription>从合作主体库中选择要展示的品牌</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>选择合作主体</Label>
+              <Label>选择企业</Label>
               <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="请选择合作主体" />
+                  <SelectValue placeholder="请选择企业" />
                 </SelectTrigger>
                 <SelectContent>
                   {unreferencedPartners.length === 0 && (
-                    <SelectItem value="" disabled>
-                      没有可引用的主体
+                    <SelectItem value="__empty__" disabled>
+                      没有可引用的企业
                     </SelectItem>
                   )}
                   {unreferencedPartners.map((partner) => (
@@ -411,6 +472,181 @@ export default function PartnerBrandPage() {
               取消
             </Button>
             <Button onClick={handleUpdate}>保存修改</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 新增独立雇主品牌 Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>新增独立雇主品牌</DialogTitle>
+            <DialogDescription>从零创建一个新的雇主品牌</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>主体名称</Label>
+              <Input
+                value={createForm.name}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder="请输入主体名称"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>主体类型</Label>
+                <Select
+                  value={createForm.type}
+                  onValueChange={(v) => setCreateForm((prev) => ({ ...prev, type: v as PartnerType }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="enterprise">企业</SelectItem>
+                    <SelectItem value="association">行业协会</SelectItem>
+                    <SelectItem value="park">产业园区</SelectItem>
+                    <SelectItem value="institution">机构</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>所属行业</Label>
+                <Select
+                  value={createForm.industry}
+                  onValueChange={(v) => setCreateForm((prev) => ({ ...prev, industry: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INDUSTRIES.map((ind) => (
+                      <SelectItem key={ind} value={ind}>
+                        {ind}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>合作状态</Label>
+                <Select
+                  value={createForm.status}
+                  onValueChange={(v) => setCreateForm((prev) => ({ ...prev, status: v as CooperationStatus }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">合作中</SelectItem>
+                    <SelectItem value="negotiating">洽谈中</SelectItem>
+                    <SelectItem value="paused">已暂停</SelectItem>
+                    <SelectItem value="terminated">已终止</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>合作深度</Label>
+                <Select
+                  value={createForm.rating}
+                  onValueChange={(v) => setCreateForm((prev) => ({ ...prev, rating: v as CooperationRating }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="strategic">战略合作</SelectItem>
+                    <SelectItem value="deep">深度合作</SelectItem>
+                    <SelectItem value="general">一般合作</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>地区</Label>
+              <Input
+                value={createForm.region}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, region: e.target.value }))}
+                placeholder="如 江苏省苏州市"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>联系人</Label>
+              <Input
+                value={createForm.contactPerson || ""}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, contactPerson: e.target.value }))}
+                placeholder="请输入联系人姓名"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>联系电话</Label>
+              <Input
+                value={createForm.contactPhone || ""}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, contactPhone: e.target.value }))}
+                placeholder="请输入联系电话"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>联系邮箱</Label>
+              <Input
+                value={createForm.contactEmail || ""}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, contactEmail: e.target.value }))}
+                placeholder="请输入联系邮箱"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>详细地址</Label>
+              <Input
+                value={createForm.address || ""}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, address: e.target.value }))}
+                placeholder="请输入详细地址"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>成立年份</Label>
+                <Input
+                  type="number"
+                  value={createForm.establishedYear || ""}
+                  onChange={(e) => setCreateForm((prev) => ({ ...prev, establishedYear: e.target.value ? Number(e.target.value) : undefined }))}
+                  placeholder="如 2010"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>员工人数</Label>
+                <Input
+                  type="number"
+                  value={createForm.employeeCount || ""}
+                  onChange={(e) => setCreateForm((prev) => ({ ...prev, employeeCount: e.target.value ? Number(e.target.value) : undefined }))}
+                  placeholder="如 500"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>合作类型（逗号分隔）</Label>
+              <Input
+                value={createCooperationTypes}
+                onChange={(e) => setCreateCooperationTypes(e.target.value)}
+                placeholder="如 人才培养, 实习实训, 技术研发"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>品牌描述</Label>
+              <Textarea
+                value={createForm.description}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, description: e.target.value }))}
+                rows={3}
+                placeholder="请输入品牌描述..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleCreate}>确认新增</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

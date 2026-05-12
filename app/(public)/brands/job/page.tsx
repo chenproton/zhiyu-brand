@@ -28,14 +28,14 @@ export default function JobBrandPage() {
     return matchesSearch && matchesLevel && matchesIndustry && job.status === "published"
   })
 
-  const getLevelBadgeStyle = (level: string) => {
+  const getLevelBadgeVariant = (level: string): "outline" | "secondary" | "default" => {
     switch (level) {
       case "recommended":
-        return "bg-amber-100 text-amber-700 border-amber-200"
+        return "secondary"
       case "key":
-        return "bg-blue-100 text-blue-700 border-blue-200"
+        return "outline"
       default:
-        return "bg-gray-100 text-gray-700 border-gray-200"
+        return "outline"
     }
   }
 
@@ -107,7 +107,7 @@ export default function JobBrandPage() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-3 left-3 flex gap-2">
-                  <Badge className={getLevelBadgeStyle(job.level)}>
+                  <Badge variant={getLevelBadgeVariant(job.level)}>
                     {BRAND_LEVEL_LABELS[job.level]}
                   </Badge>
                 </div>
@@ -124,8 +124,8 @@ export default function JobBrandPage() {
 
                 <div className="grid grid-cols-3 gap-4 py-3 border-y mb-4">
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 font-semibold text-emerald-600">
-                      <TrendingUp className="h-4 w-4" />
+                    <div className="flex items-center justify-center gap-1 font-medium text-foreground">
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
                       {job.averageSalary}
                     </div>
                     <p className="text-xs text-muted-foreground">薪资范围</p>
@@ -175,8 +175,8 @@ export default function JobBrandPage() {
 
                 <div className="flex flex-wrap gap-1">
                   {job.featureTags.map((tag) => (
-                    <Badge key={tag} className="text-xs bg-amber-100 text-amber-700 hover:bg-amber-200">
-                      <Star className="h-3 w-3 mr-1" />
+                    <Badge key={tag} variant="outline" className="text-xs">
+                      <Star className="h-3 w-3 mr-1 text-muted-foreground" />
                       {tag}
                     </Badge>
                   ))}

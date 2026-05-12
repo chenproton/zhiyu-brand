@@ -36,6 +36,13 @@ function splitByComma(val: string): string[] {
   return val.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
 }
 
+// 从 majorBrands 构造可引用的专业源数据
+const majors = majorBrands.map((mb) => ({
+  id: mb.id,
+  name: mb.name,
+  department: mb.department,
+}))
+
 export default function MajorBrandPage() {
   const [data, setData] = useState<MajorBrand[]>(majorBrands)
   const [searchTerm, setSearchTerm] = useState("")
@@ -45,19 +52,7 @@ export default function MajorBrandPage() {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<MajorBrand | null>(null)
 
-  const [quoteForm, setQuoteForm] = useState<Partial<MajorBrand>>({
-    name: "",
-    department: "",
-    level: "standard",
-    introduction: "",
-    studentCount: 0,
-    employmentRate: 0,
-    coreCourses: [],
-    employmentDirections: [],
-    cooperationPartners: [],
-    featuredAchievements: [],
-    status: "draft",
-  })
+  const [selectedMajorId, setSelectedMajorId] = useState<string>("")
 
   const [editForm, setEditForm] = useState<Partial<MajorBrand>>({})
 
@@ -70,55 +65,34 @@ export default function MajorBrandPage() {
   })
 
   const getBadgeVariant = (level: string) => {
-    switch (level) {
-      case "recommended":
-        return "default"
-      case "key":
-        return "secondary"
-      default:
-        return "outline"
-    }
+    return "outline"
   }
 
-  const resetQuoteForm = () => {
-    setQuoteForm({
-      name: "",
-      department: "",
+  const handleQuoteSubmit = () => {
+    if (!selectedMajorId) return
+    const major = majors.find((m) => m.id === selectedMajorId)
+    if (!major) return
+    const newItem: MajorBrand = {
+      id: generateId(),
+      name: major.name,
+      department: major.department,
       level: "standard",
       introduction: "",
-      studentCount: 0,
-      employmentRate: 0,
+      cultivationGoal: "",
       coreCourses: [],
       employmentDirections: [],
       cooperationPartners: [],
       featuredAchievements: [],
+      studentCount: 0,
+      employmentRate: 0,
       status: "draft",
-    })
-  }
-
-  const handleQuoteSubmit = () => {
-    if (!quoteForm.name) return
-    const newItem: MajorBrand = {
-      id: generateId(),
-      name: quoteForm.name || "",
-      department: quoteForm.department || "",
-      level: (quoteForm.level as MajorBrand["level"]) || "standard",
-      introduction: quoteForm.introduction || "",
-      cultivationGoal: "",
-      coreCourses: quoteForm.coreCourses || [],
-      employmentDirections: quoteForm.employmentDirections || [],
-      cooperationPartners: quoteForm.cooperationPartners || [],
-      featuredAchievements: quoteForm.featuredAchievements || [],
-      studentCount: quoteForm.studentCount || 0,
-      employmentRate: quoteForm.employmentRate || 0,
-      status: (quoteForm.status as MajorBrand["status"]) || "draft",
       viewCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
     setData((prev) => [newItem, ...prev])
     setIsQuoteOpen(false)
-    resetQuoteForm()
+    setSelectedMajorId("")
   }
 
   const handleDelete = (id: string) => {
@@ -189,83 +163,93 @@ export default function MajorBrandPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {filteredMajors.map((major) => (
-          <Card key={major.id}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{major.name}</CardTitle>
-                  <CardDescription className="mt-1">{major.department}</CardDescription>
+          <Card key={major.id} className="text-sm">
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <CardTitle className="text-base truncate">{major.name}</CardTitle>
+                  <CardDescription className="mt-0.5">{major.department}</CardDescription>
                 </div>
-                <div className="flex gap-1">
-                  <Badge variant={getBadgeVariant(major.level)}>
+                <div className="flex gap-1 shrink-0">
+                  <Badge variant="outline" className="text-xs">
                     {BRAND_LEVEL_LABELS[major.level]}
                   </Badge>
-                  <Badge variant={major.status === "published" ? "default" : "secondary"}>
+                  <Badge variant={major.status === "published" ? "secondary" : "outline"} className="text-xs">
                     {BRAND_STATUS_LABELS[major.status]}
                   </Badge>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground line-clamp-2">{major.introduction}</p>
+            <CardContent className="space-y-2 pt-0">
+              <p className="text-muted-foreground line-clamp-1">{major.introduction}</p>
 
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Users className="h-4 w-4" />
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Users className="h-3.5 w-3.5 text-muted-foreground" />
                   {major.studentCount} 在校生
                 </div>
-                <div className="flex items-center gap-1 text-emerald-600">
-                  <TrendingUp className="h-4 w-4" />
-                  {major.employmentRate}% 就业率
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-foreground font-medium">{major.employmentRate}%</span> 就业率
                 </div>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Eye className="h-4 w-4" />
+                <div className="flex items-center gap-1">
+                  <Eye className="h-3.5 w-3.5 text-muted-foreground" />
                   {major.viewCount} 浏览
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {major.coreCourses.slice(0, 4).map((course) => (
-                  <Badge key={course} variant="outline" className="text-xs">
+              <div className="flex flex-wrap gap-1">
+                {major.coreCourses.slice(0, 3).map((course) => (
+                  <Badge key={course} variant="outline" className="text-xs font-normal">
                     {course}
                   </Badge>
                 ))}
-                {major.coreCourses.length > 4 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{major.coreCourses.length - 4}
+                {major.coreCourses.length > 3 && (
+                  <Badge variant="outline" className="text-xs font-normal">
+                    +{major.coreCourses.length - 3}
                   </Badge>
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {major.cooperationPartners.map((partner) => (
-                  <Badge key={partner} variant="secondary" className="text-xs">
+              <div className="flex flex-wrap gap-1">
+                {major.cooperationPartners.slice(0, 2).map((partner) => (
+                  <Badge key={partner} variant="secondary" className="text-xs font-normal">
                     {partner}
                   </Badge>
                 ))}
+                {major.cooperationPartners.length > 2 && (
+                  <Badge variant="secondary" className="text-xs font-normal">
+                    +{major.cooperationPartners.length - 2}
+                  </Badge>
+                )}
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {major.featuredAchievements.map((achievement) => (
-                  <Badge key={achievement} className="text-xs bg-amber-100 text-amber-700 hover:bg-amber-200">
+              <div className="flex flex-wrap gap-1">
+                {major.featuredAchievements.slice(0, 2).map((achievement) => (
+                  <Badge key={achievement} variant="secondary" className="text-xs font-normal">
                     {achievement}
                   </Badge>
                 ))}
+                {major.featuredAchievements.length > 2 && (
+                  <Badge variant="secondary" className="text-xs font-normal">
+                    +{major.featuredAchievements.length - 2}
+                  </Badge>
+                )}
               </div>
 
-              <div className="flex gap-2 pt-2">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => alert("预览功能开发中")}>
-                  <Eye className="h-4 w-4 mr-1" />
+              <div className="flex gap-2 border-t pt-4 mt-4">
+                <Button variant="outline" size="sm" className="flex-1 h-8 text-xs" onClick={() => alert("预览功能开发中")}>
+                  <Eye className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                   预览
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => openEdit(major)}>
-                  <Pencil className="h-4 w-4 mr-1" />
+                <Button variant="outline" size="sm" className="flex-1 h-8 text-xs" onClick={() => openEdit(major)}>
+                  <Pencil className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                   编辑
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1 text-destructive hover:text-destructive" onClick={() => handleDelete(major.id)}>
-                  <Trash2 className="h-4 w-4 mr-1" />
+                <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs" onClick={() => handleDelete(major.id)}>
+                  <Trash2 className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                   删除
                 </Button>
               </div>
@@ -276,148 +260,31 @@ export default function MajorBrandPage() {
 
       {/* 引用专业 Dialog */}
       <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>引用专业</DialogTitle>
-            <DialogDescription>手动填写专业品牌信息</DialogDescription>
+            <DialogDescription>从专业库中选择需要引用的专业</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
-            <div className="space-y-2">
-              <Label>专业名称</Label>
-              <Input
-                value={quoteForm.name || ""}
-                onChange={(e) => setQuoteForm((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="如 人工智能应用技术"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>所属院系</Label>
-              <Select
-                value={quoteForm.department || ""}
-                onValueChange={(val) => setQuoteForm((prev) => ({ ...prev, department: val }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择或输入院系" />
-                </SelectTrigger>
-                <SelectContent>
-                  {departments.map((dept) => (
-                    <SelectItem key={dept} value={dept}>
-                      {dept}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>品牌等级</Label>
-              <Select
-                value={quoteForm.level || "standard"}
-                onValueChange={(val) => setQuoteForm((prev) => ({ ...prev, level: val as MajorBrand["level"] }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recommended">推荐品牌</SelectItem>
-                  <SelectItem value="key">重点品牌</SelectItem>
-                  <SelectItem value="standard">标准品牌</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>状态</Label>
-              <Select
-                value={quoteForm.status || "draft"}
-                onValueChange={(val) => setQuoteForm((prev) => ({ ...prev, status: val as MajorBrand["status"] }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">草稿</SelectItem>
-                  <SelectItem value="pending">待审核</SelectItem>
-                  <SelectItem value="published">已发布</SelectItem>
-                  <SelectItem value="archived">已归档</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>在校生人数</Label>
-              <Input
-                type="number"
-                value={quoteForm.studentCount ?? 0}
-                onChange={(e) => setQuoteForm((prev) => ({ ...prev, studentCount: Number(e.target.value) }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>就业率 (%)</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={quoteForm.employmentRate ?? 0}
-                onChange={(e) => setQuoteForm((prev) => ({ ...prev, employmentRate: Number(e.target.value) }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>核心课程（逗号分隔）</Label>
-              <Input
-                value={quoteForm.coreCourses?.join(", ") || ""}
-                onChange={(e) =>
-                  setQuoteForm((prev) => ({ ...prev, coreCourses: splitByComma(e.target.value) }))
-                }
-                placeholder="如 Python程序设计, 机器学习基础"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>就业方向（逗号分隔）</Label>
-              <Input
-                value={quoteForm.employmentDirections?.join(", ") || ""}
-                onChange={(e) =>
-                  setQuoteForm((prev) => ({ ...prev, employmentDirections: splitByComma(e.target.value) }))
-                }
-                placeholder="如 算法工程师, 数据分析师"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>合作企业（逗号分隔）</Label>
-              <Input
-                value={quoteForm.cooperationPartners?.join(", ") || ""}
-                onChange={(e) =>
-                  setQuoteForm((prev) => ({ ...prev, cooperationPartners: splitByComma(e.target.value) }))
-                }
-                placeholder="如 苏州智联科技有限公司"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>特色成果（逗号分隔）</Label>
-              <Input
-                value={quoteForm.featuredAchievements?.join(", ") || ""}
-                onChange={(e) =>
-                  setQuoteForm((prev) => ({ ...prev, featuredAchievements: splitByComma(e.target.value) }))
-                }
-                placeholder="如 省级特色专业, 教育部1+X试点"
-              />
-            </div>
-
-            <div className="col-span-2 space-y-2">
-              <Label>专业简介</Label>
-              <Textarea
-                value={quoteForm.introduction || ""}
-                onChange={(e) => setQuoteForm((prev) => ({ ...prev, introduction: e.target.value }))}
-                rows={3}
-                placeholder="请输入专业简介..."
-              />
-            </div>
+          <div className="space-y-2 py-4">
+            <Label>选择专业</Label>
+            <Select value={selectedMajorId} onValueChange={setSelectedMajorId}>
+              <SelectTrigger>
+                <SelectValue placeholder="请选择专业" />
+              </SelectTrigger>
+              <SelectContent>
+                {majors.map((major) => (
+                  <SelectItem key={major.id} value={major.id}>
+                    {major.name}（{major.department}）
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsQuoteOpen(false); resetQuoteForm(); }}>
+            <Button variant="outline" onClick={() => { setIsQuoteOpen(false); setSelectedMajorId(""); }}>
               取消
             </Button>
-            <Button onClick={handleQuoteSubmit} disabled={!quoteForm.name}>
+            <Button onClick={handleQuoteSubmit} disabled={!selectedMajorId}>
               确认引用
             </Button>
           </DialogFooter>
@@ -436,8 +303,10 @@ export default function MajorBrandPage() {
               <Label>专业名称</Label>
               <Input
                 value={editForm.name || ""}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
+                disabled
+                className="bg-muted"
               />
+              <p className="text-xs text-muted-foreground">专业名称不可修改，修改仅影响品牌展示，不会回写专业库</p>
             </div>
             <div className="space-y-2">
               <Label>所属院系</Label>

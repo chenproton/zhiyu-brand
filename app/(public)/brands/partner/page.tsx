@@ -36,14 +36,14 @@ export default function PartnerBrandPage() {
   const deepPartners = filteredPartners.filter(p => p.rating === "deep")
   const generalPartners = filteredPartners.filter(p => p.rating === "general")
 
-  const getRatingColor = (rating: string) => {
+  const getRatingBadgeVariant = (rating: string): "outline" | "secondary" | "default" => {
     switch (rating) {
       case "strategic":
-        return "bg-amber-100 text-amber-700 border-amber-200"
+        return "secondary"
       case "deep":
-        return "bg-blue-100 text-blue-700 border-blue-200"
+        return "outline"
       default:
-        return "bg-gray-100 text-gray-700 border-gray-200"
+        return "outline"
     }
   }
 
@@ -120,14 +120,14 @@ export default function PartnerBrandPage() {
         {strategicPartners.length > 0 && (
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-1 h-6 bg-amber-500 rounded" />
+              <div className="w-1 h-6 bg-muted-foreground rounded" />
               <h2 className="text-xl font-semibold">战略合作伙伴</h2>
-              <Badge className="bg-amber-100 text-amber-700">{strategicPartners.length}</Badge>
+              <Badge variant="secondary">{strategicPartners.length}</Badge>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {strategicPartners.map((partner) => (
                 <Card key={partner.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
+                  <CardContent className="p-5">
                     <div className="flex items-start gap-4">
                       <Avatar className="h-16 w-16 rounded-lg">
                         <AvatarImage src={partner.logo} className="object-cover" />
@@ -138,12 +138,12 @@ export default function PartnerBrandPage() {
                       <div className="flex-1">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-semibold text-lg">{partner.name}</h3>
+                            <h3 className="text-base font-semibold text-foreground">{partner.name}</h3>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge variant="outline" className="text-xs">
                                 {PARTNER_TYPE_LABELS[partner.type]}
                               </Badge>
-                              <Badge className={getRatingColor(partner.rating)}>
+                              <Badge variant={getRatingBadgeVariant(partner.rating)}>
                                 {COOPERATION_RATING_LABELS[partner.rating]}
                               </Badge>
                             </div>
@@ -200,9 +200,9 @@ export default function PartnerBrandPage() {
         {deepPartners.length > 0 && (
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-1 h-6 bg-blue-500 rounded" />
+              <div className="w-1 h-6 bg-muted-foreground rounded" />
               <h2 className="text-xl font-semibold">深度合作伙伴</h2>
-              <Badge className="bg-blue-100 text-blue-700">{deepPartners.length}</Badge>
+              <Badge variant="secondary">{deepPartners.length}</Badge>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {deepPartners.map((partner) => (
@@ -216,7 +216,7 @@ export default function PartnerBrandPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h3 className="font-semibold">{partner.name}</h3>
+                        <h3 className="text-base font-semibold text-foreground">{partner.name}</h3>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">
                             {PARTNER_TYPE_LABELS[partner.type]}
@@ -244,7 +244,7 @@ export default function PartnerBrandPage() {
         {generalPartners.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-1 h-6 bg-gray-400 rounded" />
+              <div className="w-1 h-6 bg-muted-foreground rounded" />
               <h2 className="text-xl font-semibold">合作伙伴</h2>
               <Badge variant="secondary">{generalPartners.length}</Badge>
             </div>
@@ -260,7 +260,7 @@ export default function PartnerBrandPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-sm truncate">{partner.name}</h3>
+                        <h3 className="text-sm font-medium text-foreground truncate">{partner.name}</h3>
                         <p className="text-xs text-muted-foreground">{partner.industry}</p>
                       </div>
                     </div>

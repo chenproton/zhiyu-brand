@@ -102,7 +102,7 @@ export default function TeacherBrandPage() {
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-xl">{teacher.name}</h3>
                         {teacher.isFeatured && (
-                          <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
+                          <Star className="h-5 w-5 text-muted-foreground" />
                         )}
                       </div>
                       <p className="text-muted-foreground">{teacher.title}</p>
@@ -138,7 +138,7 @@ export default function TeacherBrandPage() {
                         </div>
                         <div className="flex flex-wrap gap-1 justify-center">
                           {teacher.awards.slice(0, 2).map((award) => (
-                            <Badge key={award} className="text-xs bg-amber-100 text-amber-700 hover:bg-amber-200">
+                            <Badge key={award} variant="outline" className="text-xs">
                               {award}
                             </Badge>
                           ))}
