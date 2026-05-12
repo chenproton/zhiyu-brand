@@ -24,17 +24,21 @@ import {
   CreditCard,
   Image,
 } from 'lucide-react'
-import { AddAgreementButton } from './enterprise-action-bar'
+import { AddAgreementButton, AgreementDetailButton } from './enterprise-action-bar'
 import { getEnterpriseById, getProjectsByPartnerId, getAchievementsByPartnerId, achievements } from '@/lib/mock-data'
 import { ENTERPRISE_TYPE_LABELS, COOPERATION_TYPES, COOPERATION_RATING_LABELS } from '@/lib/types'
-import { NewProjectButton, LinkAchievementButton } from './enterprise-detail-actions'
+import { NewProjectButton } from './enterprise-detail-actions'
+import { EnterpriseAchievementActions } from './enterprise-achievement-actions'
+import { partners } from '@/lib/mock-data'
 
 interface PageProps {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ tab?: string }>
 }
 
-export default async function EnterpriseDetailPage({ params }: PageProps) {
+export default async function EnterpriseDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params
+  const { tab } = await searchParams
   const enterprise = getEnterpriseById(id)
 
   if (!enterprise) {
@@ -43,6 +47,9 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
 
   const projects = getProjectsByPartnerId(id)
   const achievements = getAchievementsByPartnerId(id)
+
+  const validTabs = ['info', 'agreements', 'projects', 'achievements']
+  const defaultTab = validTabs.includes(tab || '') ? tab : 'info'
 
   return (
     <div>
@@ -134,13 +141,12 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
         </Card>
       </div>
 
-      <Tabs defaultValue="info" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="info">基本信息</TabsTrigger>
           <TabsTrigger value="agreements">合作协议 ({enterprise.agreements?.length || 0})</TabsTrigger>
           <TabsTrigger value="projects">合作项目 ({projects.length})</TabsTrigger>
           <TabsTrigger value="achievements">合作成果 ({achievements.length})</TabsTrigger>
-          <TabsTrigger value="rating">评级记录</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
@@ -198,6 +204,36 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
                     </Badge>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">合作评级</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">当前评级</span>
+                  <CooperationRatingBadge rating={enterprise.rating} />
+                </div>
+                {enterprise.ratingRecord && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">评定时间</span>
+                      <span className="text-sm">{enterprise.ratingRecord.evaluatedAt.toLocaleDateString('zh-CN')}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">评定人</span>
+                      <span className="text-sm">{enterprise.ratingRecord.evaluator}</span>
+                    </div>
+                    {enterprise.ratingRecord.remark && (
+                      <div>
+                        <span className="text-sm text-muted-foreground">备注</span>
+                        <p className="text-sm mt-1 bg-muted p-2 rounded">{enterprise.ratingRecord.remark}</p>
+                      </div>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
 
@@ -281,7 +317,10 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
                           {agreement.type} · 有效期至 {agreement.endDate.toLocaleDateString('zh-CN')}
                         </p>
                       </div>
-                      <AgreementStatusBadge status={agreement.status} />
+                      <div className="flex items-center gap-2">
+                        <AgreementStatusBadge status={agreement.status} />
+                        <AgreementDetailButton agreement={agreement} />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -301,7 +340,7 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
                 <CardTitle className="text-base">合作项目</CardTitle>
                 <CardDescription>与该企业开展的所有合作项目</CardDescription>
               </div>
-              <NewProjectButton />
+              <NewProjectButton defaultPartnerIds={[enterprise.id.replace('e', 'p')]} />
             </CardHeader>
             <CardContent>
               {projects.length > 0 ? (
@@ -341,7 +380,7 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
                 <CardTitle className="text-base">合作成果</CardTitle>
                 <CardDescription>与该企业合作产生的成果</CardDescription>
               </div>
-              <LinkAchievementButton availableAchievements={achievements} />
+              <EnterpriseAchievementActions />
             </CardHeader>
             <CardContent>
               {achievements.length > 0 ? (
@@ -370,41 +409,7 @@ export default async function EnterpriseDetailPage({ params }: PageProps) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="rating">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">评级记录</CardTitle>
-              <CardDescription>该企业的合作深度评级历史</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {enterprise.ratingRecord ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium">{COOPERATION_RATING_LABELS[enterprise.ratingRecord.rating]}</p>
-                      <p className="text-sm text-muted-foreground">
-                        评定时间：{enterprise.ratingRecord.evaluatedAt.toLocaleDateString('zh-CN')}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        评定人：{enterprise.ratingRecord.evaluator}
-                      </p>
-                      {enterprise.ratingRecord.remark && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          备注：{enterprise.ratingRecord.remark}
-                        </p>
-                      )}
-                    </div>
-                    <CooperationRatingBadge rating={enterprise.ratingRecord.rating} />
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  暂无评级记录
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+
       </Tabs>
     </div>
   )

@@ -32,15 +32,15 @@ import {
   Plus, 
   MoreHorizontal, 
   Eye, 
-  Edit, 
+  Edit,
   Pause,
   Play,
   Trash2,
-  FileText,
   MapPin,
   Building2,
+  Sparkles,
 } from "lucide-react"
-import { jobs } from "@/lib/mock-data"
+import { jobs, jobRecommendations } from "@/lib/mock-data"
 import { JOB_STATUS_LABELS, JOB_TYPE_LABELS, type JobStatus, type JobType } from "@/lib/types"
 
 const statusColors: Record<JobStatus, string> = {
@@ -66,13 +66,17 @@ export default function JobsPage() {
     })
   }, [searchTerm, statusFilter, typeFilter])
 
+  const getRecommendationCount = (jobId: string) => {
+    return jobRecommendations.filter(r => r.jobId === jobId).length
+  }
+
   return (
     <div className="space-y-6">
       {/* 页面标题 */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">岗位管理</h1>
-          <p className="text-muted-foreground">发布和管理招聘岗位信息</p>
+          <p className="text-muted-foreground">基于岗位成果发布和管理招聘岗位</p>
         </div>
         <Button asChild>
           <Link href="/admin/employment/jobs/new">
@@ -144,19 +148,18 @@ export default function JobsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[300px]">岗位信息</TableHead>
+                <TableHead className="w-[280px]">岗位信息</TableHead>
                 <TableHead>企业</TableHead>
                 <TableHead>薪资</TableHead>
-                <TableHead>类型</TableHead>
                 <TableHead>状态</TableHead>
-                <TableHead className="text-center">浏览/投递</TableHead>
+                <TableHead className="text-center">浏览/推荐</TableHead>
                 <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredJobs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                     没有找到符合条件的岗位
                   </TableCell>
                 </TableRow>
@@ -173,6 +176,12 @@ export default function JobsPage() {
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                           <MapPin className="h-3 w-3" />
                           {job.location}
+                          {job.jobBrandName && (
+                            <>
+                              <span className="mx-1">·</span>
+                              <span>基于: {job.jobBrandName}</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </TableCell>
@@ -185,12 +194,9 @@ export default function JobsPage() {
                     <TableCell>
                       <span className="text-sm font-medium text-primary">
                         {job.salaryMin && job.salaryMax 
-                          ? `${job.salaryMin/1000}-${job.salaryMax/1000}K` 
+                          ? `${job.salaryMin}-${job.salaryMax}K` 
                           : '面议'}
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{JOB_TYPE_LABELS[job.type]}</Badge>
                     </TableCell>
                     <TableCell>
                       <Badge className={statusColors[job.status]}>
@@ -204,8 +210,8 @@ export default function JobsPage() {
                           {job.viewCount}
                         </span>
                         <span className="flex items-center gap-1">
-                          <FileText className="h-3 w-3" />
-                          {job.applicationCount}
+                          <Sparkles className="h-3 w-3" />
+                          {getRecommendationCount(job.id)}
                         </span>
                       </div>
                     </TableCell>
@@ -226,12 +232,6 @@ export default function JobsPage() {
                           <DropdownMenuItem onClick={() => alert('编辑岗位功能开发中')}>
                             <Edit className="h-4 w-4 mr-2" />
                             编辑岗位
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/employment/applications?jobId=${job.id}`}>
-                              <FileText className="h-4 w-4 mr-2" />
-                              查看投递
-                            </Link>
                           </DropdownMenuItem>
                           {job.status === "published" ? (
                             <DropdownMenuItem onClick={() => alert('暂停招聘功能开发中')}>

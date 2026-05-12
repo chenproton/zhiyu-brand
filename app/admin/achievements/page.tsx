@@ -2,14 +2,20 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Plus, Search, Eye, Edit, Trash2, Briefcase, Map, BookOpen, Tag } from "lucide-react"
+import { Plus, Search, Eye, Edit, Trash2, Briefcase, Map, BookOpen, Tag, MoreHorizontal } from "lucide-react"
+import { ImportAchievementsButton } from "./_components/import-achievements-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { achievements } from "@/lib/mock-data"
 import { ACHIEVEMENT_TYPE_LABELS } from "@/lib/types"
 import type { Achievement, AchievementType } from "@/lib/types"
@@ -27,6 +33,14 @@ const typeColors: Record<AchievementType, string> = {
   course: "bg-purple-100 text-purple-800",
   custom: "bg-orange-100 text-orange-800",
 }
+
+const TABS = [
+  { value: 'all', label: '全部' },
+  { value: 'job', label: '岗位' },
+  { value: 'scene', label: '场景' },
+  { value: 'course', label: '课程' },
+  { value: 'custom', label: '自定义成果' },
+] as const
 
 export default function AchievementsPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -68,12 +82,15 @@ export default function AchievementsPage() {
             管理岗位成果、场景成果、课程成果及自定义成果
           </p>
         </div>
-        <Button asChild>
-          <Link href="/admin/achievements/new">
-            <Plus className="mr-2 h-4 w-4" />
-            新增成果
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ImportAchievementsButton />
+          <Button asChild>
+            <Link href="/admin/achievements/new">
+              <Plus className="mr-2 h-4 w-4" />
+              新增成果
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -95,35 +112,38 @@ export default function AchievementsPage() {
         ))}
       </div>
 
-      {/* Filters */}
+      {/* Filters + Table */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">成果列表</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="搜索成果名称、描述..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="成果类型" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部类型</SelectItem>
-                {Object.entries(ACHIEVEMENT_TYPE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Tab 筛选 */}
+          <div className="flex gap-1 mb-4">
+            {TABS.map((tab) => (
+              <Button
+                key={tab.value}
+                variant={typeFilter === tab.value ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setTypeFilter(tab.value)}
+              >
+                {tab.label}
+              </Button>
+            ))}
           </div>
 
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="搜索成果名称、描述..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Table */}
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -133,7 +153,7 @@ export default function AchievementsPage() {
                   <TableHead>关联主体</TableHead>
                   <TableHead>关联项目</TableHead>
                   <TableHead>发布日期</TableHead>
-                  <TableHead className="text-right">操作</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -179,24 +199,30 @@ export default function AchievementsPage() {
                         )}
                       </TableCell>
                       <TableCell>{achievement.publishDate.toLocaleDateString('zh-CN')}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/admin/achievements/${achievement.id}`}>
-                              <Eye className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => alert('编辑功能开发中')}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleDeleteClick(achievement)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/achievements/${achievement.id}`}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                查看详情
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => alert('编辑功能开发中')}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              编辑
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteClick(achievement)}>
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              删除
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))

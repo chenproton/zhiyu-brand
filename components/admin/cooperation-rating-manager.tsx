@@ -120,11 +120,7 @@ export default function CooperationRatingManager() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold">合作评级字典</h2>
-          <p className="text-sm text-muted-foreground">定义合作深度的评级标准与评定条件</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button size="sm" onClick={handleAdd}>
           <Plus className="h-4 w-4 mr-1" />
           新增评级

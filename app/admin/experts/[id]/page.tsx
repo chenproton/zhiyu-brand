@@ -15,6 +15,8 @@ import {
   Award,
   Clock,
   Briefcase,
+  EyeOff,
+  User,
 } from 'lucide-react'
 import { getExpertById, getPartnerById } from '@/lib/mock-data'
 
@@ -58,6 +60,10 @@ export default async function ExpertDetailPage({ params }: PageProps) {
               <p className="text-muted-foreground">{expert.title}</p>
               <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  {expert.gender === 'male' ? '男' : expert.gender === 'female' ? '女' : '未设置'}
+                </span>
+                <span className="flex items-center gap-1">
                   <Briefcase className="h-4 w-4" />
                   {expert.field}
                 </span>
@@ -65,6 +71,11 @@ export default async function ExpertDetailPage({ params }: PageProps) {
                   <Clock className="h-4 w-4" />
                   {expert.experience}年经验
                 </span>
+                {expert.expertType && (
+                  <Badge variant="outline" className="text-xs">
+                    {expert.expertType}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -135,25 +146,37 @@ export default async function ExpertDetailPage({ params }: PageProps) {
           <div className="space-y-6">
             {/* Contact Info */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-base">联系方式</CardTitle>
+                {expert.isContactHidden && (
+                  <Badge variant="secondary" className="text-xs">
+                    <EyeOff className="h-3 w-3 mr-1" />
+                    已隐藏
+                  </Badge>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
-                {expert.contactEmail && (
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <a href={`mailto:${expert.contactEmail}`} className="text-sm hover:underline">
-                      {expert.contactEmail}
-                    </a>
-                  </div>
-                )}
-                {expert.contactPhone && (
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <a href={`tel:${expert.contactPhone}`} className="text-sm hover:underline">
-                      {expert.contactPhone}
-                    </a>
-                  </div>
+                {expert.isContactHidden ? (
+                  <p className="text-sm text-muted-foreground">该专家的联系方式已设置为隐藏</p>
+                ) : (
+                  <>
+                    {expert.contactEmail && (
+                      <div className="flex items-center gap-3">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <a href={`mailto:${expert.contactEmail}`} className="text-sm hover:underline">
+                          {expert.contactEmail}
+                        </a>
+                      </div>
+                    )}
+                    {expert.contactPhone && (
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <a href={`tel:${expert.contactPhone}`} className="text-sm hover:underline">
+                          {expert.contactPhone}
+                        </a>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>

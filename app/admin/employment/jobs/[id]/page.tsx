@@ -6,8 +6,8 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
 import { 
   ArrowLeft, 
   Edit, 
@@ -15,22 +15,17 @@ import {
   Play, 
   MapPin, 
   Building2, 
-  Clock,
-  Users,
   Briefcase,
   GraduationCap,
-  Eye,
-  FileText,
-  Calendar,
-  DollarSign,
   CheckCircle2,
+  Sparkles,
+  DollarSign,
 } from "lucide-react"
-import { getJobById, getApplicationsByJobId } from "@/lib/mock-data"
+import { getJobById, getRecommendationsByJobId } from "@/lib/mock-data"
 import { 
   JOB_STATUS_LABELS, 
   JOB_TYPE_LABELS, 
   WORK_NATURE_LABELS,
-  APPLICATION_STATUS_LABELS,
   type JobStatus 
 } from "@/lib/types"
 
@@ -42,14 +37,20 @@ const statusColors: Record<JobStatus, string> = {
   filled: "bg-blue-100 text-blue-800",
 }
 
-const appStatusColors: Record<string, string> = {
+const recStatusLabels: Record<string, string> = {
+  pending: "待查看",
+  viewed: "已查看",
+  contacted: "已联系",
+  hired: "已录用",
+  rejected: "不合适",
+}
+
+const recStatusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   viewed: "bg-blue-100 text-blue-800",
-  interview: "bg-purple-100 text-purple-800",
-  offer: "bg-green-100 text-green-800",
+  contacted: "bg-purple-100 text-purple-800",
   hired: "bg-emerald-100 text-emerald-800",
-  rejected: "bg-red-100 text-red-800",
-  withdrawn: "bg-gray-100 text-gray-800",
+  rejected: "bg-gray-100 text-gray-800",
 }
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -60,7 +61,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     notFound()
   }
 
-  const applications = getApplicationsByJobId(job.id)
+  const recommendations = getRecommendationsByJobId(job.id)
 
   return (
     <div className="space-y-6">
@@ -118,7 +119,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium text-primary text-lg">
                     {job.salaryMin && job.salaryMax 
-                      ? `${job.salaryMin/1000}-${job.salaryMax/1000}K/月` 
+                      ? `${job.salaryMin}-${job.salaryMax}K/月` 
                       : '薪资面议'}
                   </span>
                 </div>
@@ -136,6 +137,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 </div>
               </div>
 
+              {job.jobBrandName && (
+                <div className="p-3 bg-primary/5 rounded-lg">
+                  <p className="text-sm">
+                    <span className="text-muted-foreground">基于岗位成果：</span>
+                    <span className="font-medium">{job.jobBrandName}</span>
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                 <div className="text-center">
                   <p className="text-2xl font-bold">{job.headcount}</p>
@@ -146,8 +156,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   <p className="text-sm text-muted-foreground">浏览次数</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold">{job.applicationCount}</p>
-                  <p className="text-sm text-muted-foreground">投递人数</p>
+                  <p className="text-2xl font-bold">{recommendations.length}</p>
+                  <p className="text-sm text-muted-foreground">推荐人数</p>
                 </div>
               </div>
 
@@ -182,44 +192,64 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </CardContent>
           </Card>
 
-          {/* 投递列表 */}
+          {/* 推荐学生列表 */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>投递记录 ({applications.length})</CardTitle>
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/admin/employment/applications?jobId=${job.id}`}>
-                  查看全部
-                </Link>
+              <CardTitle>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-purple-500" />
+                  智能推荐毕业生 ({recommendations.length})
+                </div>
+              </CardTitle>
+              <Button variant="outline" size="sm" onClick={() => alert('生成新批次推荐功能开发中')}>
+                <Sparkles className="h-4 w-4 mr-2" />
+                生成新批次推荐
               </Button>
             </CardHeader>
             <CardContent>
-              {applications.length === 0 ? (
+              {recommendations.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  暂无投递记录
+                  暂无推荐记录，发布后系统将自动匹配推荐
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {applications.slice(0, 5).map((app) => (
-                    <div key={app.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  {recommendations.slice(0, 8).map((rec) => (
+                    <div key={rec.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-3">
                         <Avatar>
-                          <AvatarFallback>{app.studentName[0]}</AvatarFallback>
+                          <AvatarFallback>{rec.studentName[0]}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium">{app.studentName}</p>
-                          <p className="text-sm text-muted-foreground">{app.studentMajor}</p>
+                          <p className="font-medium">{rec.studentName}</p>
+                          <p className="text-sm text-muted-foreground">{rec.studentMajor}</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {rec.matchReasons.map((reason) => (
+                              <Badge key={reason} variant="outline" className="text-xs">
+                                {reason}
+                              </Badge>
+                            ))}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground">
-                          {app.appliedAt.toLocaleDateString('zh-CN')}
-                        </span>
-                        <Badge className={appStatusColors[app.status]}>
-                          {APPLICATION_STATUS_LABELS[app.status]}
+                        <div className="text-right">
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <span>匹配度</span>
+                            <span className="font-medium text-primary">{rec.matchScore}%</span>
+                          </div>
+                          <Progress value={rec.matchScore} className="w-24 h-2 mt-1" />
+                        </div>
+                        <Badge className={recStatusColors[rec.status]}>
+                          {recStatusLabels[rec.status]}
                         </Badge>
                       </div>
                     </div>
                   ))}
+                  {recommendations.length > 8 && (
+                    <p className="text-center text-sm text-muted-foreground pt-2">
+                      还有 {recommendations.length - 8} 条推荐记录
+                    </p>
+                  )}
                 </div>
               )}
             </CardContent>

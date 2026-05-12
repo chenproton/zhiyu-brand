@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,11 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowLeft, Save, Plus, X } from 'lucide-react'
-import { partners } from '@/lib/mock-data'
+import { ArrowLeft, Save } from 'lucide-react'
+import { partners, projects } from '@/lib/mock-data'
 import { PROJECT_PHASE_LABELS } from '@/lib/types'
-import type { ProjectPhase, ProjectSupportingResult, ProjectAgreement, ProjectPhaseItem } from '@/lib/types'
+import type { ProjectPhase } from '@/lib/types'
 
 const PROJECT_TYPES = [
   '人才培养项目',
@@ -44,20 +43,36 @@ export default function NewProjectPage() {
     description: '',
     startDate: '',
     endDate: '',
-    supportingResults: [] as ProjectSupportingResult[],
-    projectAgreements: [] as ProjectAgreement[],
-    phases: [] as ProjectPhaseItem[],
   })
-
-  const [newResult, setNewResult] = useState({ name: '', type: '', description: '' })
-  const [newAgreement, setNewAgreement] = useState({ name: '', type: '', startDate: '', endDate: '', content: '' })
-  const [newPhase, setNewPhase] = useState({ name: '', description: '', startDate: '', endDate: '', status: 'pending' as ProjectPhaseItem['status'] })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     await new Promise((resolve) => setTimeout(resolve, 1000))
-    alert('项目信息已保存（演示）')
+
+    const newProject = {
+      id: `proj${Date.now()}`,
+      name: formData.name,
+      partnerId: formData.partnerIds[0] || '',
+      partnerName: partners.find((p) => p.id === formData.partnerIds[0])?.name || '',
+      partnerIds: formData.partnerIds,
+      type: formData.type,
+      phase: formData.phase,
+      description: formData.description,
+      startDate: new Date(formData.startDate),
+      endDate: new Date(formData.endDate),
+      milestones: [],
+      supportingResults: [],
+      projectAgreements: [],
+      phases: [],
+      publishStatus: 'draft',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    projects.push(newProject as any)
+
+    alert('项目已新增（演示）')
+    setIsSubmitting(false)
     router.push('/admin/projects')
   }
 
@@ -68,65 +83,6 @@ export default function NewProjectPage() {
         ? prev.partnerIds.filter((id) => id !== partnerId)
         : [...prev.partnerIds, partnerId],
     }))
-  }
-
-  const addResult = () => {
-    if (newResult.name.trim()) {
-      const item: ProjectSupportingResult = {
-        id: `sr${Date.now()}`,
-        name: newResult.name.trim(),
-        type: newResult.type.trim() || '其他',
-        description: newResult.description.trim(),
-        createdAt: new Date(),
-      }
-      setFormData((prev) => ({ ...prev, supportingResults: [...prev.supportingResults, item] }))
-      setNewResult({ name: '', type: '', description: '' })
-    }
-  }
-
-  const removeResult = (id: string) => {
-    setFormData((prev) => ({ ...prev, supportingResults: prev.supportingResults.filter((r) => r.id !== id) }))
-  }
-
-  const addAgreement = () => {
-    if (newAgreement.name.trim() && newAgreement.startDate && newAgreement.endDate) {
-      const item: ProjectAgreement = {
-        id: `pa${Date.now()}`,
-        name: newAgreement.name.trim(),
-        type: newAgreement.type.trim() || '合作协议',
-        startDate: new Date(newAgreement.startDate),
-        endDate: new Date(newAgreement.endDate),
-        status: 'active',
-        content: newAgreement.content.trim(),
-        createdAt: new Date(),
-      }
-      setFormData((prev) => ({ ...prev, projectAgreements: [...prev.projectAgreements, item] }))
-      setNewAgreement({ name: '', type: '', startDate: '', endDate: '', content: '' })
-    }
-  }
-
-  const removeAgreement = (id: string) => {
-    setFormData((prev) => ({ ...prev, projectAgreements: prev.projectAgreements.filter((a) => a.id !== id) }))
-  }
-
-  const addPhase = () => {
-    if (newPhase.name.trim() && newPhase.startDate) {
-      const item: ProjectPhaseItem = {
-        id: `ph${Date.now()}`,
-        name: newPhase.name.trim(),
-        description: newPhase.description.trim(),
-        startDate: new Date(newPhase.startDate),
-        endDate: newPhase.endDate ? new Date(newPhase.endDate) : undefined,
-        status: newPhase.status,
-        progress: 0,
-      }
-      setFormData((prev) => ({ ...prev, phases: [...prev.phases, item] }))
-      setNewPhase({ name: '', description: '', startDate: '', endDate: '', status: 'pending' })
-    }
-  }
-
-  const removePhase = (id: string) => {
-    setFormData((prev) => ({ ...prev, phases: prev.phases.filter((p) => p.id !== id) }))
   }
 
   return (
@@ -147,7 +103,6 @@ export default function NewProjectPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">项目信息</CardTitle>
-                  <CardDescription>填写项目的基本信息</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -268,137 +223,6 @@ export default function NewProjectPage() {
               </Card>
             </div>
           </div>
-
-          <Tabs defaultValue="supportingResults" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="supportingResults">配套成果 ({formData.supportingResults.length})</TabsTrigger>
-              <TabsTrigger value="projectAgreements">项目协议 ({formData.projectAgreements.length})</TabsTrigger>
-              <TabsTrigger value="phases">项目阶段 ({formData.phases.length})</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="supportingResults">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">配套成果管理</CardTitle>
-                  <CardDescription>管理项目的配套产出成果</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-3 gap-3">
-                    <Input placeholder="成果名称" value={newResult.name} onChange={(e) => setNewResult({ ...newResult, name: e.target.value })} />
-                    <Input placeholder="成果类型" value={newResult.type} onChange={(e) => setNewResult({ ...newResult, type: e.target.value })} />
-                    <Input placeholder="成果描述" value={newResult.description} onChange={(e) => setNewResult({ ...newResult, description: e.target.value })} />
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={addResult}>
-                    <Plus className="h-4 w-4 mr-1" />添加成果
-                  </Button>
-                  {formData.supportingResults.length > 0 && (
-                    <div className="space-y-2">
-                      {formData.supportingResults.map((result) => (
-                        <div key={result.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">{result.name}</p>
-                            <p className="text-xs text-muted-foreground">{result.type} · {result.description}</p>
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => removeResult(result.id)}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="projectAgreements">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">项目协议管理</CardTitle>
-                  <CardDescription>管理项目相关的合作协议</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-3">
-                    <Input placeholder="协议名称" value={newAgreement.name} onChange={(e) => setNewAgreement({ ...newAgreement, name: e.target.value })} />
-                    <Input placeholder="协议类型" value={newAgreement.type} onChange={(e) => setNewAgreement({ ...newAgreement, type: e.target.value })} />
-                    <Input type="date" placeholder="开始日期" value={newAgreement.startDate} onChange={(e) => setNewAgreement({ ...newAgreement, startDate: e.target.value })} />
-                    <Input type="date" placeholder="结束日期" value={newAgreement.endDate} onChange={(e) => setNewAgreement({ ...newAgreement, endDate: e.target.value })} />
-                  </div>
-                  <Textarea placeholder="协议内容" value={newAgreement.content} onChange={(e) => setNewAgreement({ ...newAgreement, content: e.target.value })} rows={2} />
-                  <Button type="button" variant="outline" size="sm" onClick={addAgreement}>
-                    <Plus className="h-4 w-4 mr-1" />添加协议
-                  </Button>
-                  {formData.projectAgreements.length > 0 && (
-                    <div className="space-y-2">
-                      {formData.projectAgreements.map((agreement) => (
-                        <div key={agreement.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">{agreement.name}</p>
-                            <p className="text-xs text-muted-foreground">{agreement.type} · {agreement.startDate.toLocaleDateString('zh-CN')} 至 {agreement.endDate.toLocaleDateString('zh-CN')}</p>
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => removeAgreement(agreement.id)}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="phases">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">项目阶段管理</CardTitle>
-                  <CardDescription>管理项目的阶段与进展</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-3 gap-3">
-                    <Input placeholder="阶段名称" value={newPhase.name} onChange={(e) => setNewPhase({ ...newPhase, name: e.target.value })} />
-                    <Input placeholder="阶段描述" value={newPhase.description} onChange={(e) => setNewPhase({ ...newPhase, description: e.target.value })} />
-                    <Select value={newPhase.status} onValueChange={(value) => setNewPhase({ ...newPhase, status: value as ProjectPhaseItem['status'] })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="状态" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">待开始</SelectItem>
-                        <SelectItem value="in-progress">进行中</SelectItem>
-                        <SelectItem value="completed">已完成</SelectItem>
-                        <SelectItem value="delayed">延期</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-3">
-                    <Input type="date" placeholder="开始日期" value={newPhase.startDate} onChange={(e) => setNewPhase({ ...newPhase, startDate: e.target.value })} />
-                    <Input type="date" placeholder="结束日期" value={newPhase.endDate} onChange={(e) => setNewPhase({ ...newPhase, endDate: e.target.value })} />
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={addPhase}>
-                    <Plus className="h-4 w-4 mr-1" />添加阶段
-                  </Button>
-                  {formData.phases.length > 0 && (
-                    <div className="space-y-2">
-                      {formData.phases.map((phase) => (
-                        <div key={phase.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-sm">{phase.name}</p>
-                              <Badge variant={phase.status === 'completed' ? 'default' : phase.status === 'in-progress' ? 'secondary' : 'outline'} className="text-[10px]">
-                                {phase.status === 'completed' ? '已完成' : phase.status === 'in-progress' ? '进行中' : phase.status === 'delayed' ? '延期' : '待开始'}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground">{phase.description} · {phase.startDate.toLocaleDateString('zh-CN')} {phase.endDate ? `至 ${phase.endDate.toLocaleDateString('zh-CN')}` : ''}</p>
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => removePhase(phase.id)}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
         </div>
       </form>
     </div>

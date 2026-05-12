@@ -8,32 +8,37 @@ import { Progress } from "@/components/ui/progress"
 import { 
   Briefcase, 
   FileText, 
-  Users, 
+  Users,
   TrendingUp,
-  Building2,
   GraduationCap,
   ArrowRight,
-  Clock,
-  CheckCircle2,
-  XCircle,
   Eye,
+  Sparkles,
+  Calendar,
 } from "lucide-react"
-import { jobs, jobApplications, employmentStats } from "@/lib/mock-data"
-import { JOB_STATUS_LABELS, APPLICATION_STATUS_LABELS } from "@/lib/types"
+import { jobs, employmentStats, jobRecommendations } from "@/lib/mock-data"
+import { JOB_STATUS_LABELS } from "@/lib/types"
 
-const statusColors: Record<string, string> = {
+const recStatusLabels: Record<string, string> = {
+  pending: "待查看",
+  viewed: "已查看",
+  contacted: "已联系",
+  hired: "已录用",
+  rejected: "不合适",
+}
+
+const recStatusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   viewed: "bg-blue-100 text-blue-800",
-  interview: "bg-purple-100 text-purple-800",
-  offer: "bg-green-100 text-green-800",
+  contacted: "bg-purple-100 text-purple-800",
   hired: "bg-emerald-100 text-emerald-800",
-  rejected: "bg-red-100 text-red-800",
-  withdrawn: "bg-gray-100 text-gray-800",
+  rejected: "bg-gray-100 text-gray-800",
 }
 
 export default function EmploymentPage() {
-  const recentApplications = jobApplications.slice(0, 5)
+  const recentRecommendations = jobRecommendations.slice(0, 5)
   const urgentJobs = jobs.filter(j => j.isUrgent && j.status === "published")
+  const activeJobs = jobs.filter(j => j.status === "published")
 
   return (
     <div className="space-y-6">
@@ -41,7 +46,7 @@ export default function EmploymentPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">就业服务管理</h1>
-          <p className="text-muted-foreground">岗位发布、学生投递、信息撮合服务</p>
+          <p className="text-muted-foreground">就业项目管理、岗位发布、智能推荐</p>
         </div>
         <div className="flex gap-2">
           <Button asChild>
@@ -66,25 +71,25 @@ export default function EmploymentPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">投递总数</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">推荐总数</CardTitle>
+            <Sparkles className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{employmentStats.totalApplications}</div>
+            <div className="text-2xl font-bold">{employmentStats.totalRecommendations}</div>
             <p className="text-xs text-muted-foreground">
-              待处理 {employmentStats.pendingApplications} 份
+              待查看 {employmentStats.pendingRecommendations} 人
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">面试中</CardTitle>
+            <CardTitle className="text-sm font-medium">已联系</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{employmentStats.interviewCount}</div>
+            <div className="text-2xl font-bold">{employmentStats.contactedCount}</div>
             <p className="text-xs text-muted-foreground">
-              已发offer {employmentStats.applicationsByStatus.offer} 份
+              企业已发起联系
             </p>
           </CardContent>
         </Card>
@@ -96,7 +101,7 @@ export default function EmploymentPage() {
           <CardContent>
             <div className="text-2xl font-bold">{employmentStats.hiredCount}</div>
             <p className="text-xs text-muted-foreground">
-              录用率 {employmentStats.totalApplications > 0 ? ((employmentStats.hiredCount / employmentStats.totalApplications) * 100).toFixed(1) : 0}%
+              录用率 {employmentStats.totalRecommendations > 0 ? ((employmentStats.hiredCount / employmentStats.totalRecommendations) * 100).toFixed(1) : 0}%
             </p>
           </CardContent>
         </Card>
@@ -109,7 +114,7 @@ export default function EmploymentPage() {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-amber-100 rounded-lg">
-                  <FileText className="h-5 w-5 text-amber-600" />
+                  <Calendar className="h-5 w-5 text-amber-600" />
                 </div>
                 <div>
                   <CardTitle className="text-base">就业项目</CardTitle>
@@ -150,23 +155,23 @@ export default function EmploymentPage() {
             </CardContent>
           </Card>
         </Link>
-        <Link href="/admin/employment/applications">
+        <Link href="/admin/employment/recommendations">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <FileText className="h-5 w-5 text-blue-600" />
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Sparkles className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <CardTitle className="text-base">投递管理</CardTitle>
-                  <CardDescription>查看和处理学生投递</CardDescription>
+                  <CardTitle className="text-base">就业推荐</CardTitle>
+                  <CardDescription>智能匹配推荐毕业生</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
-                  {employmentStats.pendingApplications} 份待处理
+                  {employmentStats.totalRecommendations} 条推荐
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </div>
@@ -189,7 +194,7 @@ export default function EmploymentPage() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
-                  查看学生简历
+                  查看学生画像
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </div>
@@ -199,30 +204,35 @@ export default function EmploymentPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* 最新投递 */}
+        {/* 最新推荐 */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>最新投递</CardTitle>
+            <CardTitle>最新推荐</CardTitle>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/admin/employment/applications">查看全部</Link>
+              <Link href="/admin/employment/recommendations">查看全部</Link>
             </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentApplications.map((app) => (
-                <div key={app.id} className="flex items-center justify-between p-3 border rounded-lg">
+              {recentRecommendations.map((rec) => (
+                <div key={rec.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 bg-muted rounded-full flex items-center justify-center">
                       <GraduationCap className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{app.studentName}</p>
-                      <p className="text-xs text-muted-foreground">投递: {app.jobTitle}</p>
+                      <p className="font-medium text-sm">{rec.studentName}</p>
+                      <p className="text-xs text-muted-foreground">推荐至: {rec.jobTitle}</p>
                     </div>
                   </div>
-                  <Badge className={statusColors[app.status]}>
-                    {APPLICATION_STATUS_LABELS[app.status]}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      匹配度 {rec.matchScore}%
+                    </Badge>
+                    <Badge className={recStatusColors[rec.status]}>
+                      {recStatusLabels[rec.status]}
+                    </Badge>
+                  </div>
                 </div>
               ))}
             </div>
@@ -253,7 +263,7 @@ export default function EmploymentPage() {
                         <p className="text-sm text-muted-foreground">{job.partnerName}</p>
                       </div>
                       <p className="text-sm font-medium text-primary">
-                        {job.salaryMin && job.salaryMax ? `${job.salaryMin/1000}-${job.salaryMax/1000}K` : '面议'}
+                        {job.salaryMin && job.salaryMax ? `${job.salaryMin}-${job.salaryMax}K` : '面议'}
                       </p>
                     </div>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -263,8 +273,8 @@ export default function EmploymentPage() {
                           {job.viewCount} 浏览
                         </span>
                         <span className="flex items-center gap-1">
-                          <FileText className="h-3 w-3" />
-                          {job.applicationCount} 投递
+                          <Sparkles className="h-3 w-3" />
+                          {jobRecommendations.filter(r => r.jobId === job.id).length} 推荐
                         </span>
                       </div>
                       <span>招 {job.headcount} 人</span>
@@ -277,18 +287,18 @@ export default function EmploymentPage() {
         </Card>
       </div>
 
-      {/* 投递状态分布 */}
+      {/* 推荐状态分布 */}
       <Card>
         <CardHeader>
-          <CardTitle>投递状态分布</CardTitle>
+          <CardTitle>推荐状态分布</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-7">
-            {Object.entries(employmentStats.applicationsByStatus).map(([status, count]) => (
+          <div className="grid gap-4 md:grid-cols-5">
+            {Object.entries(employmentStats.recommendationsByStatus).map(([status, count]) => (
               <div key={status} className="text-center p-3 bg-muted/50 rounded-lg">
                 <p className="text-2xl font-bold">{count}</p>
                 <p className="text-xs text-muted-foreground">
-                  {APPLICATION_STATUS_LABELS[status as keyof typeof APPLICATION_STATUS_LABELS]}
+                  {recStatusLabels[status] || status}
                 </p>
               </div>
             ))}

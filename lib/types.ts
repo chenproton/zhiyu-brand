@@ -28,6 +28,12 @@ export type ProjectPublishStatus = 'draft' | 'published'
 // 专家评级
 export type ExpertRating = 'gold' | 'silver' | 'bronze'
 
+// 专家性别
+export type ExpertGender = 'male' | 'female'
+
+// 专家类型
+export type ExpertType = '企业导师' | '测评专员' | '教学专家' | '技术顾问' | '创业导师' | '评审专家'
+
 // 活动状态
 export type ActivityStatus = 'draft' | 'published' | 'ended'
 
@@ -195,10 +201,12 @@ export interface Project {
 export interface Expert {
   id: string
   name: string
+  gender?: ExpertGender
   partnerId?: string
   partnerName?: string
   title: string
   field: string
+  expertType?: ExpertType
   specialties: string[]
   experience: number
   rating: ExpertRating
@@ -208,6 +216,7 @@ export interface Expert {
   achievements?: string[]
   contactEmail?: string
   contactPhone?: string
+  isContactHidden?: boolean
   status: 'active' | 'inactive'
   createdAt: Date
   updatedAt: Date
@@ -416,6 +425,16 @@ export const EXPERT_ROLES = [
   '课程开发',
 ]
 
+// 专家类型列表
+export const EXPERT_TYPES: ExpertType[] = [
+  '企业导师',
+  '测评专员',
+  '教学专家',
+  '技术顾问',
+  '创业导师',
+  '评审专家',
+]
+
 // 活动类型列表
 export const ACTIVITY_TYPES = [
   '校企交流会',
@@ -428,32 +447,92 @@ export const ACTIVITY_TYPES = [
   '培训活动',
 ]
 
-// ==================== 合作权限管理类型 ====================
+// ==================== 合作权限管理类型（新版）====================
 
-// 权限主体类型
-export type PermissionSubjectType = 'enterprise' | 'expert'
+// 合作账号类型：企业公共账号 / 专家个人账号
+export type CooperationAccountType = 'enterprise_public' | 'expert_personal'
 
-// 功能权限项
-export type FunctionPermission = 'job_manage' | 'scene_manage' | 'course_manage'
-
-export const PERMISSION_SUBJECT_TYPE_LABELS: Record<PermissionSubjectType, string> = {
-  enterprise: '企业类型',
-  expert: '专家类型',
+export const COOPERATION_ACCOUNT_TYPE_LABELS: Record<CooperationAccountType, string> = {
+  enterprise_public: '企业公共账号',
+  expert_personal: '专家个人账号',
 }
 
-export const FUNCTION_PERMISSION_LABELS: Record<FunctionPermission, string> = {
-  job_manage: '岗位管理',
-  scene_manage: '场景管理',
-  course_manage: '课程管理',
-}
-
-// 权限配置记录
-export interface PermissionConfig {
+// 合作账号
+export interface CooperationAccount {
   id: string
-  subjectType: PermissionSubjectType
-  subjectId: string
-  subjectName: string
-  permissions: FunctionPermission[]
+  accountType: CooperationAccountType
+  ownerId: string        // 关联的企业ID或专家ID
+  ownerName: string      // 企业名称或专家姓名
+  ownerEntityType: 'enterprise' | 'expert'
+  accountName: string    // 账号显示名称
+  username: string       // 登录账号
+  password: string       // 登录密码
+  contactPerson: string
+  contactPhone: string
+  status: 'active' | 'inactive'
+  createdAt: Date
+  updatedAt: Date
+}
+
+// 资源类型
+export type ResourceType = 'position' | 'scene' | 'course'
+
+export const RESOURCE_TYPE_LABELS: Record<ResourceType, string> = {
+  position: '岗位管理',
+  scene: '场景管理',
+  course: '课程管理',
+}
+
+// 操作类型
+export type OperationType = 'view' | 'edit' | 'review' | 'publish' | 'delete'
+
+export const OPERATION_TYPE_LABELS: Record<OperationType, string> = {
+  view: '查看',
+  edit: '编辑',
+  review: '审核',
+  publish: '发布',
+  delete: '删除',
+}
+
+// 资源权限项（资源类型 + 批次 + 操作）
+export interface ResourcePermissionItem {
+  id: string
+  resourceType: ResourceType
+  batchName: string
+  operations: OperationType[]
+}
+
+// 测评类型
+export type AssessmentType = 'on_site_qa' | 'on_site_review' | 'question_bank' | 'exam_paper'
+
+export const ASSESSMENT_TYPE_LABELS: Record<AssessmentType, string> = {
+  on_site_qa: '现场问答',
+  on_site_review: '现场评审',
+  question_bank: '题库',
+  exam_paper: '试卷',
+}
+
+// 平台类型
+export type PlatformType = 'job' | 'scene' | 'brand'
+
+export const PLATFORM_TYPE_LABELS: Record<PlatformType, string> = {
+  job: '岗位平台',
+  scene: '场景平台',
+  brand: '品牌平台',
+}
+
+// 权限授权记录
+export interface PermissionGrant {
+  id: string
+  accountId: string
+  accountName: string
+  accountType: CooperationAccountType
+  ownerName: string
+
+  resourcePermissions: ResourcePermissionItem[]
+  assessmentPermissions: AssessmentType[]
+  authorizedPlatforms: PlatformType[]
+
   enabled: boolean
   createdAt: Date
   updatedAt: Date
@@ -663,6 +742,9 @@ export interface Job {
   partnerId: string
   partnerName: string
   partnerLogo?: string
+  // 基于岗位成果发布
+  jobBrandId?: string
+  jobBrandName?: string
   type: JobType
   workNature: WorkNature
   department: string
@@ -688,6 +770,24 @@ export interface Job {
   viewCount: number
   applicationCount: number
   deadline?: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+// 岗位推荐记录
+export interface JobRecommendation {
+  id: string
+  jobId: string
+  jobTitle: string
+  partnerId: string
+  partnerName: string
+  studentId: string
+  studentName: string
+  studentMajor: string
+  matchScore: number // 匹配度 0-100
+  matchReasons: string[] // 匹配原因标签
+  batchNo: string // 推荐批次号
+  status: 'pending' | 'viewed' | 'contacted' | 'hired' | 'rejected'
   createdAt: Date
   updatedAt: Date
 }
@@ -753,14 +853,14 @@ export interface JobFavorite {
 export interface EmploymentStats {
   totalJobs: number
   activeJobs: number
-  totalApplications: number
-  pendingApplications: number
-  interviewCount: number
+  totalRecommendations: number
+  pendingRecommendations: number
+  contactedCount: number
   hiredCount: number
   jobsByType: Record<JobType, number>
-  applicationsByStatus: Record<ApplicationStatus, number>
+  recommendationsByStatus: Record<string, number>
   topPartners: { partnerId: string; partnerName: string; jobCount: number }[]
-  topMajors: { major: string; applicationCount: number }[]
+  topMajors: { major: string; recommendationCount: number }[]
 }
 
 // 岗位状态标签
