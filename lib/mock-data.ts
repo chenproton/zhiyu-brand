@@ -5338,6 +5338,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 3119,
   secondaryCollege: '智能制造学院',
   createdAt: new Date('2023-01-03'),
+  jobCategory: "teaching",
   updatedAt: new Date('2024-06-22'),
 },
 {
@@ -5370,6 +5371,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 2978,
   secondaryCollege: '信息技术学院',
   createdAt: new Date('2023-03-22'),
+  jobCategory: "non-teaching",
   updatedAt: new Date('2024-06-15'),
 },
 {
@@ -5401,6 +5403,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 1262,
   secondaryCollege: '经济管理学院',
   createdAt: new Date('2023-08-17'),
+  jobCategory: "teaching",
   updatedAt: new Date('2024-06-13'),
 },
 {
@@ -5430,6 +5433,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 1207,
   secondaryCollege: '艺术设计学院',
   createdAt: new Date('2023-12-15'),
+  jobCategory: "non-teaching",
   updatedAt: new Date('2024-06-03'),
 },
 {
@@ -5460,6 +5464,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 1469,
   secondaryCollege: '新能源工程学院',
   createdAt: new Date('2023-08-01'),
+  jobCategory: "teaching",
   updatedAt: new Date('2024-06-12'),
 },
 {
@@ -5491,6 +5496,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 802,
   secondaryCollege: '生物医药学院',
   createdAt: new Date('2023-03-11'),
+  jobCategory: "non-teaching",
   updatedAt: new Date('2024-06-21'),
 },
 {
@@ -5520,6 +5526,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 1174,
   secondaryCollege: '现代服务学院',
   createdAt: new Date('2023-03-11'),
+  jobCategory: "teaching",
   updatedAt: new Date('2024-06-23'),
 },
 {
@@ -5550,6 +5557,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 1190,
   secondaryCollege: '国际教育学院',
   createdAt: new Date('2023-10-19'),
+  jobCategory: "non-teaching",
   updatedAt: new Date('2024-06-05'),
 },
 {
@@ -5580,6 +5588,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 3117,
   secondaryCollege: '创新创业学院',
   createdAt: new Date('2023-01-16'),
+  jobCategory: "teaching",
   updatedAt: new Date('2024-06-21'),
 },
 {
@@ -5611,6 +5620,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 1893,
   secondaryCollege: '智能制造学院',
   createdAt: new Date('2023-10-05'),
+  jobCategory: "non-teaching",
   updatedAt: new Date('2024-06-11'),
 },
 {
@@ -5642,6 +5652,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 1077,
   secondaryCollege: '信息技术学院',
   createdAt: new Date('2023-02-02'),
+  jobCategory: "teaching",
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -5673,6 +5684,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 868,
   secondaryCollege: '经济管理学院',
   createdAt: new Date('2023-07-17'),
+  jobCategory: "non-teaching",
   updatedAt: new Date('2024-06-15'),
 },
 {
@@ -5702,6 +5714,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 1048,
   secondaryCollege: '艺术设计学院',
   createdAt: new Date('2023-05-24'),
+  jobCategory: "teaching",
   updatedAt: new Date('2024-06-12'),
 },
 {
@@ -5733,6 +5746,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 3002,
   secondaryCollege: '新能源工程学院',
   createdAt: new Date('2023-02-05'),
+  jobCategory: "non-teaching",
   updatedAt: new Date('2024-06-04'),
 },
 {
@@ -5764,6 +5778,7 @@ export const jobBrands: JobBrand[] = [
   viewCount: 2371,
   secondaryCollege: '生物医药学院',
   createdAt: new Date('2023-03-20'),
+  jobCategory: "teaching",
   updatedAt: new Date('2024-06-17'),
 },
 ]

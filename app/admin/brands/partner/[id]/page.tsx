@@ -152,7 +152,7 @@ export default function PartnerDetailPage() {
             </div>
           </div>
         </div>
-        <Button>
+        <Button onClick={() => alert('编辑功能开发中')}>
           <Pencil className="h-4 w-4 mr-2" />
           编辑信息
         </Button>

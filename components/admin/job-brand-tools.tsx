@@ -110,12 +110,14 @@ export function NonTeachingJobDialog({
   partner,
   initialJob,
   onSave,
+  description,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   partner: Pick<Partner, "id" | "name" | "logo">
   initialJob?: Job | null
   onSave: (job: Job) => void
+  description?: string
 }) {
   const [form, setForm] = useState<JobFormState>(() =>
     initialJob
@@ -167,7 +169,7 @@ export function NonTeachingJobDialog({
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{initialJob ? "编辑非教学岗位" : "新建非教学岗位"}</DialogTitle>
-          <DialogDescription>填写岗位基础信息，保存后直接关联到当前雇主品牌。</DialogDescription>
+          <DialogDescription>{description || "填写岗位基础信息，保存后直接关联到当前雇主品牌。"}</DialogDescription>
         </DialogHeader>
         <div className="space-y-5 py-2">
           <div className="space-y-2">
@@ -231,11 +233,13 @@ export function TeachingJobDialog({
   onOpenChange,
   partner,
   onSave,
+  description,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   partner: Pick<Partner, "id" | "name" | "logo">
   onSave: (job: Job) => void
+  description?: string
 }) {
   const [search, setSearch] = useState("")
   const [selectedId, setSelectedId] = useState("")
@@ -290,7 +294,7 @@ export function TeachingJobDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>引用教学岗位</DialogTitle>
-          <DialogDescription>从岗位库中选择教学岗位，保存后关联到当前雇主品牌。</DialogDescription>
+          <DialogDescription>{description || "从岗位库中选择教学岗位，保存后关联到当前雇主品牌。"}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="relative">

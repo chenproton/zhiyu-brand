@@ -25,8 +25,13 @@ import {
 } from "@/components/ui/select"
 import { ArrowLeft, Search, Eye, Plus, Pencil, Trash2, TrendingUp, Users, AlertCircle } from "lucide-react"
 import { jobBrands, jobs, enterprises } from "@/lib/mock-data"
-import type { JobBrand } from "@/lib/types"
-import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS, INDUSTRIES } from "@/lib/types"
+import type { JobBrand, Job } from "@/lib/types"
+import { BRAND_STATUS_LABELS, INDUSTRIES, JOB_CATEGORY_LABELS } from "@/lib/types"
+import {
+  JobActionButtons,
+  NonTeachingJobDialog,
+  TeachingJobDialog,
+} from "@/components/admin/job-brand-tools"
 
 function generateId() {
   return "jb-" + Math.random().toString(36).substr(2, 9)
@@ -36,29 +41,19 @@ function splitByComma(val: string): string[] {
   return val.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
 }
 
+const virtualPartner = { id: "virtual", name: "岗位品牌", logo: "" }
+
 export default function JobBrandPage() {
   const [data, setData] = useState<JobBrand[]>(jobBrands)
   const [searchTerm, setSearchTerm] = useState("")
   const [levelFilter, setLevelFilter] = useState("all")
   const [industryFilter, setIndustryFilter] = useState("all")
 
-  const [isQuoteOpen, setIsQuoteOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<JobBrand | null>(null)
 
-  const [selectedJobId, setSelectedJobId] = useState("")
-  const [quoteForm, setQuoteForm] = useState<Partial<JobBrand>>({
-    level: "standard",
-    status: "draft",
-    featureTags: [],
-    description: "",
-    name: "",
-    industry: "",
-    suitableMajors: [],
-    averageSalary: "",
-    demandCount: 0,
-    abilityModel: [],
-  })
+  const [teachingOpen, setTeachingOpen] = useState(false)
+  const [nonTeachingOpen, setNonTeachingOpen] = useState(false)
 
   const [editForm, setEditForm] = useState<Partial<JobBrand>>({})
 
@@ -68,66 +63,6 @@ export default function JobBrandPage() {
     const matchesIndustry = industryFilter === "all" || job.industry === industryFilter
     return matchesSearch && matchesLevel && matchesIndustry
   })
-
-  const handleSelectJob = (jobId: string) => {
-    setSelectedJobId(jobId)
-    const job = jobs.find((j) => j.id === jobId)
-    if (!job) return
-    const enterprise = enterprises.find((e) => e.id === job.partnerId)
-    const salaryStr =
-      job.salaryMin && job.salaryMax
-        ? `${job.salaryMin}-${job.salaryMax}K`
-        : job.salaryMin
-          ? `${job.salaryMin}K`
-          : ""
-    setQuoteForm((prev) => ({
-      ...prev,
-      name: job.title,
-      industry: enterprise?.industry || "",
-      suitableMajors: job.suitableMajors,
-      averageSalary: salaryStr,
-      demandCount: job.headcount,
-    }))
-  }
-
-  const resetQuoteForm = () => {
-    setSelectedJobId("")
-    setQuoteForm({
-      level: "standard",
-      status: "draft",
-      featureTags: [],
-      description: "",
-      name: "",
-      industry: "",
-      suitableMajors: [],
-      averageSalary: "",
-      demandCount: 0,
-      abilityModel: [],
-    })
-  }
-
-  const handleQuoteSubmit = () => {
-    if (!quoteForm.name || !selectedJobId) return
-    const newItem: JobBrand = {
-      id: generateId(),
-      name: quoteForm.name || "",
-      industry: quoteForm.industry || "",
-      level: (quoteForm.level as JobBrand["level"]) || "standard",
-      description: quoteForm.description || "",
-      abilityModel: quoteForm.abilityModel || [],
-      suitableMajors: quoteForm.suitableMajors || [],
-      averageSalary: quoteForm.averageSalary,
-      demandCount: quoteForm.demandCount || 0,
-      featureTags: quoteForm.featureTags || [],
-      status: (quoteForm.status as JobBrand["status"]) || "draft",
-      viewCount: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-    setData((prev) => [newItem, ...prev])
-    setIsQuoteOpen(false)
-    resetQuoteForm()
-  }
 
   const handleDelete = (id: string) => {
     if (confirm("确定要删除该岗位品牌吗？")) {
@@ -154,6 +89,44 @@ export default function JobBrandPage() {
     setEditingItem(null)
   }
 
+  const convertJobToJobBrand = (job: Job, category: "teaching" | "non-teaching"): JobBrand => {
+    const salaryStr =
+      job.salaryMin && job.salaryMax
+        ? `${job.salaryMin}-${job.salaryMax}K`
+        : job.salaryMin
+          ? `${job.salaryMin}K`
+          : ""
+    return {
+      id: generateId(),
+      name: job.title,
+      industry: job.industry || "",
+      level: "standard",
+      description: job.description || "",
+      abilityModel: [],
+      suitableMajors: job.suitableMajors || [],
+      averageSalary: salaryStr,
+      demandCount: job.headcount || 1,
+      featureTags: [],
+      status: "draft",
+      viewCount: 0,
+      jobCategory: category,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+  }
+
+  const handleSaveTeaching = (job: Job) => {
+    const newItem = convertJobToJobBrand(job, "teaching")
+    setData((prev) => [newItem, ...prev])
+    setTeachingOpen(false)
+  }
+
+  const handleSaveNonTeaching = (job: Job) => {
+    const newItem = convertJobToJobBrand(job, "non-teaching")
+    setData((prev) => [newItem, ...prev])
+    setNonTeachingOpen(false)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -176,10 +149,10 @@ export default function JobBrandPage() {
               <CardDescription>从职业岗位平台同步岗位，进行品牌化配置</CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => setIsQuoteOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                引用岗位
-              </Button>
+              <JobActionButtons
+                onAddTeaching={() => setTeachingOpen(true)}
+                onAddNonTeaching={() => setNonTeachingOpen(true)}
+              />
             </div>
           </div>
         </CardHeader>
@@ -231,7 +204,7 @@ export default function JobBrandPage() {
                   />
                   <div className="absolute top-2 left-2 flex gap-1">
                     <Badge variant="outline">
-                      {BRAND_LEVEL_LABELS[job.level]}
+                      {JOB_CATEGORY_LABELS[job.jobCategory || "non-teaching"]}
                     </Badge>
                     <Badge variant={job.status === "published" ? "secondary" : "outline"}>
                       {BRAND_STATUS_LABELS[job.status]}
@@ -307,48 +280,23 @@ export default function JobBrandPage() {
         </CardContent>
       </Card>
 
-      {/* 引用岗位 Dialog */}
-      <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>引用岗位</DialogTitle>
-            <DialogDescription>从岗位库中选择岗位进行引用</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>选择源岗位</Label>
-              <Select value={selectedJobId} onValueChange={handleSelectJob}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择岗位" />
-                </SelectTrigger>
-                <SelectContent>
-                  {jobs.map((job) => (
-                    <SelectItem key={job.id} value={job.id}>
-                      {job.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {selectedJobId && (
-              <div className="rounded-md bg-muted p-3 text-sm space-y-1">
-                <p><span className="text-muted-foreground">岗位名称：</span>{quoteForm.name}</p>
-                <p><span className="text-muted-foreground">所属行业：</span>{quoteForm.industry || "-"}</p>
-                <p><span className="text-muted-foreground">薪资范围：</span>{quoteForm.averageSalary || "-"}</p>
-                <p><span className="text-muted-foreground">需求量：</span>{quoteForm.demandCount || 0}</p>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsQuoteOpen(false); resetQuoteForm(); }}>
-              取消
-            </Button>
-            <Button onClick={handleQuoteSubmit} disabled={!selectedJobId}>
-              确认引用
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* 引用教学岗位 Dialog */}
+      <TeachingJobDialog
+        open={teachingOpen}
+        onOpenChange={setTeachingOpen}
+        partner={virtualPartner}
+        onSave={handleSaveTeaching}
+        description="从岗位库中选择教学岗位，保存后添加到岗位品牌列表。"
+      />
+
+      {/* 添加非教学岗位 Dialog */}
+      <NonTeachingJobDialog
+        open={nonTeachingOpen}
+        onOpenChange={setNonTeachingOpen}
+        partner={virtualPartner}
+        onSave={handleSaveNonTeaching}
+        description="填写岗位基础信息，保存后添加到岗位品牌列表。"
+      />
 
       {/* 编辑 Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
@@ -414,18 +362,17 @@ export default function JobBrandPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>品牌等级</Label>
+              <Label>岗位分类</Label>
               <Select
-                value={editForm.level || "standard"}
-                onValueChange={(val) => setEditForm((prev) => ({ ...prev, level: val as JobBrand["level"] }))}
+                value={editForm.jobCategory || "non-teaching"}
+                onValueChange={(val) => setEditForm((prev) => ({ ...prev, jobCategory: val as JobBrand["jobCategory"] }))}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="recommended">推荐品牌</SelectItem>
-                  <SelectItem value="key">重点品牌</SelectItem>
-                  <SelectItem value="standard">标准品牌</SelectItem>
+                  <SelectItem value="teaching">教学岗位</SelectItem>
+                  <SelectItem value="non-teaching">非教学岗位</SelectItem>
                 </SelectContent>
               </Select>
             </div>

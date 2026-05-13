@@ -272,11 +272,6 @@ export default function PartnerBrandPage() {
           </Select>
         </div>
         <div className="flex gap-2">
-          <JobActionButtons
-            size="default"
-            onAddTeaching={() => openJobDialog("teaching")}
-            onAddNonTeaching={() => openJobDialog("non-teaching")}
-          />
           <Button variant="outline" onClick={openCreate}>
             <Plus className="h-4 w-4 mr-2" />
             新增独立雇主品牌
@@ -376,10 +371,6 @@ export default function PartnerBrandPage() {
                   <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => handleDelete(partner.id)}>
                     <Trash2 className="h-3 w-3 mr-1" />
                     删除
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => openJobDialog("non-teaching", partner)}>
-                    <Plus className="h-3 w-3 mr-1" />
-                    添加岗位
                   </Button>
                 </div>
               </div>

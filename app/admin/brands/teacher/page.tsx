@@ -57,25 +57,17 @@ const emptyExpertForm = {
 }
 
 function TransferPicker({
-  groups,
-  activeGroup,
-  onActiveGroupChange,
   items,
   selectedItems,
   selectedIds,
   onSelectedIdsChange,
-  groupTitle,
   availableTitle,
   selectedTitle,
 }: {
-  groups: string[]
-  activeGroup: string
-  onActiveGroupChange: (group: string) => void
-  items: { id: string; title: string; subtitle: string }[]
+  items: { id: string; title: string; subtitle: string; group: string }[]
   selectedItems: { id: string; title: string; subtitle: string }[]
   selectedIds: string[]
   onSelectedIdsChange: (ids: string[]) => void
-  groupTitle: string
   availableTitle: string
   selectedTitle: string
 }) {
@@ -85,61 +77,54 @@ function TransferPicker({
   const remove = (id: string) => {
     onSelectedIdsChange(selectedIds.filter((item) => item !== id))
   }
-  const addAll = () => {
-    onSelectedIdsChange(Array.from(new Set([...selectedIds, ...items.map((item) => item.id)])))
-  }
-  const clearAll = () => {
-    onSelectedIdsChange([])
-  }
+
+  const groups = Array.from(new Set(items.map((item) => item.group)))
+  const grouped = groups
+    .map((group) => ({
+      group,
+      items: items.filter((item) => item.group === group && !selectedIds.includes(item.id)),
+    }))
+    .filter((g) => g.items.length > 0)
 
   return (
-    <div className="grid gap-4 py-4 md:grid-cols-[180px_1fr_1fr]">
+    <div className="grid gap-4 py-4 md:grid-cols-[1fr_1fr]">
       <div className="rounded-md border">
-        <div className="border-b px-3 py-2 text-sm font-medium">{groupTitle}</div>
+        <div className="border-b px-3 py-2 text-sm font-medium">{availableTitle}</div>
         <div className="max-h-80 overflow-y-auto p-2">
-          {groups.map((group) => (
-            <button
-              key={group}
-              type="button"
-              className={`w-full rounded px-3 py-2 text-left text-sm hover:bg-muted ${activeGroup === group ? "bg-muted font-medium" : ""}`}
-              onClick={() => onActiveGroupChange(group)}
-            >
-              {group}
-            </button>
+          {grouped.map(({ group, items }) => (
+            <div key={group}>
+              <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 rounded mt-1">
+                {group}
+              </div>
+              {items.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm hover:bg-muted"
+                  onClick={() => add(item.id)}
+                >
+                  <span>
+                    <span className="block font-medium">{item.title}</span>
+                    <span className="text-xs text-muted-foreground">{item.subtitle}</span>
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
+              ))}
+            </div>
           ))}
-        </div>
-      </div>
-      <div className="rounded-md border">
-        <div className="flex items-center justify-between border-b px-3 py-2">
-          <span className="text-sm font-medium">{availableTitle}</span>
-          <Button variant="ghost" size="sm" onClick={addAll}>
-            全部加入 <ChevronRight className="ml-1 h-4 w-4" />
-          </Button>
-        </div>
-        <div className="max-h-80 overflow-y-auto p-2">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              disabled={selectedIds.includes(item.id)}
-              className="flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-              onClick={() => add(item.id)}
-            >
-              <span>
-                <span className="block font-medium">{item.title}</span>
-                <span className="text-xs text-muted-foreground">{item.subtitle}</span>
-              </span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </button>
-          ))}
+          {grouped.length === 0 && (
+            <div className="py-10 text-center text-sm text-muted-foreground">无可选项目</div>
+          )}
         </div>
       </div>
       <div className="rounded-md border">
         <div className="flex items-center justify-between border-b px-3 py-2">
           <span className="text-sm font-medium">{selectedTitle}（{selectedItems.length}）</span>
-          <Button variant="ghost" size="sm" onClick={clearAll}>
-            <ChevronLeft className="mr-1 h-4 w-4" />清空
-          </Button>
+          {selectedItems.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => onSelectedIdsChange([])}>
+              清空
+            </Button>
+          )}
         </div>
         <div className="max-h-80 overflow-y-auto p-2">
           {selectedItems.length === 0 ? (
@@ -175,20 +160,13 @@ export default function TeacherBrandPage() {
   const [teacherDialogOpen, setTeacherDialogOpen] = useState(false)
   const [editingTeacher, setEditingTeacher] = useState<TeacherBrand | null>(null)
   const [teacherForm, setTeacherForm] = useState(emptyTeacherForm)
-  const [selectedTeacherId, setSelectedTeacherId] = useState("")
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([])
-  const [teacherOrg, setTeacherOrg] = useState("")
 
   // Expert dialog
   const [expertDialogOpen, setExpertDialogOpen] = useState(false)
   const [editingExpert, setEditingExpert] = useState<Expert | null>(null)
   const [expertForm, setExpertForm] = useState(emptyExpertForm)
-  const [selectedExpertId, setSelectedExpertId] = useState("")
   const [selectedExpertIds, setSelectedExpertIds] = useState<string[]>([])
-  const [expertOrg, setExpertOrg] = useState("")
-
-  const teacherDepartments = Array.from(new Set(teacherBrands.map((teacher) => teacher.department)))
-  const expertCompanies = Array.from(new Set(experts.map((expert) => expert.partnerName || "未归属企业")))
 
   const filteredTeachers = teachers.filter(
     (teacher) =>
@@ -205,9 +183,7 @@ export default function TeacherBrandPage() {
   // Teacher CRUD
   function openAddTeacherDialog() {
     setEditingTeacher(null)
-    setSelectedTeacherId("")
     setSelectedTeacherIds([])
-    setTeacherOrg(teacherDepartments[0] || "")
     setTeacherDialogOpen(true)
   }
 
@@ -228,8 +204,7 @@ export default function TeacherBrandPage() {
   }
 
   function handleImportTeacher() {
-    const selected = selectedTeacherIds.length > 0 ? selectedTeacherIds : selectedTeacherId ? [selectedTeacherId] : []
-    const newTeachers = selected
+    const newTeachers = selectedTeacherIds
       .map((id) => teacherBrands.find((t) => t.id === id))
       .filter(Boolean)
       .map((source) => ({
@@ -241,7 +216,6 @@ export default function TeacherBrandPage() {
     if (newTeachers.length === 0) return
     setTeachers((prev) => [...prev, ...newTeachers])
     setTeacherDialogOpen(false)
-    setSelectedTeacherId("")
     setSelectedTeacherIds([])
   }
 
@@ -304,9 +278,7 @@ export default function TeacherBrandPage() {
   // Expert CRUD
   function openAddExpertDialog() {
     setEditingExpert(null)
-    setSelectedExpertId("")
     setSelectedExpertIds([])
-    setExpertOrg(expertCompanies[0] || "")
     setExpertDialogOpen(true)
   }
 
@@ -324,8 +296,7 @@ export default function TeacherBrandPage() {
   }
 
   function handleImportExpert() {
-    const selected = selectedExpertIds.length > 0 ? selectedExpertIds : selectedExpertId ? [selectedExpertId] : []
-    const newExperts = selected
+    const newExperts = selectedExpertIds
       .map((id) => experts.find((e) => e.id === id))
       .filter(Boolean)
       .map((source) => ({
@@ -337,7 +308,6 @@ export default function TeacherBrandPage() {
     if (newExperts.length === 0) return
     setDisplayedExperts((prev) => [...prev, ...newExperts])
     setExpertDialogOpen(false)
-    setSelectedExpertId("")
     setSelectedExpertIds([])
   }
 
@@ -366,9 +336,7 @@ export default function TeacherBrandPage() {
         )
       )
     } else {
-      const sourceExpert = experts.find((e) => e.id === selectedExpertId)
       const newExpert: Expert = {
-        ...(sourceExpert || ({} as Expert)),
         id: generateId("ex"),
         name: expertForm.name,
         title: expertForm.title,
@@ -376,6 +344,7 @@ export default function TeacherBrandPage() {
         specialties,
         experience,
         rating: expertForm.rating,
+        status: "active",
         updatedAt: new Date(),
         createdAt: new Date(),
       }
@@ -587,19 +556,18 @@ export default function TeacherBrandPage() {
 
           {!editingTeacher ? (
             <TransferPicker
-              groups={teacherDepartments}
-              activeGroup={teacherOrg}
-              onActiveGroupChange={setTeacherOrg}
-              items={teacherBrands
-                .filter((teacher) => teacher.department === teacherOrg)
-                .map((teacher) => ({ id: teacher.id, title: teacher.name, subtitle: `${teacher.title} · ${teacher.department}` }))}
+              items={teacherBrands.map((teacher) => ({
+                id: teacher.id,
+                title: teacher.name,
+                subtitle: teacher.title,
+                group: teacher.department,
+              }))}
               selectedItems={teacherBrands
                 .filter((teacher) => selectedTeacherIds.includes(teacher.id))
                 .map((teacher) => ({ id: teacher.id, title: teacher.name, subtitle: `${teacher.title} · ${teacher.department}` }))}
               selectedIds={selectedTeacherIds}
               onSelectedIdsChange={setSelectedTeacherIds}
-              groupTitle="组织架构"
-              availableTitle="部门教师"
+              availableTitle="教师名单"
               selectedTitle="已选教师"
             />
           ) : (
@@ -740,19 +708,18 @@ export default function TeacherBrandPage() {
 
           {!editingExpert ? (
             <TransferPicker
-              groups={expertCompanies}
-              activeGroup={expertOrg}
-              onActiveGroupChange={setExpertOrg}
-              items={experts
-                .filter((expert) => (expert.partnerName || "未归属企业") === expertOrg)
-                .map((expert) => ({ id: expert.id, title: expert.name, subtitle: `${expert.title} · ${expert.partnerName || "未归属企业"}` }))}
+              items={experts.map((expert) => ({
+                id: expert.id,
+                title: expert.name,
+                subtitle: expert.title,
+                group: expert.partnerName || "未归属企业",
+              }))}
               selectedItems={experts
                 .filter((expert) => selectedExpertIds.includes(expert.id))
                 .map((expert) => ({ id: expert.id, title: expert.name, subtitle: `${expert.title} · ${expert.partnerName || "未归属企业"}` }))}
               selectedIds={selectedExpertIds}
               onSelectedIdsChange={setSelectedExpertIds}
-              groupTitle="所属企业"
-              availableTitle="企业专家"
+              availableTitle="专家名单"
               selectedTitle="已选专家"
             />
           ) : (

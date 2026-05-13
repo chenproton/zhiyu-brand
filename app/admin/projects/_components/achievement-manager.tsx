@@ -210,11 +210,9 @@ export function AchievementManager({
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
-                        <Link href={`/admin/achievements/${item.id}/edit`}>
-                          <Button type="button" variant="ghost" size="icon" className="h-7 w-7">
+                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => alert("编辑功能开发中")}>
                             <Pencil className="h-4 w-4" />
                           </Button>
-                        </Link>
                       </>
                     ) : (
                       <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => alert('跳转到对应系统中查看')}>
@@ -385,7 +383,7 @@ export function AchievementManager({
                     <Checkbox
                       checked={selectedIds.has(achievement.id)}
                       onCheckedChange={() => toggleAchievement(achievement.id)}
-                      className="mt-0.5"
+                      className="mt-0.5 pointer-events-none"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">

@@ -415,12 +415,10 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                                 查看详情
                               </Button>
                             </Link>
-                            <Link href={`/admin/achievements/${achievement.id}/edit`}>
-                              <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={() => alert("编辑功能开发中")}>
                                 <Pencil className="h-3 w-3 mr-1" />
                                 编辑
                               </Button>
-                            </Link>
                           </>
                         ) : (
                           <AchievementViewButton />

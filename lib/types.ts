@@ -668,6 +668,7 @@ export interface JobBrand {
   status: BrandStatus
   viewCount: number
   secondaryCollege?: string
+  jobCategory?: JobCategory
   createdAt: Date
   updatedAt: Date
 }
