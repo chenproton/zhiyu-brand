@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Search, Plus, Pencil, Trash2, Building2, MapPin, Users, Briefcase } from "lucide-react"
+import { ArrowLeft, Search, Plus, Pencil, Trash2, Building2, MapPin, Users, Briefcase, Upload, X } from "lucide-react"
 import { jobs, partners } from "@/lib/mock-data"
 import { JobActionButtons, NonTeachingJobDialog, TeachingJobDialog } from "@/components/admin/job-brand-tools"
 import {
@@ -103,6 +103,36 @@ export default function PartnerBrandPage() {
   // Create form states
   const [createForm, setCreateForm] = useState({ ...emptyPartner })
 
+  // Photo upload refs & state
+  const licenseFileRef = useRef<HTMLInputElement>(null)
+  const ipFileRef = useRef<HTMLInputElement>(null)
+  const qualFileRef = useRef<HTMLInputElement>(null)
+  const coverFileRef = useRef<HTMLInputElement>(null)
+  const [licensePhotos, setLicensePhotos] = useState<string[]>([])
+  const [ipPhotos, setIpPhotos] = useState<string[]>([])
+  const [qualPhotos, setQualPhotos] = useState<string[]>([])
+  const [coverPhotos, setCoverPhotos] = useState<string[]>([])
+
+  const handleFileChange = (setter: React.Dispatch<React.SetStateAction<string[]>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files) {
+      const newPhotos = Array.from(files).map((file) => URL.createObjectURL(file))
+      setter((prev) => [...prev, ...newPhotos])
+    }
+    e.target.value = ''
+  }
+
+  const removePhoto = (setter: React.Dispatch<React.SetStateAction<string[]>>, index: number) => {
+    setter((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const resetCreatePhotos = () => {
+    setLicensePhotos([])
+    setIpPhotos([])
+    setQualPhotos([])
+    setCoverPhotos([])
+  }
+
   const filteredPartners = displayedPartners.filter((partner) => {
     const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = typeFilter === "all" || partner.type === typeFilter
@@ -125,6 +155,7 @@ export default function PartnerBrandPage() {
 
   const openCreate = () => {
     setCreateForm({ ...emptyPartner })
+    resetCreatePhotos()
     setCreateDialogOpen(true)
   }
 
@@ -165,6 +196,10 @@ export default function PartnerBrandPage() {
       address: createForm.address || undefined,
       establishedYear: createForm.establishedYear || undefined,
       employeeCount: createForm.employeeCount || undefined,
+      businessLicensePhotos: licensePhotos.length > 0 ? licensePhotos : undefined,
+      intellectualPropertyPhotos: ipPhotos.length > 0 ? ipPhotos : undefined,
+      qualificationPhotos: qualPhotos.length > 0 ? qualPhotos : undefined,
+      coverPhotos: coverPhotos.length > 0 ? coverPhotos : undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -335,35 +370,41 @@ export default function PartnerBrandPage() {
                 )}
               </div>
 
-              {!partner.id.startsWith('custom-') && (
-                <div className="flex flex-wrap gap-1 mt-3">
-                  {partner.cooperationTypes.slice(0, 3).map((type) => (
-                    <Badge key={type} variant="secondary" className="text-[10px] px-1.5 py-0">
-                      {type}
-                    </Badge>
-                  ))}
-                  {partner.cooperationTypes.length > 3 && (
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                      +{partner.cooperationTypes.length - 3}
-                    </Badge>
-                  )}
+              {!partner.id.startsWith('custom-') && partner.cooperationTypes.length > 0 && (
+                <div className="flex items-center gap-1 mt-3">
+                  <span className="text-[10px] text-muted-foreground shrink-0">合作方式：</span>
+                  <div className="flex flex-wrap gap-1">
+                    {partner.cooperationTypes.slice(0, 3).map((type) => (
+                      <Badge key={type} variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {type}
+                      </Badge>
+                    ))}
+                    {partner.cooperationTypes.length > 3 && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        +{partner.cooperationTypes.length - 3}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               )}
 
               {(() => {
                 const partnerJobs = localJobs.filter((job) => job.partnerId === partner.id)
                 return partnerJobs.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-1">
-                    {partnerJobs.slice(0, 3).map((job) => (
-                      <Badge key={job.id} variant="outline" className="text-[10px] px-1.5 py-0">
-                        {job.title}
-                      </Badge>
-                    ))}
-                    {partnerJobs.length > 3 && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                        +{partnerJobs.length - 3}
-                      </Badge>
-                    )}
+                  <div className="flex items-center gap-1 mt-3">
+                    <span className="text-[10px] text-muted-foreground shrink-0">关联岗位：</span>
+                    <div className="flex flex-wrap gap-1">
+                      {partnerJobs.slice(0, 3).map((job) => (
+                        <Badge key={job.id} variant="outline" className="text-[10px] px-1.5 py-0">
+                          {job.title}
+                        </Badge>
+                      ))}
+                      {partnerJobs.length > 3 && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          +{partnerJobs.length - 3}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 ) : null
               })()}
@@ -694,6 +735,90 @@ export default function PartnerBrandPage() {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">资质材料</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* 营业执照 */}
+                <div className="space-y-2">
+                  <Label>营业执照照片</Label>
+                  <input ref={licenseFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange(setLicensePhotos)} />
+                  <div className="flex flex-wrap gap-3">
+                    {licensePhotos.map((photo, idx) => (
+                      <div key={idx} className="relative">
+                        <img src={photo} alt={`营业执照 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
+                        <button type="button" onClick={() => removePhoto(setLicensePhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-1 border-dashed" onClick={() => licenseFileRef.current?.click()}>
+                      <Upload className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">上传</span>
+                    </Button>
+                  </div>
+                </div>
+                {/* 知识产权 */}
+                <div className="space-y-2">
+                  <Label>知识产权照片</Label>
+                  <input ref={ipFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange(setIpPhotos)} />
+                  <div className="flex flex-wrap gap-3">
+                    {ipPhotos.map((photo, idx) => (
+                      <div key={idx} className="relative">
+                        <img src={photo} alt={`知识产权 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
+                        <button type="button" onClick={() => removePhoto(setIpPhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-1 border-dashed" onClick={() => ipFileRef.current?.click()}>
+                      <Upload className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">上传</span>
+                    </Button>
+                  </div>
+                </div>
+                {/* 企业资质 */}
+                <div className="space-y-2">
+                  <Label>企业资质证明材料</Label>
+                  <input ref={qualFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange(setQualPhotos)} />
+                  <div className="flex flex-wrap gap-3">
+                    {qualPhotos.map((photo, idx) => (
+                      <div key={idx} className="relative">
+                        <img src={photo} alt={`资质 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
+                        <button type="button" onClick={() => removePhoto(setQualPhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-1 border-dashed" onClick={() => qualFileRef.current?.click()}>
+                      <Upload className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">上传</span>
+                    </Button>
+                  </div>
+                </div>
+                {/* 封面 */}
+                <div className="space-y-2">
+                  <Label>封面照片</Label>
+                  <input ref={coverFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange(setCoverPhotos)} />
+                  <div className="flex flex-wrap gap-3">
+                    {coverPhotos.map((photo, idx) => (
+                      <div key={idx} className="relative">
+                        <img src={photo} alt={`封面 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
+                        <button type="button" onClick={() => removePhoto(setCoverPhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-1 border-dashed" onClick={() => coverFileRef.current?.click()}>
+                      <Upload className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">上传</span>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

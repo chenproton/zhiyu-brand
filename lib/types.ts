@@ -113,6 +113,10 @@ export interface Partner {
   employeeCount?: number
   secondaryColleges?: string[]
   hiredStudents?: string[]
+  businessLicensePhotos?: string[]
+  intellectualPropertyPhotos?: string[]
+  qualificationPhotos?: string[]
+  coverPhotos?: string[]
   createdAt: Date
   updatedAt: Date
 }

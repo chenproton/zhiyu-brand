@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Search, Eye, Plus, Edit, Trash2, Star, ChevronRight, ChevronLeft, X } from "lucide-react"
+import { ArrowLeft, Search, Eye, Plus, Edit, Trash2, Star, ChevronRight, ChevronLeft, X, Award, FileText } from "lucide-react"
 import { teacherBrands, experts } from "@/lib/mock-data"
 import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS, EXPERT_RATING_LABELS } from "@/lib/types"
 import type { TeacherBrand, Expert, BrandStatus } from "@/lib/types"
@@ -569,7 +569,7 @@ export default function TeacherBrandPage() {
 
       {/* Teacher Dialog */}
       <Dialog open={teacherDialogOpen} onOpenChange={setTeacherDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingTeacher ? "编辑教师" : "引用教师"}</DialogTitle>
             <DialogDescription>
@@ -594,12 +594,85 @@ export default function TeacherBrandPage() {
               selectedTitle="已选教师"
             />
           ) : (
-            <Tabs value={teacherEditTab} onValueChange={setTeacherEditTab} className="py-4">
-              <TabsList className="mb-4">
-                <TabsTrigger value="basic">基本信息</TabsTrigger>
-                <TabsTrigger value="achievements">教师成果</TabsTrigger>
-                <TabsTrigger value="courses">任教课程</TabsTrigger>
-              </TabsList>
+            <div className="space-y-4 py-2">
+              {/* Header - 模仿企业详情页风格 */}
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4">
+                  <Avatar className="h-16 w-16 rounded-lg">
+                    <AvatarImage src={editingTeacher.avatar} className="object-cover" />
+                    <AvatarFallback className="rounded-lg text-lg">
+                      {editingTeacher.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="text-xl font-bold">{editingTeacher.name}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {teacherForm.department} · {teacherForm.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="outline">{TEACHER_TYPE_LABELS[teacherForm.type]}</Badge>
+                      <Badge variant={teacherForm.status === 'published' ? 'default' : 'secondary'}>
+                        {BRAND_STATUS_LABELS[teacherForm.status]}
+                      </Badge>
+                      {teacherForm.isFeatured && (
+                        <Badge variant="default" className="bg-amber-500 hover:bg-amber-600">
+                          <Star className="h-3 w-3 mr-1" />
+                          重点展示
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stat cards */}
+              <div className="grid grid-cols-3 gap-3">
+                <Card>
+                  <CardContent className="pt-4 pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Award className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold">{teacherAchievements.length}</p>
+                        <p className="text-xs text-muted-foreground">教师成果</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4 pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <Star className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold">{teacherForm.awards.split(/,|，/).filter(Boolean).length}</p>
+                        <p className="text-xs text-muted-foreground">荣誉奖项</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4 pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 bg-green-100 rounded-lg flex items-center justify-center">
+                        <FileText className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold">{teacherForm.researchFields.split(/,|，/).filter(Boolean).length}</p>
+                        <p className="text-xs text-muted-foreground">研究领域</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Tabs value={teacherEditTab} onValueChange={setTeacherEditTab}>
+                <TabsList className="mb-4">
+                  <TabsTrigger value="basic">基本信息</TabsTrigger>
+                  <TabsTrigger value="achievements">教师成果</TabsTrigger>
+                </TabsList>
 
               <TabsContent value="basic" className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -719,34 +792,8 @@ export default function TeacherBrandPage() {
                 />
               </TabsContent>
 
-              <TabsContent value="courses" className="space-y-4">
-                <div className="space-y-2">
-                  <Label>任教课程（逗号分隔）</Label>
-                  <Input
-                    value={teacherCourses.join("，")}
-                    onChange={(e) => setTeacherCourses(e.target.value.split(/,|，/).map((s) => s.trim()).filter(Boolean))}
-                    placeholder="例如：高等数学，线性代数，概率论"
-                  />
-                  <p className="text-xs text-muted-foreground">输入课程名称，用逗号分隔</p>
-                </div>
-                {teacherCourses.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {teacherCourses.map((course, idx) => (
-                      <Badge key={idx} variant="secondary" className="gap-1 pr-1">
-                        {course}
-                        <button
-                          type="button"
-                          onClick={() => setTeacherCourses((prev) => prev.filter((_, i) => i !== idx))}
-                          className="hover:text-destructive"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
             </Tabs>
+          </div>
           )}
 
           <DialogFooter>

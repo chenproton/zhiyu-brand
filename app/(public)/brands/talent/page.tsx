@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Trophy, Building2, TrendingUp } from "lucide-react"
+import { Search, Trophy, Building2, TrendingUp, Award } from "lucide-react"
 import { talentProfiles, employmentCases } from "@/lib/mock-data"
 
 export default function TalentBrandPage() {
@@ -154,28 +154,32 @@ export default function TalentBrandPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold">{profile.studentName}</h3>
-                          <Badge
-                            variant={
+                          <span
+                            className={
                               profile.certificationLevel === "高级"
-                                ? "default"
+                                ? "inline-flex items-center justify-center h-5 w-5 rounded-full bg-yellow-100 text-yellow-600"
                                 : profile.certificationLevel === "中级"
-                                ? "secondary"
-                                : "outline"
+                                ? "inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-100 text-blue-600"
+                                : "inline-flex items-center justify-center h-5 w-5 rounded-full bg-gray-100 text-gray-500"
                             }
+                            title={profile.certificationLevel}
                           >
-                            {profile.certificationLevel}
-                          </Badge>
+                            <Award className="h-3.5 w-3.5" />
+                          </span>
                         </div>
                         <p className="text-sm text-muted-foreground">{profile.major}</p>
                         <p className="text-xs text-muted-foreground">{profile.grade}</p>
                         <p className="text-xs text-muted-foreground">{profile.department}</p>
                         {profile.targetPositions && profile.targetPositions.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {profile.targetPositions.slice(0, 2).map((pos) => (
-                              <Badge key={pos} variant="outline" className="text-[10px] px-1 py-0 h-4">
-                                {pos}
-                              </Badge>
-                            ))}
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-[10px] text-muted-foreground shrink-0">目标岗位：</span>
+                            <div className="flex flex-wrap gap-1">
+                              {profile.targetPositions.slice(0, 2).map((pos) => (
+                                <Badge key={pos} variant="outline" className="text-[10px] px-1 py-0 h-4">
+                                  {pos}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>

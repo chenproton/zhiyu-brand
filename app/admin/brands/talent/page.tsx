@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,7 +27,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
 
-import { ArrowLeft, Search, Eye, Plus, Trash2, Settings, X, Check, ChevronDown } from "lucide-react"
+import { ArrowLeft, Search, Eye, Plus, Trash2, Settings, X, Check, ChevronDown, Award, Upload } from "lucide-react"
 import {
   talentProfiles as initialTalentProfiles,
   employmentCases as initialEmploymentCases,
@@ -106,6 +106,21 @@ export default function TalentBrandPage() {
   const [caseStory, setCaseStory] = useState("")
   const [caseCoverImage, setCaseCoverImage] = useState("")
   const [caseStatus, setCaseStatus] = useState<BrandStatus>("draft")
+
+  // Cover image upload
+  const coverFileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files[0]) {
+      setCaseCoverImage(URL.createObjectURL(files[0]))
+    }
+    e.target.value = ''
+  }
+
+  const removeCoverImage = () => {
+    setCaseCoverImage("")
+  }
 
   // Company picker
   const [companyPickerOpen, setCompanyPickerOpen] = useState(false)
@@ -369,18 +384,18 @@ export default function TalentBrandPage() {
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-1.5">
                                         <p className="font-medium text-sm truncate">{profile.studentName}</p>
-                                        <Badge
-                                          variant={
+                                        <span
+                                          className={
                                             profile.certificationLevel === "高级"
-                                              ? "default"
+                                              ? "inline-flex items-center justify-center h-4 w-4 rounded-full bg-yellow-100 text-yellow-600"
                                               : profile.certificationLevel === "中级"
-                                              ? "secondary"
-                                              : "outline"
+                                              ? "inline-flex items-center justify-center h-4 w-4 rounded-full bg-blue-100 text-blue-600"
+                                              : "inline-flex items-center justify-center h-4 w-4 rounded-full bg-gray-100 text-gray-500"
                                           }
-                                          className="text-[10px] px-1 py-0 h-4 shrink-0"
+                                          title={profile.certificationLevel}
                                         >
-                                          {profile.certificationLevel}
-                                        </Badge>
+                                          <Award className="h-3 w-3" />
+                                        </span>
                                       </div>
                                       <p className="text-xs text-muted-foreground">{maskStudentId(profile.studentId)}</p>
                                       <p className="text-xs text-muted-foreground">{profile.major} · {profile.grade}</p>
@@ -393,26 +408,32 @@ export default function TalentBrandPage() {
                                   </div>
 
                                   {profile.targetPositions && profile.targetPositions.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-2">
-                                      {profile.targetPositions.slice(0, 2).map((pos) => (
-                                        <Badge key={pos} variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-                                          {pos}
-                                        </Badge>
-                                      ))}
+                                    <div className="flex items-center gap-1 mt-2">
+                                      <span className="text-[10px] text-muted-foreground shrink-0">目标岗位：</span>
+                                      <div className="flex flex-wrap gap-1">
+                                        {profile.targetPositions.slice(0, 2).map((pos) => (
+                                          <Badge key={pos} variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+                                            {pos}
+                                          </Badge>
+                                        ))}
+                                      </div>
                                     </div>
                                   )}
 
-                                  <div className="flex flex-wrap gap-1 mt-2">
-                                    {profile.abilityTags.slice(0, 3).map((tag) => (
-                                      <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
-                                        {tag}
-                                      </Badge>
-                                    ))}
-                                    {profile.abilityTags.length > 3 && (
-                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-                                        +{profile.abilityTags.length - 3}
-                                      </Badge>
-                                    )}
+                                  <div className="flex items-center gap-1 mt-2">
+                                    <span className="text-[10px] text-muted-foreground shrink-0">能力点：</span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {profile.abilityTags.slice(0, 3).map((tag) => (
+                                        <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                                          {tag}
+                                        </Badge>
+                                      ))}
+                                      {profile.abilityTags.length > 3 && (
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+                                          +{profile.abilityTags.length - 3}
+                                        </Badge>
+                                      )}
+                                    </div>
                                   </div>
 
                                   {profile.remark ? (
@@ -706,14 +727,36 @@ export default function TalentBrandPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="caseCoverImage">封面图片 URL</Label>
-              <Input
-                id="caseCoverImage"
-                placeholder="请输入封面图片地址..."
-                value={caseCoverImage}
-                onChange={(e) => setCaseCoverImage(e.target.value)}
+              <Label>封面图片</Label>
+              <input
+                ref={coverFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleCoverFileChange}
               />
-              <p className="text-xs text-muted-foreground">留空则使用默认封面</p>
+              {caseCoverImage ? (
+                <div className="relative w-full h-32 rounded-lg border overflow-hidden">
+                  <img src={caseCoverImage} alt="封面预览" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={removeCoverImage}
+                    className="absolute top-2 right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-32 flex flex-col items-center justify-center gap-2 border-dashed"
+                  onClick={() => coverFileInputRef.current?.click()}
+                >
+                  <Upload className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">点击上传封面图片</span>
+                </Button>
+              )}
             </div>
             <div className="space-y-2">
               <Label>发布状态</Label>
@@ -805,14 +848,36 @@ export default function TalentBrandPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="editCaseCoverImage">封面图片 URL</Label>
-              <Input
-                id="editCaseCoverImage"
-                placeholder="请输入封面图片地址..."
-                value={caseCoverImage}
-                onChange={(e) => setCaseCoverImage(e.target.value)}
+              <Label>封面图片</Label>
+              <input
+                ref={coverFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleCoverFileChange}
               />
-              <p className="text-xs text-muted-foreground">留空则使用默认封面</p>
+              {caseCoverImage ? (
+                <div className="relative w-full h-32 rounded-lg border overflow-hidden">
+                  <img src={caseCoverImage} alt="封面预览" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={removeCoverImage}
+                    className="absolute top-2 right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-32 flex flex-col items-center justify-center gap-2 border-dashed"
+                  onClick={() => coverFileInputRef.current?.click()}
+                >
+                  <Upload className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">点击上传封面图片</span>
+                </Button>
+              )}
             </div>
             <div className="space-y-2">
               <Label>发布状态</Label>
