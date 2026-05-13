@@ -16,12 +16,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  AssociatedJobsTable,
+  JobActionButtons,
+  NonTeachingJobDialog,
+  TeachingJobDialog,
+} from "@/components/admin/job-brand-tools"
 import {
   CooperationStatusBadge,
   CooperationRatingBadge,
@@ -36,14 +35,10 @@ import {
   Calendar,
   Users,
   Briefcase,
-  Trash2,
-  Plus,
 } from "lucide-react"
 import { partners, jobs as mockJobs } from "@/lib/mock-data"
 import {
   PARTNER_TYPE_LABELS,
-  JOB_CATEGORY_LABELS,
-  JOB_STATUS_LABELS,
 } from "@/lib/types"
 import type { Job, Partner } from "@/lib/types"
 
@@ -81,47 +76,24 @@ export default function PartnerDetailPage() {
   // Dialogs for job association
   const [associateNonTeachingOpen, setAssociateNonTeachingOpen] = useState(false)
   const [associateTeachingOpen, setAssociateTeachingOpen] = useState(false)
-  const [selectedJobId, setSelectedJobId] = useState("")
+  const [editingJob, setEditingJob] = useState<Job | null>(null)
 
   const associatedJobs = useMemo(
     () => localJobs.filter((j) => j.partnerId === id),
     [localJobs, id]
   )
 
-  const availableNonTeachingJobs = useMemo(
-    () => localJobs.filter((j) => j.jobCategory === "non-teaching" && j.partnerId !== id),
-    [localJobs, id]
-  )
-
-  const availableTeachingJobs = useMemo(
-    () => localJobs.filter((j) => j.jobCategory === "teaching" && j.partnerId !== id),
-    [localJobs, id]
-  )
-
-  const handleAssociateJob = (category: "teaching" | "non-teaching") => {
-    if (!selectedJobId || !partner) return
-    setLocalJobs((prev) =>
-      prev.map((j) =>
-        j.id === selectedJobId
-          ? { ...j, partnerId: partner.id, partnerName: partner.name }
-          : j
-      )
-    )
-    setSelectedJobId("")
-    if (category === "non-teaching") {
-      setAssociateNonTeachingOpen(false)
-    } else {
-      setAssociateTeachingOpen(false)
-    }
+  const handleSaveJob = (job: Job) => {
+    setLocalJobs((prev) => {
+      const exists = prev.some((item) => item.id === job.id)
+      return exists ? prev.map((item) => (item.id === job.id ? job : item)) : [job, ...prev]
+    })
+    setEditingJob(null)
   }
 
   const handleRemoveJob = (jobId: string) => {
     if (confirm("确定要移除该岗位的关联吗？")) {
-      setLocalJobs((prev) =>
-        prev.map((j) =>
-          j.id === jobId ? { ...j, partnerId: "", partnerName: "" } : j
-        )
-      )
+      setLocalJobs((prev) => prev.filter((j) => j.id !== jobId))
     }
   }
 
@@ -393,153 +365,45 @@ export default function PartnerDetailPage() {
                 <CardTitle className="text-base">关联岗位</CardTitle>
               </div>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedJobId("")
+                <JobActionButtons
+                  onAddTeaching={() => setAssociateTeachingOpen(true)}
+                  onAddNonTeaching={() => {
+                    setEditingJob(null)
                     setAssociateNonTeachingOpen(true)
                   }}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  新增非教学岗位
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedJobId("")
-                    setAssociateTeachingOpen(true)
-                  }}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  关联教学岗位
-                </Button>
+                />
               </div>
             </CardHeader>
-            <CardContent>
-              {associatedJobs.length > 0 ? (
-                <div className="space-y-3">
-                  {associatedJobs.map((job) => (
-                    <div
-                      key={job.id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                    >
-                      <div className="min-w-0">
-                        <p className="font-medium truncate">{job.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {JOB_CATEGORY_LABELS[job.jobCategory || "non-teaching"]} · {job.department} · {job.location}
-                          {job.salaryMin && job.salaryMax
-                            ? ` · ${job.salaryMin}-${job.salaryMax}K/${job.salaryUnit === "month" ? "月" : job.salaryUnit === "day" ? "天" : "时"}`
-                            : ""}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0 ml-4">
-                        <Badge variant="secondary">
-                          {JOB_STATUS_LABELS[job.status]}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleRemoveJob(job.id)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          删除
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  暂无关联岗位
-                </div>
-              )}
+            <CardContent className="p-0">
+              <AssociatedJobsTable
+                jobs={associatedJobs}
+                onEdit={(job) => {
+                  setEditingJob(job)
+                  setAssociateNonTeachingOpen(true)
+                }}
+                onDelete={handleRemoveJob}
+              />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {/* Associate Non-teaching Job Dialog */}
-      <Dialog open={associateNonTeachingOpen} onOpenChange={setAssociateNonTeachingOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>新增非教学岗位</DialogTitle>
-            <DialogDescription>选择要关联到该雇主的非教学岗位</DialogDescription>
-          </DialogHeader>
-          <div className="py-2">
-            <Select value={selectedJobId} onValueChange={setSelectedJobId}>
-              <SelectTrigger>
-                <SelectValue placeholder="请选择岗位" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableNonTeachingJobs.length === 0 && (
-                  <SelectItem value="__empty__" disabled>
-                    没有可关联的非教学岗位
-                  </SelectItem>
-                )}
-                {availableNonTeachingJobs.map((job) => (
-                  <SelectItem key={job.id} value={job.id}>
-                    {job.title} — {job.department} — {job.location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setSelectedJobId(""); setAssociateNonTeachingOpen(false) }}>
-              取消
-            </Button>
-            <Button
-              onClick={() => handleAssociateJob("non-teaching")}
-              disabled={!selectedJobId || availableNonTeachingJobs.length === 0}
-            >
-              确认关联
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Associate Teaching Job Dialog */}
-      <Dialog open={associateTeachingOpen} onOpenChange={setAssociateTeachingOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>关联教学岗位</DialogTitle>
-            <DialogDescription>选择要关联到该雇主的教学岗位</DialogDescription>
-          </DialogHeader>
-          <div className="py-2">
-            <Select value={selectedJobId} onValueChange={setSelectedJobId}>
-              <SelectTrigger>
-                <SelectValue placeholder="请选择岗位" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableTeachingJobs.length === 0 && (
-                  <SelectItem value="__empty__" disabled>
-                    没有可关联的教学岗位
-                  </SelectItem>
-                )}
-                {availableTeachingJobs.map((job) => (
-                  <SelectItem key={job.id} value={job.id}>
-                    {job.title} — {job.department} — {job.location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setSelectedJobId(""); setAssociateTeachingOpen(false) }}>
-              取消
-            </Button>
-            <Button
-              onClick={() => handleAssociateJob("teaching")}
-              disabled={!selectedJobId || availableTeachingJobs.length === 0}
-            >
-              确认关联
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <NonTeachingJobDialog
+        open={associateNonTeachingOpen}
+        onOpenChange={(open) => {
+          setAssociateNonTeachingOpen(open)
+          if (!open) setEditingJob(null)
+        }}
+        partner={partner}
+        initialJob={editingJob}
+        onSave={handleSaveJob}
+      />
+      <TeachingJobDialog
+        open={associateTeachingOpen}
+        onOpenChange={setAssociateTeachingOpen}
+        partner={partner}
+        onSave={handleSaveJob}
+      />
     </div>
   )
 }

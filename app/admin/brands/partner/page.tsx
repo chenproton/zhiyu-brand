@@ -25,11 +25,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ArrowLeft, Search, Plus, Pencil, Trash2, Building2, MapPin, Users, Briefcase } from "lucide-react"
-import { partners } from "@/lib/mock-data"
+import { jobs, partners } from "@/lib/mock-data"
+import { JobActionButtons, NonTeachingJobDialog, TeachingJobDialog } from "@/components/admin/job-brand-tools"
 import {
   INDUSTRIES,
 } from "@/lib/types"
-import type { Partner, PartnerType } from "@/lib/types"
+import type { Job, Partner, PartnerType } from "@/lib/types"
 
 const emptyPartner: Omit<Partner, "id" | "createdAt" | "updatedAt"> = {
   type: "enterprise",
@@ -83,6 +84,10 @@ export default function PartnerBrandPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null)
   const [selectedPartnerId, setSelectedPartnerId] = useState("")
+  const [localJobs, setLocalJobs] = useState<Job[]>([...jobs])
+  const [jobPartner, setJobPartner] = useState<Partner | null>(null)
+  const [nonTeachingJobOpen, setNonTeachingJobOpen] = useState(false)
+  const [teachingJobOpen, setTeachingJobOpen] = useState(false)
 
   // Edit form states
   const [formDescription, setFormDescription] = useState("")
@@ -193,6 +198,17 @@ export default function PartnerBrandPage() {
     setDialogOpen(false)
   }
 
+  const openJobDialog = (kind: "teaching" | "non-teaching", partner = filteredPartners[0]) => {
+    if (!partner) return
+    setJobPartner(partner)
+    if (kind === "teaching") setTeachingJobOpen(true)
+    else setNonTeachingJobOpen(true)
+  }
+
+  const handleSaveJob = (job: Job) => {
+    setLocalJobs((prev) => [job, ...prev])
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -256,6 +272,11 @@ export default function PartnerBrandPage() {
           </Select>
         </div>
         <div className="flex gap-2">
+          <JobActionButtons
+            size="default"
+            onAddTeaching={() => openJobDialog("teaching")}
+            onAddNonTeaching={() => openJobDialog("non-teaching")}
+          />
           <Button variant="outline" onClick={openCreate}>
             <Plus className="h-4 w-4 mr-2" />
             新增独立雇主品牌
@@ -332,6 +353,15 @@ export default function PartnerBrandPage() {
                 </div>
               )}
 
+              <div className="mt-3 flex flex-wrap gap-1">
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  教学岗位 {localJobs.filter((job) => job.partnerId === partner.id && job.jobCategory === "teaching").length}
+                </Badge>
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                  非教学岗位 {localJobs.filter((job) => job.partnerId === partner.id && job.jobCategory === "non-teaching").length}
+                </Badge>
+              </div>
+
               <div className="flex items-center justify-between pt-4 mt-4 border-t">
                 <div className="flex gap-1.5">
                   <Link href={`/admin/brands/partner/${partner.id}`}>
@@ -346,6 +376,10 @@ export default function PartnerBrandPage() {
                   <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => handleDelete(partner.id)}>
                     <Trash2 className="h-3 w-3 mr-1" />
                     删除
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => openJobDialog("non-teaching", partner)}>
+                    <Plus className="h-3 w-3 mr-1" />
+                    添加岗位
                   </Button>
                 </div>
               </div>
@@ -628,6 +662,23 @@ export default function PartnerBrandPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {jobPartner && (
+        <>
+          <NonTeachingJobDialog
+            open={nonTeachingJobOpen}
+            onOpenChange={setNonTeachingJobOpen}
+            partner={jobPartner}
+            onSave={handleSaveJob}
+          />
+          <TeachingJobDialog
+            open={teachingJobOpen}
+            onOpenChange={setTeachingJobOpen}
+            partner={jobPartner}
+            onSave={handleSaveJob}
+          />
+        </>
+      )}
     </div>
   )
 }
