@@ -696,7 +696,7 @@ export interface MajorBrand {
   level: BrandLevel
   introduction: string
   cultivationGoal: string
-  coreCourses: string[]
+  coreCourses: { name: string; description?: string; url?: string }[]
   employmentDirections: string[]
   cooperationPartners: string[]
   featuredAchievements: string[]

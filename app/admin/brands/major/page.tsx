@@ -102,7 +102,7 @@ export default function MajorBrandPage() {
                 <div className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" />{major.viewCount} 浏览</div>
               </div>
               <div className="flex flex-wrap gap-1">
-                {major.coreCourses.slice(0, 3).map((course) => <Badge key={course} variant="outline" className="text-xs font-normal">{course}</Badge>)}
+                {major.coreCourses.slice(0, 3).map((course) => <Badge key={typeof course === 'string' ? course : course.name} variant="outline" className="text-xs font-normal">{typeof course === 'string' ? course : course.name}</Badge>)}
               </div>
               <div className="flex gap-2 border-t pt-4">
                 <Link href={`/admin/brands/major/${major.id}`} className="flex-1">

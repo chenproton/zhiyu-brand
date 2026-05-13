@@ -5981,11 +5981,11 @@ export const majorBrands: MajorBrand[] = [
   introduction: "本专业面向人工智能应用技术领域，培养具备扎实理论基础和实践能力的高素质技术技能人才。",
   cultivationGoal: "培养掌握人工智能应用技术核心技术，能够从事相关领域工作的技术技能人才。",
   coreCourses: [
-    "课程1",
-    "课程2",
-    "课程3",
-    "课程4",
-    "课程5"
+    { name: "课程1" },
+    { name: "课程2" },
+    { name: "课程3" },
+    { name: "课程4" },
+    { name: "课程5" }
   ],
   employmentDirections: [
     "运营专员",
@@ -6022,12 +6022,12 @@ export const majorBrands: MajorBrand[] = [
   introduction: "本专业面向软件技术领域，培养具备扎实理论基础和实践能力的高素质技术技能人才。",
   cultivationGoal: "培养掌握软件技术核心技术，能够从事相关领域工作的技术技能人才。",
   coreCourses: [
-    "课程1",
-    "课程2",
-    "课程3",
-    "课程4",
-    "课程5",
-    "课程6"
+    { name: "课程1" },
+    { name: "课程2" },
+    { name: "课程3" },
+    { name: "课程4" },
+    { name: "课程5" },
+    { name: "课程6" }
   ],
   employmentDirections: [
     "分析师",
@@ -6062,10 +6062,10 @@ export const majorBrands: MajorBrand[] = [
   introduction: "本专业面向新能源技术领域，培养具备扎实理论基础和实践能力的高素质技术技能人才。",
   cultivationGoal: "培养掌握新能源技术核心技术，能够从事相关领域工作的技术技能人才。",
   coreCourses: [
-    "课程1",
-    "课程2",
-    "课程3",
-    "课程4"
+    { name: "课程1" },
+    { name: "课程2" },
+    { name: "课程3" },
+    { name: "课程4" }
   ],
   employmentDirections: [
     "设计师",
@@ -6099,11 +6099,11 @@ export const majorBrands: MajorBrand[] = [
   introduction: "本专业面向智能制造技术领域，培养具备扎实理论基础和实践能力的高素质技术技能人才。",
   cultivationGoal: "培养掌握智能制造技术核心技术，能够从事相关领域工作的技术技能人才。",
   coreCourses: [
-    "课程1",
-    "课程2",
-    "课程3",
-    "课程4",
-    "课程5"
+    { name: "课程1" },
+    { name: "课程2" },
+    { name: "课程3" },
+    { name: "课程4" },
+    { name: "课程5" }
   ],
   employmentDirections: [
     "设计师",
@@ -6137,10 +6137,10 @@ export const majorBrands: MajorBrand[] = [
   introduction: "本专业面向大数据技术领域，培养具备扎实理论基础和实践能力的高素质技术技能人才。",
   cultivationGoal: "培养掌握大数据技术核心技术，能够从事相关领域工作的技术技能人才。",
   coreCourses: [
-    "课程1",
-    "课程2",
-    "课程3",
-    "课程4"
+    { name: "课程1" },
+    { name: "课程2" },
+    { name: "课程3" },
+    { name: "课程4" }
   ],
   employmentDirections: [
     "设计师",
@@ -6176,11 +6176,11 @@ export const majorBrands: MajorBrand[] = [
   introduction: "本专业面向电子商务领域，培养具备扎实理论基础和实践能力的高素质技术技能人才。",
   cultivationGoal: "培养掌握电子商务核心技术，能够从事相关领域工作的技术技能人才。",
   coreCourses: [
-    "课程1",
-    "课程2",
-    "课程3",
-    "课程4",
-    "课程5"
+    { name: "课程1" },
+    { name: "课程2" },
+    { name: "课程3" },
+    { name: "课程4" },
+    { name: "课程5" }
   ],
   employmentDirections: [
     "技术员",
@@ -6214,11 +6214,11 @@ export const majorBrands: MajorBrand[] = [
   introduction: "本专业面向计算机网络技术领域，培养具备扎实理论基础和实践能力的高素质技术技能人才。",
   cultivationGoal: "培养掌握计算机网络技术核心技术，能够从事相关领域工作的技术技能人才。",
   coreCourses: [
-    "课程1",
-    "课程2",
-    "课程3",
-    "课程4",
-    "课程5"
+    { name: "课程1" },
+    { name: "课程2" },
+    { name: "课程3" },
+    { name: "课程4" },
+    { name: "课程5" }
   ],
   employmentDirections: [
     "技术员",
@@ -6252,12 +6252,12 @@ export const majorBrands: MajorBrand[] = [
   introduction: "本专业面向移动应用开发领域，培养具备扎实理论基础和实践能力的高素质技术技能人才。",
   cultivationGoal: "培养掌握移动应用开发核心技术，能够从事相关领域工作的技术技能人才。",
   coreCourses: [
-    "课程1",
-    "课程2",
-    "课程3",
-    "课程4",
-    "课程5",
-    "课程6"
+    { name: "课程1" },
+    { name: "课程2" },
+    { name: "课程3" },
+    { name: "课程4" },
+    { name: "课程5" },
+    { name: "课程6" }
   ],
   employmentDirections: [
     "工程师",
@@ -6294,12 +6294,12 @@ export const majorBrands: MajorBrand[] = [
   introduction: "本专业面向电气自动化技术领域，培养具备扎实理论基础和实践能力的高素质技术技能人才。",
   cultivationGoal: "培养掌握电气自动化技术核心技术，能够从事相关领域工作的技术技能人才。",
   coreCourses: [
-    "课程1",
-    "课程2",
-    "课程3",
-    "课程4",
-    "课程5",
-    "课程6"
+    { name: "课程1" },
+    { name: "课程2" },
+    { name: "课程3" },
+    { name: "课程4" },
+    { name: "课程5" },
+    { name: "课程6" }
   ],
   employmentDirections: [
     "设计师",
@@ -6333,12 +6333,12 @@ export const majorBrands: MajorBrand[] = [
   introduction: "本专业面向机电一体化技术领域，培养具备扎实理论基础和实践能力的高素质技术技能人才。",
   cultivationGoal: "培养掌握机电一体化技术核心技术，能够从事相关领域工作的技术技能人才。",
   coreCourses: [
-    "课程1",
-    "课程2",
-    "课程3",
-    "课程4",
-    "课程5",
-    "课程6"
+    { name: "课程1" },
+    { name: "课程2" },
+    { name: "课程3" },
+    { name: "课程4" },
+    { name: "课程5" },
+    { name: "课程6" }
   ],
   employmentDirections: [
     "技术员",

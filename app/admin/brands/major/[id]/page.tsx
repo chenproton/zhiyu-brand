@@ -86,6 +86,7 @@ type CourseItem = {
   id: string
   name: string
   description: string
+  url?: string
 }
 
 // ============ 通用编辑弹窗 ============
@@ -97,6 +98,8 @@ function NameDescDialog({
   descLabel,
   namePlaceholder,
   descPlaceholder,
+  urlLabel,
+  urlPlaceholder,
   item,
   onSave,
 }: {
@@ -107,17 +110,21 @@ function NameDescDialog({
   descLabel: string
   namePlaceholder: string
   descPlaceholder: string
-  item?: { name: string; description: string } | null
-  onSave: (name: string, description: string) => void
+  urlLabel?: string
+  urlPlaceholder?: string
+  item?: { name: string; description: string; url?: string } | null
+  onSave: (name: string, description: string, url?: string) => void
 }) {
   const [name, setName] = useState(item?.name || "")
   const [desc, setDesc] = useState(item?.description || "")
+  const [url, setUrl] = useState(item?.url || "")
 
   // 弹窗打开时重置表单
   const handleOpen = (open: boolean) => {
     if (open) {
       setName(item?.name || "")
       setDesc(item?.description || "")
+      setUrl(item?.url || "")
     }
     onOpenChange(open)
   }
@@ -137,10 +144,16 @@ function NameDescDialog({
             <Label>{descLabel}</Label>
             <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={descPlaceholder} rows={3} />
           </div>
+          {urlLabel && (
+            <div className="space-y-2">
+              <Label>{urlLabel}</Label>
+              <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder={urlPlaceholder || "请输入URL"} />
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>取消</Button>
-          <Button onClick={() => onSave(name, desc)} disabled={!name.trim()}>保存</Button>
+          <Button onClick={() => onSave(name, desc, url || undefined)} disabled={!name.trim()}>保存</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -332,8 +345,9 @@ export default function MajorBrandDetailPage() {
   const [courses, setCourses] = useState<CourseItem[]>(
     (initialMajor?.coreCourses || []).map((c) => ({
       id: generateId("course"),
-      name: c,
-      description: "",
+      name: typeof c === 'string' ? c : c.name,
+      description: typeof c === 'string' ? "" : (c.description || ""),
+      url: typeof c === 'string' ? undefined : c.url,
     }))
   )
   const [courseDialog, setCourseDialog] = useState<{ open: boolean; item?: CourseItem | null }>({ open: false })
@@ -366,7 +380,7 @@ export default function MajorBrandDetailPage() {
       employmentDirections: directionJobs.map((j) => j.title).filter(Boolean),
       cooperationPartners: companies.map((c) => c.name).filter(Boolean),
       featuredAchievements: achievementItems.map((a: any) => a.name).filter(Boolean),
-      coreCourses: courses.map((c) => c.name).filter(Boolean),
+      coreCourses: courses.map((c) => ({ name: c.name, description: c.description || undefined, url: c.url || undefined })).filter((c) => c.name),
       updatedAt: new Date(),
     }
     setMajor(updated)
@@ -455,11 +469,11 @@ export default function MajorBrandDetailPage() {
   // Tab 5 helpers (AchievementManager handles its own state)
 
   // Tab 6 helpers
-  const handleSaveCourse = (name: string, description: string) => {
+  const handleSaveCourse = (name: string, description: string, url?: string) => {
     if (courseDialog.item) {
-      setCourses((prev) => prev.map((c) => (c.id === courseDialog.item!.id ? { ...c, name, description } : c)))
+      setCourses((prev) => prev.map((c) => (c.id === courseDialog.item!.id ? { ...c, name, description, url } : c)))
     } else {
-      setCourses((prev) => [...prev, { id: generateId("course"), name, description }])
+      setCourses((prev) => [...prev, { id: generateId("course"), name, description, url }])
     }
     setCourseDialog({ open: false })
   }
@@ -950,10 +964,15 @@ export default function MajorBrandDetailPage() {
                       key={row.id}
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
                     >
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <p className="font-medium">{row.name}</p>
                         {row.description && (
                           <p className="text-sm text-muted-foreground mt-1">{row.description}</p>
+                        )}
+                        {row.url && (
+                          <a href={row.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block truncate">
+                            {row.url}
+                          </a>
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -1068,7 +1087,9 @@ export default function MajorBrandDetailPage() {
         descLabel="课程描述"
         namePlaceholder="填写课程名称"
         descPlaceholder="填写课程定位、课程特色或课程成果"
-        item={courseDialog.item ? { name: courseDialog.item.name, description: courseDialog.item.description } : null}
+        urlLabel="课程 URL"
+        urlPlaceholder="请输入课程链接地址"
+        item={courseDialog.item ? { name: courseDialog.item.name, description: courseDialog.item.description, url: courseDialog.item.url } : null}
         onSave={handleSaveCourse}
       />
     </div>

@@ -152,15 +152,97 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
 
         <TabsContent value="info">
           <div className="grid lg:grid-cols-2 gap-6">
-            <Card>
+            {/* 基本信息 - merged card */}
+            <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle className="text-base">企业简介</CardTitle>
+                <CardTitle className="text-base">基本信息</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 leading-relaxed">{enterprise.description}</p>
+              <CardContent className="space-y-6">
+                {/* 企业简介 section */}
+                <div>
+                  <h4 className="text-sm font-medium mb-2">企业简介</h4>
+                  <p className="text-gray-600 leading-relaxed">{enterprise.description}</p>
+                </div>
+
+                {/* divider + 合作类型 + 合作评级 */}
+                <div className="grid md:grid-cols-2 gap-6 border-t pt-4">
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">合作类型</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {enterprise.cooperationTypes.map((type) => (
+                        <Badge key={type} variant="secondary">
+                          {type}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">合作评级</h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">当前评级</span>
+                        <CooperationRatingBadge rating={enterprise.rating} />
+                      </div>
+                      {enterprise.ratingRecord && (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">评定时间</span>
+                            <span className="text-sm">{enterprise.ratingRecord.evaluatedAt.toLocaleDateString('zh-CN')}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">评定人</span>
+                            <span className="text-sm">{enterprise.ratingRecord.evaluator}</span>
+                          </div>
+                          {enterprise.ratingRecord.remark && (
+                            <div>
+                              <span className="text-sm text-muted-foreground">备注</span>
+                              <p className="text-sm mt-1 bg-muted p-2 rounded">{enterprise.ratingRecord.remark}</p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* divider + 其他信息 */}
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium mb-3">其他信息</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">企业类型</p>
+                      <p className="text-sm font-medium">{ENTERPRISE_TYPE_LABELS[enterprise.enterpriseType]}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">统一社会信用代码</p>
+                      <p className="text-sm font-medium">{enterprise.unifiedSocialCreditCode || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">成立年份</p>
+                      <p className="text-sm font-medium">{enterprise.establishedYear || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">员工规模</p>
+                      <p className="text-sm font-medium">{enterprise.employeeCount?.toLocaleString() || '-'} 人</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">创建时间</p>
+                      <p className="text-sm font-medium">{enterprise.createdAt.toLocaleDateString('zh-CN')}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">更新时间</p>
+                      <p className="text-sm font-medium">{enterprise.updatedAt.toLocaleDateString('zh-CN')}</p>
+                    </div>
+                    <div className="col-span-2 md:col-span-3">
+                      <p className="text-xs text-muted-foreground mb-1">关联二级学院</p>
+                      <p className="text-sm font-medium">{enterprise.secondaryColleges?.join('、') || '-'}</p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
+            {/* 联系信息 */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">联系信息</CardTitle>
@@ -193,89 +275,9 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">合作类型</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {enterprise.cooperationTypes.map((type) => (
-                    <Badge key={type} variant="secondary">
-                      {type}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">合作评级</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">当前评级</span>
-                  <CooperationRatingBadge rating={enterprise.rating} />
-                </div>
-                {enterprise.ratingRecord && (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">评定时间</span>
-                      <span className="text-sm">{enterprise.ratingRecord.evaluatedAt.toLocaleDateString('zh-CN')}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">评定人</span>
-                      <span className="text-sm">{enterprise.ratingRecord.evaluator}</span>
-                    </div>
-                    {enterprise.ratingRecord.remark && (
-                      <div>
-                        <span className="text-sm text-muted-foreground">备注</span>
-                        <p className="text-sm mt-1 bg-muted p-2 rounded">{enterprise.ratingRecord.remark}</p>
-                      </div>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">其他信息</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">企业类型</span>
-                  <span className="text-sm">{ENTERPRISE_TYPE_LABELS[enterprise.enterpriseType]}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">统一社会信用代码</span>
-                  <span className="text-sm">{enterprise.unifiedSocialCreditCode || '-'}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">成立年份</span>
-                  <span className="text-sm">{enterprise.establishedYear || '-'}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">员工规模</span>
-                  <span className="text-sm">{enterprise.employeeCount?.toLocaleString() || '-'} 人</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">创建时间</span>
-                  <span className="text-sm">{enterprise.createdAt.toLocaleDateString('zh-CN')}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">更新时间</span>
-                  <span className="text-sm">{enterprise.updatedAt.toLocaleDateString('zh-CN')}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">关联二级学院</span>
-                  <span className="text-sm">{enterprise.secondaryColleges?.join('、') || '-'}</span>
-                </div>
-              </CardContent>
-            </Card>
-
+            {/* Photo cards */}
             {enterprise.businessLicensePhotos && enterprise.businessLicensePhotos.length > 0 && (
-              <Card>
+              <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Image className="h-4 w-4" />
@@ -289,7 +291,7 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                         key={index}
                         src={photo}
                         alt={`营业执照 ${index + 1}`}
-                        className="w-full h-48 object-contain rounded-lg border"
+                        className="w-48 h-60 object-cover rounded-lg border"
                       />
                     ))}
                   </div>
@@ -298,7 +300,7 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
             )}
 
             {enterprise.intellectualPropertyPhotos && enterprise.intellectualPropertyPhotos.length > 0 && (
-              <Card>
+              <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Image className="h-4 w-4" />
@@ -312,7 +314,7 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                         key={index}
                         src={photo}
                         alt={`知识产权 ${index + 1}`}
-                        className="w-full h-48 object-contain rounded-lg border"
+                        className="w-48 h-60 object-cover rounded-lg border"
                       />
                     ))}
                   </div>
@@ -321,7 +323,7 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
             )}
 
             {enterprise.qualificationPhotos && enterprise.qualificationPhotos.length > 0 && (
-              <Card>
+              <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Image className="h-4 w-4" />
@@ -335,7 +337,7 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                         key={index}
                         src={photo}
                         alt={`资质证明 ${index + 1}`}
-                        className="w-full h-48 object-contain rounded-lg border"
+                        className="w-48 h-60 object-cover rounded-lg border"
                       />
                     ))}
                   </div>
@@ -344,7 +346,7 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
             )}
 
             {enterprise.coverPhotos && enterprise.coverPhotos.length > 0 && (
-              <Card>
+              <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Image className="h-4 w-4" />
@@ -358,7 +360,7 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                         key={index}
                         src={photo}
                         alt={`展示封面 ${index + 1}`}
-                        className="w-full h-48 object-contain rounded-lg border"
+                        className="w-48 h-60 object-cover rounded-lg border"
                       />
                     ))}
                   </div>

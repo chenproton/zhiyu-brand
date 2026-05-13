@@ -162,11 +162,14 @@ export default function MajorBrandPage() {
                         <span className="font-medium">课程体系</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
-                        {major.coreCourses.map((course) => (
-                          <Badge key={course} variant="outline" className="text-xs">
-                            {course}
-                          </Badge>
-                        ))}
+                        {major.coreCourses.map((course) => {
+                          const courseName = typeof course === 'string' ? course : course.name
+                          return (
+                            <Badge key={courseName} variant="outline" className="text-xs">
+                              {courseName}
+                            </Badge>
+                          )
+                        })}
                       </div>
                     </div>
 

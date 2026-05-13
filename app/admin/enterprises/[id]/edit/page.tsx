@@ -323,6 +323,52 @@ export default function EditEnterprisePage() {
 
             <Card>
               <CardHeader>
+                <CardTitle className="text-base">知识产权照片</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input ref={ipFileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange('intellectualPropertyPhotos')} />
+                <div className="flex flex-wrap gap-3">
+                  {formData.intellectualPropertyPhotos.map((photo, index) => (
+                    <div key={index} className="relative">
+                      <img src={photo} alt={`知识产权 ${index + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
+                      <button type="button" onClick={() => removePhoto('intellectualPropertyPhotos', index)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" className="w-32 h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => ipFileInputRef.current?.click()}>
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">上传照片</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">企业资质证明材料</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input ref={qualFileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange('qualificationPhotos')} />
+                <div className="flex flex-wrap gap-3">
+                  {formData.qualificationPhotos.map((photo, index) => (
+                    <div key={index} className="relative">
+                      <img src={photo} alt={`资质证明 ${index + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
+                      <button type="button" onClick={() => removePhoto('qualificationPhotos', index)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" className="w-32 h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => qualFileInputRef.current?.click()}>
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">上传照片</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle className="text-base">联系信息</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-2">

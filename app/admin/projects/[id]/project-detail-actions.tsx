@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Pencil, X, Calendar, CheckCircle2, Clock, AlertCircle, Circle, FileText, Award } from 'lucide-react'
+import { Plus, Pencil, X, Calendar, CheckCircle2, Clock, AlertCircle, Circle, FileText, Award, Upload } from 'lucide-react'
 import { AchievementManager } from '../_components/achievement-manager'
 import type { Milestone, ProjectAgreement, ProjectSupportingResult } from '@/lib/types'
 import { AGREEMENT_STATUS_LABELS } from '@/lib/types'
@@ -254,6 +254,7 @@ interface ProjectAgreementManagerProps {
 export function ProjectAgreementManager({ projectId, agreements, onChange }: ProjectAgreementManagerProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     name: '',
     type: '',
@@ -261,10 +262,11 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
     endDate: '',
     content: '',
     status: 'active' as ProjectAgreement['status'],
+    attachments: [] as string[],
   })
 
   const resetForm = () => {
-    setForm({ name: '', type: '', startDate: '', endDate: '', content: '', status: 'active' })
+    setForm({ name: '', type: '', startDate: '', endDate: '', content: '', status: 'active', attachments: [] })
     setEditingId(null)
   }
 
@@ -281,9 +283,23 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
       endDate: a.endDate.toISOString().split('T')[0],
       content: a.content || '',
       status: a.status,
+      attachments: a.attachments || [],
     })
     setEditingId(a.id)
     setDialogOpen(true)
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files) {
+      const newAttachments = Array.from(files).map((file) => URL.createObjectURL(file))
+      setForm((prev) => ({ ...prev, attachments: [...prev.attachments, ...newAttachments] }))
+    }
+    e.target.value = ''
+  }
+
+  const removeAttachment = (index: number) => {
+    setForm((prev) => ({ ...prev, attachments: prev.attachments.filter((_, i) => i !== index) }))
   }
 
   const handleSave = () => {
@@ -300,6 +316,7 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
                 endDate: new Date(form.endDate),
                 content: form.content.trim(),
                 status: form.status,
+                attachments: form.attachments,
               }
             : a
         )
@@ -313,6 +330,7 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
         endDate: new Date(form.endDate),
         status: form.status,
         content: form.content.trim(),
+        attachments: form.attachments,
         createdAt: new Date(),
       }
       onChange([...agreements, item])
@@ -352,6 +370,12 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
                 <p className="text-xs text-muted-foreground mt-1">
                   {agreement.startDate.toLocaleDateString('zh-CN')} 至 {agreement.endDate.toLocaleDateString('zh-CN')}
                 </p>
+                {agreement.attachments && agreement.attachments.length > 0 && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <FileText className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">{agreement.attachments.length} 个附件</span>
+                  </div>
+                )}
                 {agreement.content && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{agreement.content}</p>}
               </div>
               <div className="flex items-center gap-1 shrink-0">
@@ -411,6 +435,25 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
                   <SelectItem value="terminated">已终止</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>附件上传</Label>
+              <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" multiple className="hidden" onChange={handleFileChange} />
+              <div className="flex flex-wrap gap-3">
+                {form.attachments.map((file, index) => (
+                  <div key={index} className="relative flex items-center gap-2 p-2 border rounded-lg bg-gray-50">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground truncate max-w-[120px]">附件 {index + 1}</span>
+                    <button type="button" onClick={() => removeAttachment(index)} className="text-red-500 hover:text-red-700">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" className="h-9 px-3 border-dashed" onClick={() => fileInputRef.current?.click()}>
+                  <Upload className="h-4 w-4 mr-1" />
+                  上传附件
+                </Button>
+              </div>
             </div>
           </div>
           <DialogFooter>
