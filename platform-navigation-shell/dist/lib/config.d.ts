@@ -56,6 +56,5 @@ export interface PlatformNavigationConfig {
     showCollegeFilter?: boolean;
     collegeOptions?: string[];
     enterpriseLoginHref?: string;
-    contentClassName?: string;
 }
 //# sourceMappingURL=config.d.ts.map

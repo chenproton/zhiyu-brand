@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useSearchParams } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { ChevronDown, ChevronLeft, ChevronRight, Building2 } from "lucide-react"
 import type { PlatformNavigationConfig, SideNavItem, TopNavItem, UserMenuItem } from "../lib/config"
@@ -27,7 +27,6 @@ const fallbackUserMenuItems: UserMenuItem[] = [
 
 export function PlatformTopNav({ config }: { config: PlatformNavigationConfig }) {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const [currentTime, setCurrentTime] = useState("")
   const [mounted, setMounted] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -35,17 +34,7 @@ export function PlatformTopNav({ config }: { config: PlatformNavigationConfig })
   const BrandIcon = resolvePlatformIcon(config.brandIcon || "settings")
   const userMenuItems = config.userMenuItems ?? fallbackUserMenuItems
 
-  const selectedCollege = searchParams.get("college") || "all"
-  const handleCollegeChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value === "all") {
-      params.delete("college")
-    } else {
-      params.set("college", value)
-    }
-    window.history.pushState(null, "", `${pathname}${params.toString() ? `?${params}` : ""}`)
-    window.dispatchEvent(new Event("popstate"))
-  }
+
 
   useEffect(() => {
     setMounted(true)
@@ -301,35 +290,39 @@ export function PlatformSideNav({ config }: { config: PlatformNavigationConfig }
 }
 
 function SubNavBar({ config }: { config: PlatformNavigationConfig }) {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
   const [selectedCollege, setSelectedCollege] = useState("all")
 
   useEffect(() => {
-    const college = searchParams.get("college") || "all"
-    setSelectedCollege(college)
-  }, [searchParams])
+    const readCollege = () => {
+      const params = new URLSearchParams(window.location.search)
+      setSelectedCollege(params.get("college") || "all")
+    }
+    readCollege()
+    window.addEventListener("popstate", readCollege)
+    return () => window.removeEventListener("popstate", readCollege)
+  }, [])
 
   const handleCollegeChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(window.location.search)
     if (value === "all") {
       params.delete("college")
     } else {
       params.set("college", value)
     }
-    window.history.pushState(null, "", `${pathname}${params.toString() ? `?${params}` : ""}`)
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`
+    window.history.pushState(null, "", newUrl)
     window.dispatchEvent(new Event("popstate"))
   }
 
   if (!config.showCollegeFilter && !config.enterpriseLoginHref) return null
 
   return (
-    <div className="fixed top-14 left-0 right-0 z-40 flex h-10 items-center justify-end gap-4 border-b border-gray-100 bg-white/95 px-6 backdrop-blur-sm">
+    <div className="fixed top-14 left-0 right-0 z-40 flex h-10 items-center justify-end gap-4 px-6">
       {config.showCollegeFilter && config.collegeOptions && config.collegeOptions.length > 0 && (
         <select
           value={selectedCollege}
           onChange={(e) => handleCollegeChange(e.target.value)}
-          className="h-7 rounded-md border border-gray-200 bg-white px-2 pr-7 text-xs text-gray-700 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="h-7 rounded-md border border-gray-200 bg-white/80 px-2 pr-7 text-xs text-gray-700 outline-none backdrop-blur-sm focus:border-primary focus:ring-1 focus:ring-primary"
         >
           <option value="all">全校</option>
           {config.collegeOptions.map((college) => (
@@ -343,7 +336,7 @@ function SubNavBar({ config }: { config: PlatformNavigationConfig }) {
       {config.enterpriseLoginHref && (
         <Link
           href={config.enterpriseLoginHref}
-          className="flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-700 transition-colors hover:bg-gray-50"
+          className="flex items-center gap-1 rounded-md border border-gray-200 bg-white/80 px-2.5 py-1 text-xs text-gray-700 backdrop-blur-sm transition-colors hover:bg-white"
         >
           <Building2 className="h-3.5 w-3.5" />
           企业登录
