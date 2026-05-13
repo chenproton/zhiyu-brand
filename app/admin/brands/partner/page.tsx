@@ -27,12 +27,9 @@ import {
 import { ArrowLeft, Search, Plus, Pencil, Trash2, Building2, MapPin, Users, Briefcase } from "lucide-react"
 import { partners } from "@/lib/mock-data"
 import {
-  PARTNER_TYPE_LABELS,
-  COOPERATION_RATING_LABELS,
-  COOPERATION_STATUS_LABELS,
   INDUSTRIES,
 } from "@/lib/types"
-import type { Partner, PartnerType, CooperationRating, CooperationStatus } from "@/lib/types"
+import type { Partner, PartnerType } from "@/lib/types"
 
 const emptyPartner: Omit<Partner, "id" | "createdAt" | "updatedAt"> = {
   type: "enterprise",
@@ -52,8 +49,30 @@ const emptyPartner: Omit<Partner, "id" | "createdAt" | "updatedAt"> = {
   employeeCount: undefined,
 }
 
+const CUSTOM_PARTNERS_KEY = "brand_custom_partners"
+
+function getStoredCustomPartners(): Partner[] {
+  if (typeof window === "undefined") return []
+  try {
+    const raw = localStorage.getItem(CUSTOM_PARTNERS_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.map((p) => ({ ...p, createdAt: new Date(p.createdAt), updatedAt: new Date(p.updatedAt) })) : []
+  } catch {
+    return []
+  }
+}
+
+function saveStoredCustomPartners(customPartners: Partner[]) {
+  if (typeof window === "undefined") return
+  localStorage.setItem(CUSTOM_PARTNERS_KEY, JSON.stringify(customPartners))
+}
+
 export default function PartnerBrandPage() {
-  const [displayedPartners, setDisplayedPartners] = useState<Partner[]>(partners.slice(0, 3))
+  const [displayedPartners, setDisplayedPartners] = useState<Partner[]>(() => {
+    const stored = getStoredCustomPartners()
+    return [...partners.slice(0, 3), ...stored]
+  })
   const [searchTerm, setSearchTerm] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
   const [industryFilter, setIndustryFilter] = useState("all")
@@ -76,7 +95,6 @@ export default function PartnerBrandPage() {
 
   // Create form states
   const [createForm, setCreateForm] = useState({ ...emptyPartner })
-  const [createCooperationTypes, setCreateCooperationTypes] = useState("")
 
   const filteredPartners = displayedPartners.filter((partner) => {
     const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -85,17 +103,6 @@ export default function PartnerBrandPage() {
     const matchesRating = ratingFilter === "all" || partner.rating === ratingFilter
     return matchesSearch && matchesType && matchesIndustry && matchesRating
   })
-
-  const getRatingVariant = (rating: string) => {
-    switch (rating) {
-      case "strategic":
-        return "outline"
-      case "deep":
-        return "secondary"
-      default:
-        return "outline"
-    }
-  }
 
   const openEdit = (partner: Partner) => {
     setEditingPartner(partner)
@@ -111,7 +118,6 @@ export default function PartnerBrandPage() {
 
   const openCreate = () => {
     setCreateForm({ ...emptyPartner })
-    setCreateCooperationTypes("")
     setCreateDialogOpen(true)
   }
 
@@ -145,10 +151,7 @@ export default function PartnerBrandPage() {
     const newPartner: Partner = {
       ...createForm,
       id: `custom-${Date.now()}`,
-      cooperationTypes: createCooperationTypes
-        .split(/,|，/)
-        .map((s) => s.trim())
-        .filter(Boolean),
+      cooperationTypes: [],
       contactPerson: createForm.contactPerson || undefined,
       contactPhone: createForm.contactPhone || undefined,
       contactEmail: createForm.contactEmail || undefined,
@@ -158,13 +161,23 @@ export default function PartnerBrandPage() {
       createdAt: new Date(),
       updatedAt: new Date(),
     }
-    setDisplayedPartners((prev) => [...prev, newPartner])
+    setDisplayedPartners((prev) => {
+      const next = [...prev, newPartner]
+      const customOnly = next.filter((p) => p.id.startsWith("custom-"))
+      saveStoredCustomPartners(customOnly)
+      return next
+    })
     setCreateDialogOpen(false)
   }
 
   const handleDelete = (id: string) => {
     if (confirm("确定要删除该雇主品牌吗？")) {
-      setDisplayedPartners((prev) => prev.filter((p) => p.id !== id))
+      setDisplayedPartners((prev) => {
+        const next = prev.filter((p) => p.id !== id)
+        const customOnly = next.filter((p) => p.id.startsWith("custom-"))
+        saveStoredCustomPartners(customOnly)
+        return next
+      })
     }
   }
 
@@ -270,12 +283,15 @@ export default function PartnerBrandPage() {
                     <div className="min-w-0">
                       <h3 className="text-base font-semibold text-foreground truncate">{partner.name}</h3>
                       <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                          {PARTNER_TYPE_LABELS[partner.type]}
-                        </Badge>
-                        <Badge variant={getRatingVariant(partner.rating)} className="text-[10px] px-1.5 py-0">
-                          {COOPERATION_RATING_LABELS[partner.rating]}
-                        </Badge>
+                        {partner.id.startsWith('custom-') ? (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                            独立雇主品牌
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            合作企业
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -301,27 +317,28 @@ export default function PartnerBrandPage() {
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-1 mt-3">
-                {partner.cooperationTypes.slice(0, 3).map((type) => (
-                  <Badge key={type} variant="secondary" className="text-[10px] px-1.5 py-0">
-                    {type}
-                  </Badge>
-                ))}
-                {partner.cooperationTypes.length > 3 && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                    +{partner.cooperationTypes.length - 3}
-                  </Badge>
-                )}
-              </div>
+              {!partner.id.startsWith('custom-') && (
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {partner.cooperationTypes.slice(0, 3).map((type) => (
+                    <Badge key={type} variant="secondary" className="text-[10px] px-1.5 py-0">
+                      {type}
+                    </Badge>
+                  ))}
+                  {partner.cooperationTypes.length > 3 && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      +{partner.cooperationTypes.length - 3}
+                    </Badge>
+                  )}
+                </div>
+              )}
 
               <div className="flex items-center justify-between pt-4 mt-4 border-t">
-                <Badge
-                  variant={partner.status === "active" ? "secondary" : "outline"}
-                  className="text-[10px] px-1.5 py-0"
-                >
-                  {COOPERATION_STATUS_LABELS[partner.status]}
-                </Badge>
                 <div className="flex gap-1.5">
+                  <Link href={`/admin/brands/partner/${partner.id}`}>
+                    <Button variant="outline" size="sm" className="h-7 text-xs px-2">
+                      查看详情
+                    </Button>
+                  </Link>
                   <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => openEdit(partner)}>
                     <Pencil className="h-3 w-3 mr-1" />
                     编辑
@@ -410,20 +427,22 @@ export default function PartnerBrandPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>合作状态</Label>
-                <Select value={formStatus} onValueChange={(v) => setFormStatus(v as Partner["status"])}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">合作中</SelectItem>
-                    <SelectItem value="negotiating">洽谈中</SelectItem>
-                    <SelectItem value="paused">已暂停</SelectItem>
-                    <SelectItem value="terminated">已终止</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {!editingPartner?.id.startsWith('custom-') && (
+                <div className="space-y-2">
+                  <Label>合作状态</Label>
+                  <Select value={formStatus} onValueChange={(v) => setFormStatus(v as Partner["status"])}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">合作中</SelectItem>
+                      <SelectItem value="negotiating">洽谈中</SelectItem>
+                      <SelectItem value="paused">已暂停</SelectItem>
+                      <SelectItem value="terminated">已终止</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label>地区</Label>
@@ -449,14 +468,16 @@ export default function PartnerBrandPage() {
                 placeholder="请输入联系电话"
               />
             </div>
-            <div className="space-y-2">
-              <Label>合作类型（逗号分隔）</Label>
-              <Input
-                value={formCooperationTypes}
-                onChange={(e) => setFormCooperationTypes(e.target.value)}
-                placeholder="如 人才培养, 实习实训, 技术研发"
-              />
-            </div>
+            {!editingPartner?.id.startsWith('custom-') && (
+              <div className="space-y-2">
+                <Label>合作类型（逗号分隔）</Label>
+                <Input
+                  value={formCooperationTypes}
+                  onChange={(e) => setFormCooperationTypes(e.target.value)}
+                  placeholder="如 人才培养, 实习实训, 技术研发"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label>品牌描述</Label>
               <Textarea
@@ -529,41 +550,6 @@ export default function PartnerBrandPage() {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>合作状态</Label>
-                <Select
-                  value={createForm.status}
-                  onValueChange={(v) => setCreateForm((prev) => ({ ...prev, status: v as CooperationStatus }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">合作中</SelectItem>
-                    <SelectItem value="negotiating">洽谈中</SelectItem>
-                    <SelectItem value="paused">已暂停</SelectItem>
-                    <SelectItem value="terminated">已终止</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>合作深度</Label>
-                <Select
-                  value={createForm.rating}
-                  onValueChange={(v) => setCreateForm((prev) => ({ ...prev, rating: v as CooperationRating }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="strategic">战略合作</SelectItem>
-                    <SelectItem value="deep">深度合作</SelectItem>
-                    <SelectItem value="general">一般合作</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             <div className="space-y-2">
               <Label>地区</Label>
               <Input
@@ -623,14 +609,6 @@ export default function PartnerBrandPage() {
                   placeholder="如 500"
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label>合作类型（逗号分隔）</Label>
-              <Input
-                value={createCooperationTypes}
-                onChange={(e) => setCreateCooperationTypes(e.target.value)}
-                placeholder="如 人才培养, 实习实训, 技术研发"
-              />
             </div>
             <div className="space-y-2">
               <Label>品牌描述</Label>

@@ -1,4 +1,5 @@
 import type { PlatformNavigationConfig } from "@/platform-navigation-shell"
+import { SECONDARY_COLLEGES } from "@/lib/types"
 
 const externalPortalUrl = "http://47.251.48.187:3001/portal"
 const externalWorkspaceUrl = "http://47.251.48.187:3001/portal/workspace"
@@ -24,6 +25,9 @@ export const publicNavigationConfig: PlatformNavigationConfig = {
   shellClassName: "bg-background",
   mainClassName: "min-w-0 flex-1",
   contentClassName: "p-0",
+  showCollegeFilter: true,
+  collegeOptions: SECONDARY_COLLEGES,
+  enterpriseLoginHref: "/partner/login",
 }
 
 export const brandNavigationConfig: PlatformNavigationConfig = {
@@ -54,7 +58,7 @@ export const brandNavigationConfig: PlatformNavigationConfig = {
       icon: "folderKanban",
       children: [
         { id: "school", label: "学校信息", href: "/admin/school", matchers: ["/admin/school"] },
-        { id: "enterprises", label: "企业档案", href: "/admin/enterprises", matchers: ["/admin/enterprises"] },
+        { id: "enterprises", label: "合作企业", href: "/admin/enterprises", matchers: ["/admin/enterprises"] },
         { id: "projects", label: "合作项目", href: "/admin/projects", matchers: ["/admin/projects"] },
         { id: "achievements", label: "合作成果", href: "/admin/achievements", matchers: ["/admin/achievements"] },
         { id: "experts", label: "专家资源库", href: "/admin/experts", matchers: ["/admin/experts"] },

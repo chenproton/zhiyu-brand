@@ -34,7 +34,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { experts } from '@/lib/mock-data'
-import { EXPERT_RATING_LABELS, EXPERT_FIELDS, EXPERT_TYPES } from '@/lib/types'
+import { EXPERT_RATING_LABELS, EXPERT_TYPES } from '@/lib/types'
 import type { Expert } from '@/lib/types'
 
 const GENDER_LABELS: Record<string, string> = {
@@ -46,7 +46,6 @@ export default function ExpertsListPage() {
   const [search, setSearch] = useState('')
   const [selectedPartner, setSelectedPartner] = useState<string>('all')
   const [ratingFilter, setRatingFilter] = useState<string>('all')
-  const [fieldFilter, setFieldFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -92,19 +91,17 @@ export default function ExpertsListPage() {
         const matches =
           expert.name.toLowerCase().includes(s) ||
           expert.title.toLowerCase().includes(s) ||
-          expert.field.toLowerCase().includes(s) ||
           (expert.partnerName && expert.partnerName.toLowerCase().includes(s)) ||
           (expert.expertType && expert.expertType.toLowerCase().includes(s))
         if (!matches) return false
       }
 
       if (ratingFilter !== 'all' && expert.rating !== ratingFilter) return false
-      if (fieldFilter !== 'all' && expert.field !== fieldFilter) return false
       if (typeFilter !== 'all' && expert.expertType !== typeFilter) return false
 
       return true
     })
-  }, [search, selectedPartner, ratingFilter, fieldFilter, typeFilter])
+  }, [search, selectedPartner, ratingFilter, typeFilter])
 
   const totalCount = experts.length
   const enterpriseCount = experts.filter((e) => !!e.partnerId).length
@@ -223,17 +220,6 @@ export default function ExpertsListPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={fieldFilter} onValueChange={setFieldFilter}>
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="全部领域" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部领域</SelectItem>
-                {EXPERT_FIELDS.map((field) => (
-                  <SelectItem key={field} value={field}>{field}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="全部类型" />
@@ -315,7 +301,6 @@ export default function ExpertsListPage() {
                         <Badge variant="secondary" className="text-xs">独立专家</Badge>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{expert.field}</td>
                     <td className="px-4 py-3 text-muted-foreground">{expert.experience}年</td>
                     <td className="px-4 py-3">
                       <ExpertRatingBadge rating={expert.rating} />
@@ -342,7 +327,7 @@ export default function ExpertsListPage() {
                         variant={expert.status === 'active' ? 'default' : 'secondary'}
                         className="text-xs"
                       >
-                        {expert.status === 'active' ? '在职' : '离职'}
+                        {expert.status === 'active' ? '启用' : '禁用'}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right sticky right-0 bg-background">

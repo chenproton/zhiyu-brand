@@ -1,5 +1,8 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowRight, Building2, FolderKanban, Users, Trophy, Calendar, Handshake, Target, TrendingUp, Briefcase, Star, Heart, GraduationCap, UserCircle } from "lucide-react"
+import { ArrowRight, Building2, FolderKanban, Users, Trophy, Calendar, Handshake, Target, TrendingUp, Briefcase, Star, Heart, GraduationCap, UserCircle, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -7,39 +10,147 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { partners, projects, experts, achievements, activities, employmentCases, majorBrands, talentProfiles, jobBrands, teacherBrands, cultureBrands, schoolInfo, employmentProjects, enterprises } from "@/lib/mock-data"
 import { PARTNER_TYPE_LABELS, PROJECT_PHASE_LABELS, JOB_TYPE_LABELS, ACHIEVEMENT_TYPE_LABELS, EXPERT_RATING_LABELS, TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS, EMPLOYMENT_PROJECT_TYPE_LABELS, EMPLOYMENT_PROJECT_STATUS_LABELS } from "@/lib/types"
 
-const stats = [
-  { label: "合作主体", value: partners.filter(p => p.status === "active").length, icon: Building2, href: "/partners" },
-  { label: "合作项目", value: projects.filter(p => p.publishStatus === "published").length, icon: FolderKanban, href: "/projects" },
-  { label: "专家资源", value: experts.length, icon: Users, href: "/experts" },
-  { label: "成果产出", value: achievements.length, icon: Trophy, href: "/achievements" },
-  { label: "就业项目", value: employmentProjects.length, icon: Briefcase, href: "/jobs" },
-  { label: "品牌内容", value: talentProfiles.length + jobBrands.length + majorBrands.length + teacherBrands.length + cultureBrands.length + employmentCases.length, icon: Star, href: "/brands" },
-]
-
 const features = [
   { icon: Handshake, title: "多元主体协同", description: "汇聚学校、企业、行业协会、产业园区等多元合作主体。" },
   { icon: Target, title: "项目全程管理", description: "从需求对接到成果验收，实现项目全生命周期管理。" },
   { icon: TrendingUp, title: "数据驱动决策", description: "多维度数据分析，助力合作效果评估和资源优化。" },
 ]
 
-const brandCategories = [
-  { id: "talent", title: "人才品牌", icon: Users, href: "/brands/talent", count: talentProfiles.length + employmentCases.length, color: "text-blue-500", bgColor: "bg-blue-50", borderColor: "border-blue-100" },
-  { id: "partner", title: "合作主体品牌", icon: Building2, href: "/brands/partner", count: partners.length, color: "text-emerald-500", bgColor: "bg-emerald-50", borderColor: "border-emerald-100" },
-  { id: "job", title: "岗位品牌", icon: Briefcase, href: "/brands/job", count: jobBrands.length, color: "text-amber-500", bgColor: "bg-amber-50", borderColor: "border-amber-100" },
-  { id: "major", title: "专业品牌", icon: GraduationCap, href: "/brands/major", count: majorBrands.length, color: "text-violet-500", bgColor: "bg-violet-50", borderColor: "border-violet-100" },
-  { id: "teacher", title: "师资品牌", icon: UserCircle, href: "/brands/teacher", count: teacherBrands.length + experts.length, color: "text-rose-500", bgColor: "bg-rose-50", borderColor: "border-rose-100" },
-  { id: "culture", title: "文化思政品牌", icon: Heart, href: "/brands/culture", count: cultureBrands.length, color: "text-pink-500", bgColor: "bg-pink-50", borderColor: "border-pink-100" },
-]
+function maskStudentId(id: string) {
+  if (id.length <= 4) return id
+  return id.slice(0, 2) + "****" + id.slice(-2)
+}
 
 export default function HomePage() {
-  const featuredPartners = partners.filter(p => p.status === "active").slice(0, 6)
-  const featuredProjects = projects.filter(p => p.publishStatus === "published").slice(0, 3)
-  const upcomingActivities = activities.filter(a => a.status === "published").slice(0, 3)
-  const featuredAchievements = achievements.filter(a => a.status === "published").slice(0, 3)
-  const featuredExperts = experts.filter(e => e.status === "active").slice(0, 5)
-  const featuredJobBrands = jobBrands.filter(j => j.level === "recommended").slice(0, 3)
-  const featuredTeachers = teacherBrands.filter(t => t.isFeatured && t.status === "published").slice(0, 4)
-  const featuredCultureBrands = cultureBrands.filter(c => c.status === "published").slice(0, 3)
+  const [selectedCollege, setSelectedCollege] = useState("all")
+
+  useEffect(() => {
+    const readCollege = () => {
+      const params = new URLSearchParams(window.location.search)
+      setSelectedCollege(params.get("college") || "all")
+    }
+    readCollege()
+    window.addEventListener("popstate", readCollege)
+    return () => window.removeEventListener("popstate", readCollege)
+  }, [])
+
+  const filterByCollege = <T extends { secondaryCollege?: string }>(items: T[]) => {
+    if (selectedCollege === "all") return items
+    return items.filter((item) => item.secondaryCollege === selectedCollege)
+  }
+
+  const filteredPartners = filterByCollege(partners)
+  const filteredProjects = filterByCollege(projects)
+  const filteredExperts = filterByCollege(experts)
+  const filteredAchievements = filterByCollege(achievements)
+  const filteredTalentProfiles = filterByCollege(talentProfiles)
+  const filteredEmploymentCases = filterByCollege(employmentCases)
+  const filteredJobBrands = filterByCollege(jobBrands)
+  const filteredTeacherBrands = filterByCollege(teacherBrands)
+  const filteredCultureBrands = filterByCollege(cultureBrands)
+  const filteredMajorBrands = filterByCollege(majorBrands)
+  const filteredEmploymentProjects = filterByCollege(employmentProjects)
+
+  const featuredPartners = filteredPartners.filter(p => p.status === "active").slice(0, 6)
+  const featuredProjects = filteredProjects.filter(p => p.publishStatus === "published").slice(0, 3)
+  const featuredAchievements = filteredAchievements.filter(a => a.status === "published").slice(0, 3)
+  const featuredExperts = filteredExperts.filter(e => e.status === "active").slice(0, 5)
+  const featuredJobBrands = filteredJobBrands.filter(j => j.level === "recommended").slice(0, 3)
+  const featuredTeachers = filteredTeacherBrands.filter(t => t.isFeatured && t.status === "published").slice(0, 4)
+  const featuredCultureBrands = filteredCultureBrands.filter(c => c.status === "published").slice(0, 3)
+  const featuredTalentProfiles = filteredTalentProfiles
+    .sort((a, b) => b.abilityScore - a.abilityScore)
+    .slice(0, 8)
+
+  const stats = [
+    { label: "合作主体", value: filteredPartners.filter(p => p.status === "active").length, icon: Building2, href: "/partners" },
+    { label: "合作项目", value: filteredProjects.filter(p => p.publishStatus === "published").length, icon: FolderKanban, href: "/projects" },
+    { label: "专家资源", value: filteredExperts.length, icon: Users, href: "/experts" },
+    { label: "成果产出", value: filteredAchievements.length, icon: Trophy, href: "/achievements" },
+    { label: "就业项目", value: filteredEmploymentProjects.length, icon: Briefcase, href: "/jobs" },
+    { label: "品牌内容", value: filteredTalentProfiles.length + filteredJobBrands.length + filteredMajorBrands.length + filteredTeacherBrands.length + filteredCultureBrands.length + filteredEmploymentCases.length, icon: Star, href: "/brands" },
+  ]
+
+  const brandCategories = [
+    {
+      id: "talent",
+      title: "人才品牌",
+      icon: Users,
+      href: "/brands/talent",
+      stats: [
+        { label: "人才画像", value: filteredTalentProfiles.length },
+        { label: "就业案例", value: filteredEmploymentCases.length },
+      ],
+      color: "text-blue-500",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-100",
+    },
+    {
+      id: "partner",
+      title: "雇主品牌",
+      icon: Building2,
+      href: "/brands/partner",
+      stats: [
+        { label: "合作主体", value: filteredPartners.length },
+        { label: "已发布", value: filteredPartners.filter((p) => p.status === "active").length },
+      ],
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-50",
+      borderColor: "border-emerald-100",
+    },
+    {
+      id: "job",
+      title: "岗位品牌",
+      icon: Briefcase,
+      href: "/brands/job",
+      stats: [
+        { label: "岗位品牌", value: filteredJobBrands.length },
+        { label: "推荐品牌", value: filteredJobBrands.filter((j) => j.level === "recommended").length },
+      ],
+      color: "text-amber-500",
+      bgColor: "bg-amber-50",
+      borderColor: "border-amber-100",
+    },
+    {
+      id: "major",
+      title: "专业品牌",
+      icon: GraduationCap,
+      href: "/brands/major",
+      stats: [
+        { label: "专业品牌", value: filteredMajorBrands.length },
+        { label: "特色专业", value: filteredMajorBrands.filter((m) => m.level === "recommended").length },
+      ],
+      color: "text-violet-500",
+      bgColor: "bg-violet-50",
+      borderColor: "border-violet-100",
+    },
+    {
+      id: "teacher",
+      title: "师资品牌",
+      icon: UserCircle,
+      href: "/brands/teacher",
+      stats: [
+        { label: "校本师资", value: filteredTeacherBrands.length },
+        { label: "企业专家", value: filteredExperts.length },
+      ],
+      color: "text-rose-500",
+      bgColor: "bg-rose-50",
+      borderColor: "border-rose-100",
+    },
+    {
+      id: "culture",
+      title: "文化思政品牌",
+      icon: Heart,
+      href: "/brands/culture",
+      stats: [
+        { label: "品牌内容", value: filteredCultureBrands.length },
+        { label: "已发布", value: filteredCultureBrands.filter((c) => c.status === "published").length },
+      ],
+      color: "text-pink-500",
+      bgColor: "bg-pink-50",
+      borderColor: "border-pink-100",
+    },
+  ]
 
   return (
     <div className="flex flex-col">
@@ -217,7 +328,6 @@ export default function HomePage() {
                       <h4 className="font-semibold text-sm truncate">{expert.name}</h4>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{expert.title}</p>
                       <div className="flex items-center justify-center gap-1.5 mt-2">
-                        <Badge variant="secondary" className="text-[10px] font-normal">{expert.field}</Badge>
                         {expert.rating && (
                           <Badge variant="outline" className="text-[10px] font-normal">{EXPERT_RATING_LABELS[expert.rating]}</Badge>
                         )}
@@ -258,7 +368,14 @@ export default function HomePage() {
                         <Icon className={`h-5 w-5 ${category.color}`} />
                       </div>
                       <h3 className="font-medium text-sm">{category.title}</h3>
-                      <p className="text-xl font-bold mt-0.5">{category.count}</p>
+                      <div className="flex items-center justify-center gap-3 mt-2">
+                        {category.stats.map((stat) => (
+                          <div key={stat.label} className="text-center">
+                            <p className="text-lg font-bold leading-tight">{stat.value}</p>
+                            <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+                          </div>
+                        ))}
+                      </div>
                     </CardContent>
                   </Card>
                 </Link>
@@ -274,25 +391,122 @@ export default function HomePage() {
                 <Link href="/brands/talent">查看全部</Link>
               </Button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {employmentCases.slice(0, 6).map((case_) => (
-                <Card key={case_.id} className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
-                  <div className="aspect-[4/3] bg-muted relative">
-                    <img
-                      src={case_.photo || "/placeholder.svg?height=180&width=240"}
-                      alt={case_.studentName}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <CardContent className="p-3">
-                    <h4 className="text-sm font-semibold truncate">{case_.studentName}</h4>
-                    <p className="text-xs text-muted-foreground">{case_.major} | {case_.graduationYear}届</p>
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t">
-                      <span className="text-xs text-muted-foreground truncate max-w-[55%]">{case_.company}</span>
-                      <Badge variant="secondary" className="text-[10px]">{case_.position}</Badge>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch">
+              {featuredTalentProfiles.map((profile, index) => (
+                <Card
+                  key={profile.id}
+                  className="h-full overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5 border-0 shadow-sm cursor-pointer"
+                  onClick={() => alert("跳转到学生画像")}
+                >
+                  <CardContent className="p-4 flex flex-col h-full">
+                    <div className="flex items-center gap-3">
+                      <div className="relative shrink-0">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={profile.avatar} />
+                          <AvatarFallback className="text-base">{profile.studentName[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center">
+                          {index + 1}
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{profile.studentName}</p>
+                        <p className="text-xs text-muted-foreground">{maskStudentId(profile.studentId)}</p>
+                        <p className="text-xs text-muted-foreground">{profile.major} · {profile.grade}</p>
+                      </div>
+                      <div className="text-center shrink-0">
+                        <p className="text-lg font-bold text-foreground leading-none">{profile.abilityScore}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">能力评级</p>
+                      </div>
                     </div>
+
+                    <div className="flex flex-wrap gap-1 mt-3">
+                      {profile.abilityTags.slice(0, 4).map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                          {tag}
+                        </Badge>
+                      ))}
+                      {profile.abilityTags.length > 4 && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+                          +{profile.abilityTags.length - 4}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {profile.remark ? (
+                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2 italic">
+                        "{profile.remark}"
+                      </p>
+                    ) : (
+                      <div className="mt-2 h-4" />
+                    )}
                   </CardContent>
                 </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Featured Employer Brands */}
+          <div className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold">雇主品牌</h3>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/brands/partner">查看全部</Link>
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+              {featuredPartners.map((partner) => (
+                <Link key={partner.id} href={`/partners/${partner.id}`}>
+                  <Card className="h-full overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5 border-0 shadow-sm">
+                    <CardContent className="p-4 flex flex-col h-full">
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-12 w-12 rounded-lg shrink-0">
+                          <AvatarImage src={partner.logo} className="object-cover" />
+                          <AvatarFallback className="rounded-lg">
+                            <Building2 className="h-6 w-6 text-muted-foreground" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-semibold text-foreground truncate">{partner.name}</h3>
+                          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                            {partner.id.startsWith('custom-') ? (
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                独立雇主品牌
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                合作企业
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{partner.description}</p>
+
+                      <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {partner.region}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Briefcase className="h-3 w-3" />
+                          {partner.industry}
+                        </span>
+                        {partner.employeeCount && (
+                          <span className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            {partner.employeeCount}人
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mt-auto pt-3 border-t">
+                        <span className="text-xs text-primary font-medium">查看详情 →</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
@@ -335,7 +549,7 @@ export default function HomePage() {
               </Button>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {majorBrands.filter(m => m.level === "recommended").slice(0, 6).map((major) => (
+              {filteredMajorBrands.filter(m => m.level === "recommended").slice(0, 6).map((major) => (
                 <Card key={major.id} className="border-0 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between gap-3 mb-2">
@@ -436,10 +650,10 @@ export default function HomePage() {
           {/* Project Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
-              { label: "就业项目", value: employmentProjects.length },
-              { label: "进行中", value: employmentProjects.filter(p => p.status === 'ongoing').length },
-              { label: "在招岗位", value: employmentProjects.reduce((sum, p) => sum + p.jobCount, 0) },
-              { label: "合作企业", value: new Set(employmentProjects.flatMap(p => p.partnerIds)).size },
+              { label: "就业项目", value: filteredEmploymentProjects.length },
+              { label: "进行中", value: filteredEmploymentProjects.filter(p => p.status === 'ongoing').length },
+              { label: "在招岗位", value: filteredEmploymentProjects.reduce((sum, p) => sum + p.jobCount, 0) },
+              { label: "合作企业", value: new Set(filteredEmploymentProjects.flatMap(p => p.partnerIds)).size },
             ].map((s) => (
               <Card key={s.label} className="text-center border-0 shadow-sm">
                 <CardContent className="py-6">
@@ -452,7 +666,7 @@ export default function HomePage() {
 
           {/* Featured Employment Projects */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {employmentProjects.slice(0, 6).map((project) => {
+            {filteredEmploymentProjects.slice(0, 6).map((project) => {
               const partnerNames = project.partnerIds
                 .map((id) => enterprises.find((e) => e.id === id)?.name)
                 .filter(Boolean)

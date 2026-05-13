@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Plus, X } from "lucide-react"
+import { ArrowLeft, Plus, X, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { projects } from "@/lib/mock-data"
-import { ACHIEVEMENT_TYPE_LABELS } from "@/lib/types"
+import { ACHIEVEMENT_TYPE_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
 import type { AchievementType } from "@/lib/types"
 
 export default function NewAchievementPage() {
@@ -26,6 +26,8 @@ export default function NewAchievementPage() {
     date: "",
     authors: [] as string[],
     newAuthor: "",
+    attachments: [] as string[],
+    secondaryCollege: "",
   })
 
   const handleAddAuthor = () => {
@@ -43,6 +45,26 @@ export default function NewAchievementPage() {
       ...formData,
       authors: formData.authors.filter((_, i) => i !== index),
     })
+  }
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    const newFiles = Array.from(files).map((f) => f.name)
+    setFormData((prev) => ({
+      ...prev,
+      attachments: [...prev.attachments, ...newFiles],
+    }))
+    e.target.value = ""
+  }
+
+  const handleRemoveAttachment = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      attachments: prev.attachments.filter((_, i) => i !== index),
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,6 +179,46 @@ export default function NewAchievementPage() {
                 )}
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>附件上传</CardTitle>
+                <CardDescription>上传相关附件材料</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input
+                  type="file"
+                  multiple
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 p-4 border-2 border-dashed rounded-lg hover:bg-muted transition-colors"
+                >
+                  <Upload className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">点击上传附件</span>
+                </button>
+                {formData.attachments.length > 0 && (
+                  <div className="space-y-2">
+                    {formData.attachments.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <span className="text-sm truncate">{file}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAttachment(index)}
+                          className="ml-2 hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           <div className="space-y-6">
@@ -178,6 +240,31 @@ export default function NewAchievementPage() {
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>关联二级学院</CardTitle>
+                <CardDescription>选择成果归属的二级学院</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Select
+                  value={formData.secondaryCollege}
+                  onValueChange={(value) => setFormData({ ...formData, secondaryCollege: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择二级学院（可选）" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">不关联学院</SelectItem>
+                    {SECONDARY_COLLEGES.map((college) => (
+                      <SelectItem key={college} value={college}>
+                        {college}
                       </SelectItem>
                     ))}
                   </SelectContent>

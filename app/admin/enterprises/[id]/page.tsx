@@ -267,6 +267,10 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                   <span className="text-sm text-muted-foreground">更新时间</span>
                   <span className="text-sm">{enterprise.updatedAt.toLocaleDateString('zh-CN')}</span>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">关联二级学院</span>
+                  <span className="text-sm">{enterprise.secondaryCollege || '-'}</span>
+                </div>
               </CardContent>
             </Card>
 

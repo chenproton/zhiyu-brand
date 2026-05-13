@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select'
 import { ArrowLeft, Save } from 'lucide-react'
 import { partners, projects } from '@/lib/mock-data'
-import { PROJECT_PHASE_LABELS } from '@/lib/types'
+import { PROJECT_PHASE_LABELS, SECONDARY_COLLEGES } from '@/lib/types'
 import type { ProjectPhase } from '@/lib/types'
 
 const PROJECT_TYPES = [
@@ -40,6 +40,7 @@ export default function NewProjectPage() {
     partnerIds: [] as string[],
     type: '',
     phase: 'initiation' as ProjectPhase,
+    secondaryCollege: '',
     description: '',
     startDate: '',
     endDate: '',
@@ -58,6 +59,7 @@ export default function NewProjectPage() {
       partnerIds: formData.partnerIds,
       type: formData.type,
       phase: formData.phase,
+      secondaryCollege: formData.secondaryCollege || undefined,
       description: formData.description,
       startDate: new Date(formData.startDate),
       endDate: new Date(formData.endDate),
@@ -116,7 +118,7 @@ export default function NewProjectPage() {
                     />
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="type">合作类型 *</Label>
                       <Select
@@ -146,6 +148,22 @@ export default function NewProjectPage() {
                         <SelectContent>
                           {Object.entries(PROJECT_PHASE_LABELS).map(([value, label]) => (
                             <SelectItem key={value} value={value}>{label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="secondaryCollege">关联二级学院</Label>
+                      <Select
+                        value={formData.secondaryCollege}
+                        onValueChange={(value) => setFormData((prev) => ({ ...prev, secondaryCollege: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="请选择关联二级学院" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SECONDARY_COLLEGES.map((college) => (
+                            <SelectItem key={college} value={college}>{college}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

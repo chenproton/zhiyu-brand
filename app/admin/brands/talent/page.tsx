@@ -26,12 +26,21 @@ import {
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, Search, Eye, Plus, Trash2, Pencil, Settings, X } from "lucide-react"
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command"
+import { ArrowLeft, Search, Eye, Plus, Trash2, Pencil, Settings, X, Check, ChevronDown } from "lucide-react"
 import {
   talentProfiles as initialTalentProfiles,
   employmentCases as initialEmploymentCases,
   enterprises,
   jobs,
+  partners,
 } from "@/lib/mock-data"
 import { BRAND_STATUS_LABELS, type BrandStatus, type TalentProfile, type EmploymentCase } from "@/lib/types"
 
@@ -39,6 +48,32 @@ interface MajorRankingConfig {
   major: string
   enabled: boolean
   limit: number
+}
+
+const ABILITY_OPTIONS = [
+  '计算机视觉',
+  '深度学习',
+  '机器学习',
+  'NLP',
+  'Python',
+  'SQL',
+  'Hadoop',
+  '数据可视化',
+  'BI工具',
+  'Java',
+  '前端开发',
+  '后端开发',
+  '数据分析',
+  '产品设计',
+  '项目管理',
+  '创新思维',
+  '沟通协调',
+  '团队协作',
+]
+
+function maskStudentId(id: string) {
+  if (id.length <= 4) return id
+  return id.slice(0, 2) + "****" + id.slice(-2)
 }
 
 export default function TalentBrandPage() {
@@ -67,8 +102,9 @@ export default function TalentBrandPage() {
   // Profile edit
   const [profileEditDialogOpen, setProfileEditDialogOpen] = useState(false)
   const [editingProfile, setEditingProfile] = useState<TalentProfile | null>(null)
-  const [editCertificationLevel, setEditCertificationLevel] = useState("")
-  const [editAbilityTags, setEditAbilityTags] = useState("")
+  const [editAbilityTagsArr, setEditAbilityTagsArr] = useState<string[]>([])
+  const [editRemark, setEditRemark] = useState("")
+  const [abilitySearch, setAbilitySearch] = useState("")
 
   // Case add/edit
   const [caseDialogOpen, setCaseDialogOpen] = useState(false)
@@ -84,8 +120,49 @@ export default function TalentBrandPage() {
   const [caseStory, setCaseStory] = useState("")
   const [caseStatus, setCaseStatus] = useState<BrandStatus>("draft")
 
+  // Company picker
+  const [companyPickerOpen, setCompanyPickerOpen] = useState(false)
+  const [companyPickerTab, setCompanyPickerTab] = useState<"enterprise" | "partner">("enterprise")
+  const [companyPickerSearch, setCompanyPickerSearch] = useState("")
+
+  // Position picker
+  const [positionPickerOpen, setPositionPickerOpen] = useState(false)
+  const [positionPickerTab, setPositionPickerTab] = useState<"teaching" | "non-teaching">("teaching")
+  const [positionPickerSearch, setPositionPickerSearch] = useState("")
+
   const companyOptions = useMemo(() => enterprises.map((e) => e.name), [])
   const positionOptions = useMemo(() => [...new Set(jobs.map((j) => j.title))], [])
+
+  const teachingJobs = useMemo(() => jobs.filter((j) => j.jobCategory === "teaching"), [])
+  const nonTeachingJobs = useMemo(() => jobs.filter((j) => j.jobCategory === "non-teaching"), [])
+
+  const filteredEnterpriseNames = useMemo(() => {
+    const term = companyPickerSearch.trim().toLowerCase()
+    return enterprises
+      .filter((e) => !term || e.name.toLowerCase().includes(term))
+      .map((e) => e.name)
+  }, [companyPickerSearch])
+
+  const filteredPartnerNames = useMemo(() => {
+    const term = companyPickerSearch.trim().toLowerCase()
+    return partners
+      .filter((p) => !term || p.name.toLowerCase().includes(term))
+      .map((p) => p.name)
+  }, [companyPickerSearch])
+
+  const filteredTeachingPositions = useMemo(() => {
+    const term = positionPickerSearch.trim().toLowerCase()
+    return teachingJobs
+      .filter((j) => !term || j.title.toLowerCase().includes(term))
+      .map((j) => j.title)
+  }, [positionPickerSearch, teachingJobs])
+
+  const filteredNonTeachingPositions = useMemo(() => {
+    const term = positionPickerSearch.trim().toLowerCase()
+    return nonTeachingJobs
+      .filter((j) => !term || j.title.toLowerCase().includes(term))
+      .map((j) => j.title)
+  }, [positionPickerSearch, nonTeachingJobs])
 
   const getMajorProfiles = (major: string) => {
     const config = majorConfigs.find((c) => c.major === major)
@@ -121,8 +198,9 @@ export default function TalentBrandPage() {
 
   const openProfileEdit = (profile: TalentProfile) => {
     setEditingProfile(profile)
-    setEditCertificationLevel(profile.certificationLevel)
-    setEditAbilityTags(profile.abilityTags.join(","))
+    setEditAbilityTagsArr(profile.abilityTags)
+    setEditRemark(profile.remark || "")
+    setAbilitySearch("")
     setProfileEditDialogOpen(true)
   }
 
@@ -133,8 +211,8 @@ export default function TalentBrandPage() {
         p.id === editingProfile.id
           ? {
               ...p,
-              certificationLevel: editCertificationLevel,
-              abilityTags: editAbilityTags.split(",").map((t) => t.trim()).filter(Boolean),
+              abilityTags: editAbilityTagsArr,
+              remark: editRemark || undefined,
               updatedAt: new Date(),
             }
           : p
@@ -239,6 +317,12 @@ export default function TalentBrandPage() {
     [talentProfiles, selectedStudentId]
   )
 
+  const toggleAbilityTag = (tag: string) => {
+    setEditAbilityTagsArr((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -315,73 +399,66 @@ export default function TalentBrandPage() {
                             没有找到符合条件的人才画像
                           </div>
                         ) : (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch">
                             {profiles.map((profile) => (
-                              <Card key={profile.id} className="overflow-hidden">
-                                <CardContent className="p-4">
-                                  <div className="flex items-start gap-3">
-                                    <div className="flex items-center justify-center w-7 h-7 rounded-full bg-muted text-sm font-semibold shrink-0">
-                                      {profile.rank}
-                                    </div>
-                                    <Avatar className="h-10 w-10 shrink-0">
-                                      <AvatarImage src={profile.avatar} />
-                                      <AvatarFallback className="text-sm">{profile.studentName[0]}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-1.5 flex-wrap">
-                                        <span className="font-medium text-sm truncate">{profile.studentName}</span>
-                                        <Badge
-                                          variant="outline"
-                                          className="text-[10px] px-1 py-0 h-4"
-                                        >
-                                          {profile.certificationLevel}
-                                        </Badge>
+                              <Card key={profile.id} className="overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
+                                <CardContent className="p-4 flex flex-col flex-1">
+                                  <div className="flex items-center gap-3">
+                                    <div className="relative shrink-0">
+                                      <Avatar className="h-12 w-12">
+                                        <AvatarImage src={profile.avatar} />
+                                        <AvatarFallback className="text-base">{profile.studentName[0]}</AvatarFallback>
+                                      </Avatar>
+                                      <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center">
+                                        {profile.rank}
                                       </div>
-                                      <p className="text-xs text-muted-foreground">{profile.studentId}</p>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium text-sm truncate">{profile.studentName}</p>
+                                      <p className="text-xs text-muted-foreground">{maskStudentId(profile.studentId)}</p>
                                       <p className="text-xs text-muted-foreground">{profile.major} · {profile.grade}</p>
                                     </div>
-                                  </div>
-
-                                  <div className="grid grid-cols-2 gap-2 mt-3 py-2 border-y">
-                                    <div className="text-center">
-                                      <p className="text-lg font-bold text-foreground">{profile.abilityScore}</p>
-                                      <p className="text-[10px] text-muted-foreground">能力分数</p>
-                                    </div>
-                                    <div className="text-center">
-                                      <Badge
-                                        variant="outline"
-                                        className="text-[10px] px-1 py-0 h-4"
-                                      >
-                                        {profile.employmentStatus === "employed"
-                                          ? "已就业"
-                                          : profile.employmentStatus === "seeking"
-                                          ? "求职中"
-                                          : "在读"}
-                                      </Badge>
-                                      <p className="text-[10px] text-muted-foreground mt-0.5">就业状态</p>
+                                    <div className="text-center shrink-0">
+                                      <p className="text-lg font-bold text-foreground leading-none">{profile.abilityScore}</p>
+                                      <p className="text-[10px] text-muted-foreground mt-0.5">能力评级</p>
                                     </div>
                                   </div>
 
                                   <div className="flex flex-wrap gap-1 mt-3">
-                                    {profile.abilityTags.slice(0, 3).map((tag) => (
-                                      <Badge key={tag} variant="outline" className="text-[10px] px-1 py-0 h-4">
+                                    {profile.abilityTags.slice(0, 4).map((tag) => (
+                                      <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
                                         {tag}
                                       </Badge>
                                     ))}
-                                    {profile.abilityTags.length > 3 && (
-                                      <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
-                                        +{profile.abilityTags.length - 3}
+                                    {profile.abilityTags.length > 4 && (
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+                                        +{profile.abilityTags.length - 4}
                                       </Badge>
                                     )}
                                   </div>
 
-                                  <div className="flex items-center justify-end gap-1 mt-4 pt-4 border-t">
-                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openProfileEdit(profile)}>
-                                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                  {profile.remark ? (
+                                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2 italic">
+                                      "{profile.remark}"
+                                    </p>
+                                  ) : (
+                                    <div className="mt-2 h-8" />
+                                  )}
+
+                                  <div className="flex items-center justify-between pt-3 mt-auto border-t">
+                                    <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => alert("即将前往学生画像标签页")}>
+                                      学生画像
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteProfile(profile.id)}>
-                                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                                    </Button>
+                                    <div className="flex gap-1.5">
+                                      <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => openProfileEdit(profile)}>
+                                        <Pencil className="h-3 w-3 mr-1" />
+                                        编辑
+                                      </Button>
+                                      <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => handleDeleteProfile(profile.id)}>
+                                        <Trash2 className="h-3 w-3 mr-1" />
+                                        删除
+                                      </Button>
+                                    </div>
                                   </div>
                                 </CardContent>
                               </Card>
@@ -422,15 +499,20 @@ export default function TalentBrandPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredCases.map((case_) => (
                   <Card key={case_.id} className="overflow-hidden">
-                    <div className="aspect-video bg-muted relative">
+                    <div className="aspect-[4/3] bg-muted relative overflow-hidden">
                       <img
-                        src={case_.photo || "/placeholder.svg?height=200&width=300"}
+                        src={case_.photo || "/placeholder.svg?height=300&width=400"}
                         alt={case_.studentName}
                         className="w-full h-full object-cover"
                       />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3 text-white">
+                        <h3 className="font-semibold text-sm">{case_.studentName}</h3>
+                        <p className="text-xs text-white/80">{case_.major} | {case_.graduationYear}届</p>
+                      </div>
                       <Badge
                         className="absolute top-2 right-2"
                         variant={case_.status === "published" ? "default" : "secondary"}
@@ -438,48 +520,42 @@ export default function TalentBrandPage() {
                         {BRAND_STATUS_LABELS[case_.status]}
                       </Badge>
                     </div>
-                    <CardContent className="pt-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Avatar>
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Avatar className="h-8 w-8">
                           <AvatarImage src={case_.companyLogo} />
-                          <AvatarFallback>{case_.company[0]}</AvatarFallback>
+                          <AvatarFallback className="text-xs">{case_.company[0]}</AvatarFallback>
                         </Avatar>
-                        <div>
-                          <p className="font-medium">{case_.studentName}</p>
-                          <p className="text-sm text-muted-foreground">{case_.major}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{case_.company}</p>
+                          <p className="text-xs text-muted-foreground truncate">{case_.position}</p>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">就业企业</span>
-                          <span className="font-medium">{case_.company}</span>
+                      {case_.salary && (
+                        <div className="text-sm text-foreground font-medium mb-2">
+                          {case_.salary}
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">岗位</span>
-                          <span>{case_.position}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">薪资</span>
-                          <span className="text-foreground font-medium">{case_.salary}</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-1 mt-3">
+                      )}
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                        {case_.story}
+                      </p>
+                      <div className="flex flex-wrap gap-1 mb-3">
                         {case_.abilityTags.map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs">
+                          <Badge key={tag} variant="secondary" className="text-[10px] px-1 py-0 h-4">
                             {tag}
                           </Badge>
                         ))}
                       </div>
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Eye className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Eye className="h-3 w-3 text-muted-foreground" />
                           <span>{case_.viewCount}</span>
                         </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => openCaseEdit(case_)}>
+                        <div className="flex gap-1">
+                          <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => openCaseEdit(case_)}>
                             编辑
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDeleteCase(case_.id)}>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => handleDeleteCase(case_.id)}>
                             删除
                           </Button>
                         </div>
@@ -565,25 +641,74 @@ export default function TalentBrandPage() {
               <Label>学生姓名</Label>
               <Input value={editingProfile?.studentName || ""} disabled />
             </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2">
+                <Label>学号</Label>
+                <Input value={editingProfile?.studentId || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label>专业</Label>
+                <Input value={editingProfile?.major || ""} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label>级别</Label>
+                <Input value={editingProfile?.grade || ""} disabled />
+              </div>
+            </div>
             <div className="space-y-2">
-              <Label>能力分数</Label>
+              <Label>能力评级</Label>
               <Input type="number" value={editingProfile?.abilityScore || ""} disabled />
-              <p className="text-xs text-muted-foreground">能力分数由系统数据自动计算，不可编辑</p>
+              <p className="text-xs text-muted-foreground">能力评级由系统数据自动计算，不可编辑</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="editCertificationLevel">认证等级</Label>
-              <Input
-                id="editCertificationLevel"
-                value={editCertificationLevel}
-                onChange={(e) => setEditCertificationLevel(e.target.value)}
-              />
+              <Label>能力点标签</Label>
+              <div className="flex flex-wrap gap-1 mb-2">
+                {editAbilityTagsArr.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="cursor-pointer gap-1 pr-1">
+                    {tag}
+                    <X
+                      className="h-3 w-3"
+                      onClick={() => toggleAbilityTag(tag)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+              <Command className="rounded-lg border shadow-sm">
+                <CommandInput
+                  placeholder="搜索能力标签..."
+                  value={abilitySearch}
+                  onValueChange={setAbilitySearch}
+                />
+                {abilitySearch.trim() && (
+                  <CommandList className="max-h-[200px]">
+                    <CommandEmpty>未找到匹配的标签</CommandEmpty>
+                    <CommandGroup>
+                      {ABILITY_OPTIONS
+                        .filter((opt) => !editAbilityTagsArr.includes(opt))
+                        .filter((opt) => opt.toLowerCase().includes(abilitySearch.toLowerCase()))
+                        .map((opt) => (
+                          <CommandItem
+                            key={opt}
+                            onSelect={() => { toggleAbilityTag(opt); setAbilitySearch(""); }}
+                            className="cursor-pointer"
+                          >
+                            <Check className="mr-2 h-4 w-4 opacity-0" />
+                            {opt}
+                          </CommandItem>
+                        ))}
+                    </CommandGroup>
+                  </CommandList>
+                )}
+              </Command>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="editAbilityTags">能力标签（逗号分隔）</Label>
-              <Input
-                id="editAbilityTags"
-                value={editAbilityTags}
-                onChange={(e) => setEditAbilityTags(e.target.value)}
+              <Label htmlFor="profile-remark">备注</Label>
+              <Textarea
+                id="profile-remark"
+                value={editRemark}
+                onChange={(e) => setEditRemark(e.target.value)}
+                placeholder="请输入备注信息..."
+                rows={2}
               />
             </div>
           </div>
@@ -659,34 +784,38 @@ export default function TalentBrandPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label>就业企业</Label>
-              <Select value={caseCompany} onValueChange={setCaseCompany}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择企业" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companyOptions.map((company) => (
-                    <SelectItem key={company} value={company}>
-                      {company}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>雇主企业</Label>
+              <Button
+                variant="outline"
+                className="w-full justify-between font-normal"
+                onClick={() => {
+                  setCompanyPickerTab("enterprise")
+                  setCompanyPickerSearch("")
+                  setCompanyPickerOpen(true)
+                }}
+              >
+                <span className={caseCompany ? "text-foreground" : "text-muted-foreground"}>
+                  {caseCompany || "请选择企业"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
             </div>
             <div className="space-y-2">
               <Label>岗位</Label>
-              <Select value={casePosition} onValueChange={setCasePosition}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择岗位" />
-                </SelectTrigger>
-                <SelectContent>
-                  {positionOptions.map((position) => (
-                    <SelectItem key={position} value={position}>
-                      {position}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Button
+                variant="outline"
+                className="w-full justify-between font-normal"
+                onClick={() => {
+                  setPositionPickerTab("teaching")
+                  setPositionPickerSearch("")
+                  setPositionPickerOpen(true)
+                }}
+              >
+                <span className={casePosition ? "text-foreground" : "text-muted-foreground"}>
+                  {casePosition || "请选择岗位"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
             </div>
             <div className="space-y-2">
               <Label htmlFor="caseSalary">薪资</Label>
@@ -746,34 +875,38 @@ export default function TalentBrandPage() {
               <Input value={editingCase?.studentName || ""} disabled />
             </div>
             <div className="space-y-2">
-              <Label>就业企业</Label>
-              <Select value={caseCompany} onValueChange={setCaseCompany}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择企业" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companyOptions.map((company) => (
-                    <SelectItem key={company} value={company}>
-                      {company}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>雇主企业</Label>
+              <Button
+                variant="outline"
+                className="w-full justify-between font-normal"
+                onClick={() => {
+                  setCompanyPickerTab("enterprise")
+                  setCompanyPickerSearch("")
+                  setCompanyPickerOpen(true)
+                }}
+              >
+                <span className={caseCompany ? "text-foreground" : "text-muted-foreground"}>
+                  {caseCompany || "请选择企业"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
             </div>
             <div className="space-y-2">
               <Label>岗位</Label>
-              <Select value={casePosition} onValueChange={setCasePosition}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择岗位" />
-                </SelectTrigger>
-                <SelectContent>
-                  {positionOptions.map((position) => (
-                    <SelectItem key={position} value={position}>
-                      {position}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Button
+                variant="outline"
+                className="w-full justify-between font-normal"
+                onClick={() => {
+                  setPositionPickerTab("teaching")
+                  setPositionPickerSearch("")
+                  setPositionPickerOpen(true)
+                }}
+              >
+                <span className={casePosition ? "text-foreground" : "text-muted-foreground"}>
+                  {casePosition || "请选择岗位"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
             </div>
             <div className="space-y-2">
               <Label htmlFor="editCaseSalary">薪资</Label>
@@ -813,6 +946,146 @@ export default function TalentBrandPage() {
             </Button>
             <Button onClick={handleUpdateCase}>保存修改</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 企业选择器 Dialog */}
+      <Dialog open={companyPickerOpen} onOpenChange={setCompanyPickerOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-hidden p-0">
+          <DialogHeader className="px-4 pt-4 pb-2">
+            <DialogTitle>选择企业</DialogTitle>
+            <DialogDescription>在合作企业或雇主企业中选择</DialogDescription>
+          </DialogHeader>
+          <Tabs value={companyPickerTab} onValueChange={(v) => { setCompanyPickerTab(v as "enterprise" | "partner"); setCompanyPickerSearch("") }}>
+            <TabsList className="mx-4 mb-2">
+              <TabsTrigger value="enterprise">合作企业</TabsTrigger>
+              <TabsTrigger value="partner">雇主企业</TabsTrigger>
+            </TabsList>
+            <div className="px-4 pb-2">
+              <Input
+                placeholder="搜索企业..."
+                value={companyPickerSearch}
+                onChange={(e) => setCompanyPickerSearch(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <TabsContent value="enterprise" className="mt-0">
+              <div className="max-h-[300px] overflow-y-auto px-4 pb-4">
+                {filteredEnterpriseNames.length > 0 ? (
+                  <div className="space-y-1">
+                    {filteredEnterpriseNames.map((name) => (
+                      <div
+                        key={name}
+                        className="flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-muted text-sm"
+                        onClick={() => {
+                          setCaseCompany(name)
+                          setCompanyPickerOpen(false)
+                        }}
+                      >
+                        <span>{name}</span>
+                        {caseCompany === name && <Check className="h-4 w-4 text-primary" />}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">未找到匹配的企业</p>
+                )}
+              </div>
+            </TabsContent>
+            <TabsContent value="partner" className="mt-0">
+              <div className="max-h-[300px] overflow-y-auto px-4 pb-4">
+                {filteredPartnerNames.length > 0 ? (
+                  <div className="space-y-1">
+                    {filteredPartnerNames.map((name) => (
+                      <div
+                        key={name}
+                        className="flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-muted text-sm"
+                        onClick={() => {
+                          setCaseCompany(name)
+                          setCompanyPickerOpen(false)
+                        }}
+                      >
+                        <span>{name}</span>
+                        {caseCompany === name && <Check className="h-4 w-4 text-primary" />}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">未找到匹配的企业</p>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* 岗位选择器 Dialog */}
+      <Dialog open={positionPickerOpen} onOpenChange={setPositionPickerOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-hidden p-0">
+          <DialogHeader className="px-4 pt-4 pb-2">
+            <DialogTitle>选择岗位</DialogTitle>
+            <DialogDescription>在教学岗位或非教学岗位中选择</DialogDescription>
+          </DialogHeader>
+          <Tabs value={positionPickerTab} onValueChange={(v) => { setPositionPickerTab(v as "teaching" | "non-teaching"); setPositionPickerSearch("") }}>
+            <TabsList className="mx-4 mb-2">
+              <TabsTrigger value="teaching">教学岗位</TabsTrigger>
+              <TabsTrigger value="non-teaching">非教学岗位</TabsTrigger>
+            </TabsList>
+            <div className="px-4 pb-2">
+              <Input
+                placeholder="搜索岗位..."
+                value={positionPickerSearch}
+                onChange={(e) => setPositionPickerSearch(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <TabsContent value="teaching" className="mt-0">
+              <div className="max-h-[300px] overflow-y-auto px-4 pb-4">
+                {filteredTeachingPositions.length > 0 ? (
+                  <div className="space-y-1">
+                    {filteredTeachingPositions.map((title) => (
+                      <div
+                        key={title}
+                        className="flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-muted text-sm"
+                        onClick={() => {
+                          setCasePosition(title)
+                          setPositionPickerOpen(false)
+                        }}
+                      >
+                        <span>{title}</span>
+                        {casePosition === title && <Check className="h-4 w-4 text-primary" />}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">未找到匹配的岗位</p>
+                )}
+              </div>
+            </TabsContent>
+            <TabsContent value="non-teaching" className="mt-0">
+              <div className="max-h-[300px] overflow-y-auto px-4 pb-4">
+                {filteredNonTeachingPositions.length > 0 ? (
+                  <div className="space-y-1">
+                    {filteredNonTeachingPositions.map((title) => (
+                      <div
+                        key={title}
+                        className="flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-muted text-sm"
+                        onClick={() => {
+                          setCasePosition(title)
+                          setPositionPickerOpen(false)
+                        }}
+                      >
+                        <span>{title}</span>
+                        {casePosition === title && <Check className="h-4 w-4 text-primary" />}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">未找到匹配的岗位</p>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </div>

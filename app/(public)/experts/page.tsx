@@ -14,22 +14,18 @@ import { experts } from "@/lib/mock-data"
 export default function ExpertsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
-  const [fieldFilter, setFieldFilter] = useState<string>("all")
-
   const filteredExperts = useMemo(() => {
     return experts.filter((expert) => {
       const matchesSearch = expert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         expert.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         expert.specialties?.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
-      const matchesType = typeFilter === "all" || expert.field === typeFilter
-      const matchesField = fieldFilter === "all" || expert.specialties?.includes(fieldFilter)
-      return matchesSearch && matchesType && matchesField
+      const matchesType = typeFilter === "all" || expert.expertType === typeFilter
+      return matchesSearch && matchesType
     })
-  }, [searchTerm, typeFilter, fieldFilter])
+  }, [searchTerm, typeFilter])
 
-  // Get all unique specialties
-  const allFields = [...new Set(experts.flatMap(e => e.specialties || []))]
-  const allTypes = [...new Set(experts.map(e => e.field))]
+  // Get all unique expert types
+  const allTypes = [...new Set(experts.map(e => e.expertType).filter(Boolean))] as string[]
 
   return (
     <div className="py-8 lg:py-12">
@@ -64,17 +60,6 @@ export default function ExpertsPage() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={fieldFilter} onValueChange={setFieldFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="研究领域" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部领域</SelectItem>
-              {allFields.map((field) => (
-                <SelectItem key={field} value={field}>{field}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
 
         {/* Results Count */}
@@ -91,7 +76,7 @@ export default function ExpertsPage() {
               <Filter className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>暂无符合条件的专家</p>
             </div>
-            <Button variant="outline" onClick={() => { setSearchTerm(""); setTypeFilter("all"); setFieldFilter("all") }}>
+            <Button variant="outline" onClick={() => { setSearchTerm(""); setTypeFilter("all") }}>
               清除筛选条件
             </Button>
           </div>
@@ -117,16 +102,18 @@ export default function ExpertsPage() {
                   <CardContent className="text-center">
                     <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground mb-3">
                       <GraduationCap className="h-3 w-3" />
-                      {expert.partnerName || expert.field}
+                      {expert.partnerName || expert.title}
                     </div>
-                    <Badge variant="outline" className="mb-3">
-                      {expert.field}
-                    </Badge>
+                    {expert.expertType && (
+                      <Badge variant="outline" className="mb-3">
+                        {expert.expertType}
+                      </Badge>
+                    )}
                     {expert.specialties && expert.specialties.length > 0 && (
                       <div className="flex flex-wrap justify-center gap-1 mt-2">
-                        {expert.specialties.slice(0, 3).map((field) => (
-                          <Badge key={field} variant="secondary" className="text-xs">
-                            {field}
+                        {expert.specialties.slice(0, 3).map((specialty) => (
+                          <Badge key={specialty} variant="secondary" className="text-xs">
+                            {specialty}
                           </Badge>
                         ))}
                       </div>

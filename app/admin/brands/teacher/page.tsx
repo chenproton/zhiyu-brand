@@ -52,10 +52,8 @@ const emptyExpertForm = {
   title: "",
   partnerName: "",
   specialties: "",
-  roles: "",
   experience: "",
   rating: "gold" as Expert["rating"],
-  achievements: "",
 }
 
 export default function TeacherBrandPage() {
@@ -194,10 +192,8 @@ export default function TeacherBrandPage() {
       title: expert.title,
       partnerName: expert.partnerName || "",
       specialties: expert.specialties.join("，"),
-      roles: expert.roles.join("，"),
       experience: String(expert.experience),
       rating: expert.rating,
-      achievements: expert.achievements?.join("，") || "",
     })
     setExpertDialogOpen(true)
   }
@@ -221,15 +217,7 @@ export default function TeacherBrandPage() {
       .split(/,|，/)
       .map((s) => s.trim())
       .filter(Boolean)
-    const roles = expertForm.roles
-      .split(/,|，/)
-      .map((s) => s.trim())
-      .filter(Boolean)
     const experience = Number(expertForm.experience) || 0
-    const achievements = expertForm.achievements
-      .split(/,|，/)
-      .map((s) => s.trim())
-      .filter(Boolean)
 
     if (editingExpert) {
       setDisplayedExperts((prev) =>
@@ -241,10 +229,8 @@ export default function TeacherBrandPage() {
                 title: expertForm.title,
                 partnerName: expertForm.partnerName,
                 specialties,
-                roles,
                 experience,
                 rating: expertForm.rating,
-                achievements,
                 updatedAt: new Date(),
               }
             : e
@@ -259,10 +245,8 @@ export default function TeacherBrandPage() {
         title: expertForm.title,
         partnerName: expertForm.partnerName,
         specialties,
-        roles,
         experience,
         rating: expertForm.rating,
-        achievements,
         updatedAt: new Date(),
         createdAt: new Date(),
       }
@@ -440,26 +424,9 @@ export default function TeacherBrandPage() {
                     </div>
                   </div>
 
-                  <div className="mt-3">
-                    <p className="text-sm font-medium mb-1">参与角色</p>
-                    <div className="flex flex-wrap gap-1">
-                      {expert.roles.map((role) => (
-                        <Badge key={role} variant="secondary" className="text-xs">
-                          {role}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t text-center">
-                    <div>
-                      <p className="text-base font-semibold">{expert.experience}</p>
-                      <p className="text-xs text-muted-foreground">行业经验(年)</p>
-                    </div>
-                    <div>
-                      <p className="text-base font-semibold">{expert.achievements?.length || 0}</p>
-                      <p className="text-xs text-muted-foreground">成果数量</p>
-                    </div>
+                  <div className="mt-4 pt-4 border-t text-center">
+                    <p className="text-base font-semibold">{expert.experience}</p>
+                    <p className="text-xs text-muted-foreground">行业经验(年)</p>
                   </div>
 
                   <div className="flex gap-2 mt-4 pt-4 border-t">
@@ -701,16 +668,6 @@ export default function TeacherBrandPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="e-roles">参与角色（逗号分隔）</Label>
-                <Textarea
-                  id="e-roles"
-                  value={expertForm.roles}
-                  onChange={(e) => setExpertForm({ ...expertForm, roles: e.target.value })}
-                  placeholder="例如：客座教授，产业导师"
-                  rows={2}
-                />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="e-rating">专家评级</Label>
                 <Select
                   value={expertForm.rating}
@@ -734,16 +691,6 @@ export default function TeacherBrandPage() {
                   value={expertForm.experience}
                   onChange={(e) => setExpertForm({ ...expertForm, experience: e.target.value })}
                   placeholder="请输入行业经验年数"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="e-achievements">成果荣誉（逗号分隔）</Label>
-                <Textarea
-                  id="e-achievements"
-                  value={expertForm.achievements}
-                  onChange={(e) => setExpertForm({ ...expertForm, achievements: e.target.value })}
-                  placeholder="例如：发明专利5项，省级科技进步奖"
-                  rows={2}
                 />
               </div>
             </div>

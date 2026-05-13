@@ -17,8 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, Save, X, Search } from 'lucide-react'
-import { EXPERT_TYPES, INDUSTRIES } from '@/lib/types'
+import { ArrowLeft, Save, X, Search, Plus } from 'lucide-react'
+import { EXPERT_TYPES, INDUSTRIES, SECONDARY_COLLEGES } from '@/lib/types'
 import type { ExpertGender, ExpertType } from '@/lib/types'
 
 // 模拟岗位数据
@@ -68,6 +68,8 @@ export default function NewExpertPage() {
   const [relatedPositions, setRelatedPositions] = useState<string[]>([])
   const [positionSearch, setPositionSearch] = useState('')
   const [positionDropdownOpen, setPositionDropdownOpen] = useState(false)
+
+  const [secondaryCollege, setSecondaryCollege] = useState('')
 
   const handleRemoveSpecialty = (index: number) => {
     setSpecialties(specialties.filter((_, i) => i !== index))
@@ -144,7 +146,7 @@ export default function NewExpertPage() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="title">职称/头衔 *</Label>
+                    <Label htmlFor="title">职务/职称 *</Label>
                     <Input
                       id="title"
                       value={title}
@@ -190,6 +192,22 @@ export default function NewExpertPage() {
                   </div>
                 </div>
 
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="secondaryCollege">关联二级学院</Label>
+                    <Select value={secondaryCollege} onValueChange={(v) => setSecondaryCollege(v)}>
+                      <SelectTrigger id="secondaryCollege">
+                        <SelectValue placeholder="请选择二级学院" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SECONDARY_COLLEGES.map((college) => (
+                          <SelectItem key={college} value={college}>{college}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 {/* 关联行业 */}
                 <div className="space-y-2">
                   <Label>关联行业</Label>
@@ -223,19 +241,20 @@ export default function NewExpertPage() {
                     ))}
                   </div>
                 </div>
+
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>工作经验</CardTitle>
+                <CardTitle>从业经历</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Textarea
                   rows={5}
                   value={workExperience}
                   onChange={(e) => setWorkExperience(e.target.value)}
-                  placeholder="请输入工作经验描述..."
+                  placeholder="请输入从业经历描述..."
                 />
               </CardContent>
             </Card>
@@ -304,6 +323,8 @@ export default function NewExpertPage() {
                 </div>
               </CardContent>
             </Card>
+
+
           </div>
 
           <div className="space-y-6">
@@ -352,8 +373,8 @@ export default function NewExpertPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">在聘</SelectItem>
-                    <SelectItem value="inactive">离聘</SelectItem>
+                    <SelectItem value="active">启用</SelectItem>
+                    <SelectItem value="inactive">禁用</SelectItem>
                   </SelectContent>
                 </Select>
               </CardContent>

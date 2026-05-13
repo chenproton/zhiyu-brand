@@ -203,25 +203,14 @@ export default function TeacherBrandPage() {
                         </div>
                       </div>
 
-                      <div>
-                        <p className="text-sm font-medium mb-2">参与角色</p>
-                        <div className="flex flex-wrap gap-1">
-                          {expert.roles.map((role) => (
-                            <Badge key={role} variant="secondary" className="text-xs">
-                              {role}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
                       <div className="flex items-center justify-between pt-3 border-t">
                         <div className="text-center">
                           <p className="font-semibold">{expert.experience}</p>
                           <p className="text-xs text-muted-foreground">行业经验</p>
                         </div>
                         <div className="text-center">
-                          <p className="font-semibold">{expert.achievements?.length || 0}</p>
-                          <p className="text-xs text-muted-foreground">成果数量</p>
+                          <p className="font-semibold">{expert.rating}</p>
+                          <p className="text-xs text-muted-foreground">专家评级</p>
                         </div>
                       </div>
                     </div>

@@ -351,15 +351,8 @@ export default async function PartnerDetailPage({ params }: PageProps) {
                             <ExpertRatingBadge rating={expert.rating} />
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {expert.title} · {expert.field}
+                            {expert.title}
                           </p>
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {expert.roles.slice(0, 3).map((role) => (
-                              <Badge key={role} variant="outline" className="text-xs">
-                                {role}
-                              </Badge>
-                            ))}
-                          </div>
                         </div>
                       </div>
                     ))}

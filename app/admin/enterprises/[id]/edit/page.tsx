@@ -23,6 +23,7 @@ import {
   COOPERATION_STATUS_LABELS,
   COOPERATION_RATING_LABELS,
   INDUSTRIES,
+  SECONDARY_COLLEGES,
 } from '@/lib/types'
 import type { EnterpriseType, CooperationStatus, CooperationRating } from '@/lib/types'
 
@@ -49,6 +50,7 @@ export default function EditEnterprisePage() {
     address: '',
     establishedYear: '',
     employeeCount: '',
+    secondaryCollege: '',
   })
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export default function EditEnterprisePage() {
       address: enterprise.address || '',
       establishedYear: enterprise.establishedYear?.toString() || '',
       employeeCount: enterprise.employeeCount?.toString() || '',
+      secondaryCollege: enterprise.secondaryCollege || '',
     })
   }, [enterpriseId])
 
@@ -96,6 +99,7 @@ export default function EditEnterprisePage() {
       enterprise.address = formData.address
       enterprise.establishedYear = formData.establishedYear ? parseInt(formData.establishedYear) : undefined
       enterprise.employeeCount = formData.employeeCount ? parseInt(formData.employeeCount) : undefined
+      enterprise.secondaryCollege = formData.secondaryCollege || undefined
       enterprise.updatedAt = new Date()
     }
 
@@ -361,6 +365,22 @@ export default function EditEnterprisePage() {
                     onChange={(e) => setFormData((prev) => ({ ...prev, employeeCount: e.target.value }))}
                     placeholder="如：500"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>关联二级学院</Label>
+                  <Select
+                    value={formData.secondaryCollege}
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, secondaryCollege: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择二级学院" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SECONDARY_COLLEGES.map((college) => (
+                        <SelectItem key={college} value={college}>{college}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>

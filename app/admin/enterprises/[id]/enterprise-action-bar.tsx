@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,7 +20,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Download, Eye, Plus, X } from 'lucide-react'
+import { Download, Eye, Plus, Upload, X } from 'lucide-react'
 import type { EnterpriseAgreement } from '@/lib/types'
 import { AgreementStatusBadge } from '@/components/shared/status-badge'
 
@@ -34,6 +34,7 @@ const AGREEMENT_STATUS_OPTIONS = [
 
 export function AddAgreementButton() {
   const [open, setOpen] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     name: '',
     type: '',
@@ -41,13 +42,14 @@ export function AddAgreementButton() {
     endDate: '',
     status: 'draft' as EnterpriseAgreement['status'],
     content: '',
+    attachments: [] as string[],
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     alert(`协议「${formData.name}」已新增（演示）`)
     setOpen(false)
-    setFormData({ name: '', type: '', startDate: '', endDate: '', status: 'draft', content: '' })
+    setFormData({ name: '', type: '', startDate: '', endDate: '', status: 'draft', content: '', attachments: [] })
   }
 
   return (
@@ -125,6 +127,53 @@ export function AddAgreementButton() {
                 onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
                 placeholder="请输入协议内容..."
               />
+            </div>
+            <div className="space-y-2">
+              <Label>附件</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  const files = e.target.files
+                  if (files) {
+                    const newFiles = Array.from(files).map((file) => file.name)
+                    setFormData((prev) => ({ ...prev, attachments: [...prev.attachments, ...newFiles] }))
+                  }
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = ''
+                  }
+                }}
+              />
+              <div className="space-y-2">
+                {formData.attachments.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between px-3 py-2 bg-muted rounded-md text-sm">
+                    <span className="truncate max-w-[300px]">{file}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          attachments: prev.attachments.filter((_, i) => i !== index),
+                        }))
+                      }
+                      className="text-muted-foreground hover:text-red-600 ml-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-dashed"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  上传附件
+                </Button>
+              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>

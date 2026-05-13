@@ -59,4 +59,7 @@ export interface PlatformNavigationConfig {
   shellClassName?: string
   mainClassName?: string
   contentClassName?: string
+  showCollegeFilter?: boolean
+  collegeOptions?: string[]
+  enterpriseLoginHref?: string
 }

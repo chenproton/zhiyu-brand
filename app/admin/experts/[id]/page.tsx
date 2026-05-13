@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   ArrowLeft,
@@ -12,9 +12,10 @@ import {
   Building2,
   GraduationCap,
   Clock,
-  Briefcase,
   EyeOff,
   User,
+  Award,
+  School,
 } from 'lucide-react'
 import { getExpertById, getPartnerById } from '@/lib/mock-data'
 
@@ -80,9 +81,9 @@ export default async function ExpertDetailPage({ params }: PageProps) {
           </Link>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-2 gap-6">
           {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6">
             {/* Related Industries */}
             <Card>
               <CardHeader>
@@ -103,7 +104,7 @@ export default async function ExpertDetailPage({ params }: PageProps) {
             {expert.workExperience && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">工作经验</CardTitle>
+                  <CardTitle className="text-base">从业经历</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-600 whitespace-pre-line">{expert.workExperience}</p>
@@ -124,6 +125,21 @@ export default async function ExpertDetailPage({ params }: PageProps) {
                         {pos}
                       </Badge>
                     ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Secondary College */}
+            {expert.secondaryCollege && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">关联二级学院</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-start gap-3">
+                    <School className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-gray-600">{expert.secondaryCollege}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -218,7 +234,7 @@ export default async function ExpertDetailPage({ params }: PageProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">状态</span>
                   <Badge variant={expert.status === 'active' ? 'default' : 'secondary'}>
-                    {expert.status === 'active' ? '在聘' : '离聘'}
+                    {expert.status === 'active' ? '启用' : '禁用'}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">

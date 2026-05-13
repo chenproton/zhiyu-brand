@@ -71,6 +71,7 @@ export interface Enterprise {
     evaluator: string
     remark?: string
   }
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -106,6 +107,7 @@ export interface Partner {
   address?: string
   establishedYear?: number
   employeeCount?: number
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -193,6 +195,7 @@ export interface Project {
   projectAgreements?: ProjectAgreement[]
   // 项目阶段与进展
   phases?: ProjectPhaseItem[]
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -205,21 +208,19 @@ export interface Expert {
   partnerId?: string
   partnerName?: string
   title: string
-  field: string
   expertType?: ExpertType
   specialties: string[]
   experience: number
   rating: ExpertRating
   avatar?: string
-  roles: string[]
   education?: string
-  achievements?: string[]
   contactEmail?: string
   contactPhone?: string
   isContactHidden?: boolean
   status: 'active' | 'inactive'
   workExperience?: string
   relatedPositions?: string[]
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -257,6 +258,7 @@ export interface Achievement {
   publishDate: Date
   status: 'draft' | 'published' | 'archived'
   viewCount: number
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -480,6 +482,20 @@ export const EXPERT_TYPES: ExpertType[] = [
   '独立专家',
 ]
 
+// 二级学院列表
+export const SECONDARY_COLLEGES = [
+  '智能制造学院',
+  '信息技术学院',
+  '经济管理学院',
+  '艺术设计学院',
+  '新能源工程学院',
+  '生物医药学院',
+  '现代服务学院',
+  '国际教育学院',
+  '创新创业学院',
+  '继续教育学院',
+]
+
 // 活动类型列表
 export const ACTIVITY_TYPES = [
   '校企交流会',
@@ -611,6 +627,8 @@ export interface TalentProfile {
   employmentStatus?: 'employed' | 'seeking' | 'studying'
   employmentCompany?: string
   employmentPosition?: string
+  remark?: string
+  secondaryCollege?: string
   isFeatured: boolean
   updatedAt: Date
 }
@@ -649,6 +667,7 @@ export interface JobBrand {
   coverImage?: string
   status: BrandStatus
   viewCount: number
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -671,6 +690,7 @@ export interface MajorBrand {
   promoVideo?: string
   status: BrandStatus
   viewCount: number
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -691,6 +711,7 @@ export interface TeacherBrand {
   isFeatured: boolean
   status: BrandStatus
   viewCount: number
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -708,6 +729,7 @@ export interface CultureBrand {
   coverImage?: string
   status: BrandStatus
   viewCount: number
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -1024,6 +1046,7 @@ export interface EmploymentProject {
   jobCount: number
   applicationCount: number
   description?: string
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }

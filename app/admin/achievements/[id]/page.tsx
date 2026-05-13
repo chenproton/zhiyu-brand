@@ -188,6 +188,10 @@ export default function AchievementDetailPage() {
                 <p className="font-medium">{ACHIEVEMENT_TYPE_LABELS[achievement.type]}</p>
               </div>
               <div>
+                <p className="text-sm text-muted-foreground">关联二级学院</p>
+                <p className="font-medium">{achievement.secondaryCollege || '—'}</p>
+              </div>
+              <div>
                 <p className="text-sm text-muted-foreground">发布日期</p>
                 <p className="font-medium">{achievement.publishDate.toLocaleDateString('zh-CN')}</p>
               </div>

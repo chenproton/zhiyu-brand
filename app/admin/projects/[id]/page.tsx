@@ -21,7 +21,7 @@ import {
   Award,
 } from 'lucide-react'
 import { projects, partners } from '@/lib/mock-data'
-import { PROJECT_PHASE_LABELS } from '@/lib/types'
+import { PROJECT_PHASE_LABELS, SECONDARY_COLLEGES } from '@/lib/types'
 import type { Project } from '@/lib/types'
 import ProjectActionBar from './project-action-bar'
 import { ProjectMilestoneManager, ProjectAgreementManager, ProjectAchievementManager } from './project-detail-actions'
@@ -212,7 +212,7 @@ export default function ProjectDetailPage() {
                 <CardTitle className="text-base">项目信息</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-4 gap-4">
+                <div className="grid md:grid-cols-5 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">合作类型</p>
                     <p className="font-medium">{project.type}</p>
@@ -220,6 +220,10 @@ export default function ProjectDetailPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">当前阶段</p>
                     <p className="font-medium">{PROJECT_PHASE_LABELS[project.phase]}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">关联二级学院</p>
+                    <p className="font-medium">{project.secondaryCollege || '未设置'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">创建时间</p>

@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input'
 import React from 'react'
 import {
   Plus, Pencil, Trash2, Shield, Building2, User, Eye, MapPin,
-  Briefcase, BookOpen, CheckSquare, X, ChevronDown, ChevronUp, Check,
+  Briefcase, BookOpen, CheckSquare, X, ChevronDown, ChevronUp, Check, Share2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { permissionGrants, cooperationAccounts, enterprises, experts } from '@/lib/mock-data'
@@ -115,6 +115,8 @@ export default function PermissionsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingGrant, setDeletingGrant] = useState<PermissionGrant | null>(null)
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [shareGrant, setShareGrant] = useState<PermissionGrant | null>(null)
 
   // 弹窗表单状态
   const [activeTab, setActiveTab] = useState('account')
@@ -201,6 +203,11 @@ export default function PermissionsPage() {
   const handleDelete = (grant: PermissionGrant) => {
     setDeletingGrant(grant)
     setDeleteDialogOpen(true)
+  }
+
+  const handleShare = (grant: PermissionGrant) => {
+    setShareGrant(grant)
+    setShareDialogOpen(true)
   }
 
   const handleConfirmDelete = () => {
@@ -555,6 +562,9 @@ export default function PermissionsPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleShare(grant) }}>
+                            <Share2 className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleViewDetail(grant) }}>
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -641,36 +651,24 @@ export default function PermissionsPage() {
             </DialogDescription>
           </DialogHeader>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col min-h-0">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="account">账号信息</TabsTrigger>
               <TabsTrigger value="resource">功能权限</TabsTrigger>
-              <TabsTrigger value="assessment">测评权限</TabsTrigger>
             </TabsList>
             <div className="flex-1 overflow-y-auto mt-4 pr-2 min-h-0">
               {/* 账号信息 */}
               <TabsContent value="account" className="mt-0 space-y-4">
                 <div className="space-y-2">
                   <Label>所属主体类型</Label>
-                  <div className="flex gap-3">
-                    <Button
-                      type="button"
-                      variant={ownerEntityType === 'enterprise' ? 'default' : 'outline'}
-                      onClick={() => { setOwnerEntityType('enterprise'); setOwnerId('') }}
-                      className="flex-1"
-                    >
-                      <Building2 className="h-4 w-4 mr-2" />
-                      企业
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={ownerEntityType === 'expert' ? 'default' : 'outline'}
-                      onClick={() => { setOwnerEntityType('expert'); setOwnerId('') }}
-                      className="flex-1"
-                    >
-                      <User className="h-4 w-4 mr-2" />
-                      专家
-                    </Button>
-                  </div>
+                  <Select value={ownerEntityType} onValueChange={(val) => { setOwnerEntityType(val as 'enterprise' | 'expert'); setOwnerId('') }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="请选择所属主体类型" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="enterprise">企业</SelectItem>
+                      <SelectItem value="expert">专家</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -874,46 +872,6 @@ export default function PermissionsPage() {
                 </div>
               </TabsContent>
 
-              {/* 测评权限 */}
-              <TabsContent value="assessment" className="mt-0 space-y-4">
-                <Label>测评权限配置（可多选）</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {ASSESSMENTS.map((type) => (
-                    <Card
-                      key={type}
-                      className={`cursor-pointer transition-colors ${assessmentPermissions.includes(type) ? 'border-primary bg-primary/5' : ''}`}
-                      onClick={() => toggleAssessment(type)}
-                    >
-                      <CardContent className="pt-4 pb-4 flex items-center gap-3">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            className="sr-only"
-                            checked={assessmentPermissions.includes(type)}
-                            onChange={() => toggleAssessment(type)}
-                          />
-                          <div className={cn(
-                            "size-4 shrink-0 rounded-[4px] border flex items-center justify-center transition-colors",
-                            assessmentPermissions.includes(type) ? "bg-primary border-primary text-primary-foreground" : "bg-background border-input"
-                          )}>
-                            {assessmentPermissions.includes(type) && <Check className="size-3.5" />}
-                          </div>
-                        </label>
-                        <div>
-                          <p className="font-medium text-sm">{ASSESSMENT_TYPE_LABELS[type]}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {type === 'on_site_qa' && '允许进行现场问答测评'}
-                            {type === 'on_site_review' && '允许进行现场评审'}
-                            {type === 'question_bank' && '允许使用题库资源'}
-                            {type === 'exam_paper' && '允许管理试卷'}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-
             </div>
           </Tabs>
           <DialogFooter className="mt-4">
@@ -1009,6 +967,38 @@ export default function PermissionsPage() {
           <DialogFooter>
             <Button onClick={() => setDetailDialogOpen(false)}>关闭</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 分享弹窗 */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>分享账号信息</DialogTitle>
+            <DialogDescription>
+              将以下信息复制并发送给合作方
+            </DialogDescription>
+          </DialogHeader>
+          {shareGrant && (() => {
+            const account = accounts.find(a => a.id === shareGrant.accountId)
+            const shareText = `您好！账号已为您准备就绪 🎉\n\n您可以通过以下地址登录平台：\nhttp://47.251.48.187:3001/partner/login\n\n登录账号：${account?.username ?? '—'}\n登录密码：${account?.password ?? '******'}\n\n如有任何问题，欢迎随时联系管理员。`
+            return (
+              <div className="space-y-4">
+                <pre className="whitespace-pre-wrap break-all rounded-md bg-muted p-4 text-sm select-all">
+                  {shareText}
+                </pre>
+                <div className="flex justify-end">
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(shareText)
+                    }}
+                  >
+                    复制
+                  </Button>
+                </div>
+              </div>
+            )
+          })()}
         </DialogContent>
       </Dialog>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,9 +15,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, X, Search, Link2, Eye, Pencil } from 'lucide-react'
+import { Plus, X, Search, Link2, Eye, Pencil, Upload, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { achievements } from '@/lib/mock-data'
+import { SECONDARY_COLLEGES } from '@/lib/types'
 
 const ACHIEVEMENT_TYPE_LABELS: Record<string, string> = {
   job: '岗位',
@@ -45,6 +46,8 @@ interface AchievementItem {
   type: string
   description: string
   createdAt: Date
+  attachments?: string[]
+  secondaryCollege?: string
 }
 
 interface AchievementManagerProps {
@@ -71,6 +74,8 @@ export function AchievementManager({
     name: '',
     type: '',
     description: '',
+    attachments: [] as string[],
+    secondaryCollege: '',
   })
 
   const filteredAchievements = useMemo(() => {
@@ -95,6 +100,26 @@ export function AchievementManager({
     return result
   }, [search, typeFilter, sourceFilter])
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    const newFiles = Array.from(files).map((f) => f.name)
+    setCustomForm((prev) => ({
+      ...prev,
+      attachments: [...(prev.attachments || []), ...newFiles],
+    }))
+    e.target.value = ''
+  }
+
+  const handleRemoveAttachment = (index: number) => {
+    setCustomForm((prev) => ({
+      ...prev,
+      attachments: (prev.attachments || []).filter((_, i) => i !== index),
+    }))
+  }
+
   const addCustom = () => {
     if (!customForm.name.trim()) return
     const item: AchievementItem = {
@@ -103,9 +128,11 @@ export function AchievementManager({
       type: customForm.type.trim() || '自定义',
       description: customForm.description.trim(),
       createdAt: new Date(),
+      attachments: customForm.attachments,
+      secondaryCollege: customForm.secondaryCollege || undefined,
     }
     onChange([...items, item])
-    setCustomForm({ name: '', type: '', description: '' })
+    setCustomForm({ name: '', type: '', description: '', attachments: [], secondaryCollege: '' })
     setCustomDialogOpen(false)
   }
 
@@ -230,6 +257,21 @@ export function AchievementManager({
               />
             </div>
             <div className="space-y-2">
+              <Label>关联二级学院</Label>
+              <select
+                value={customForm.secondaryCollege}
+                onChange={(e) => setCustomForm((prev) => ({ ...prev, secondaryCollege: e.target.value }))}
+                className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
+              >
+                <option value="">请选择二级学院</option>
+                {SECONDARY_COLLEGES.map((college) => (
+                  <option key={college} value={college}>
+                    {college}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
               <Label>成果描述</Label>
               <Textarea
                 value={customForm.description}
@@ -237,6 +279,43 @@ export function AchievementManager({
                 placeholder="请输入成果描述"
                 rows={3}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>附件上传</Label>
+              <input
+                type="file"
+                multiple
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed rounded-lg hover:bg-muted transition-colors"
+              >
+                <Upload className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">点击上传附件</span>
+              </button>
+              {customForm.attachments && customForm.attachments.length > 0 && (
+                <div className="space-y-2">
+                  {customForm.attachments.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm truncate">{file}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAttachment(index)}
+                        className="ml-2 hover:text-destructive shrink-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>

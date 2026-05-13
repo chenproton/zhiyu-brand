@@ -140,7 +140,11 @@ export default function TalentBrandPage() {
           <TabsContent value="ranking">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProfiles.map((profile, index) => (
-                <Card key={profile.id} className="overflow-hidden">
+                <Card
+                  key={profile.id}
+                  className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => alert("跳转到学生画像")}
+                >
                   <CardContent className="pt-6">
                     <div className="flex items-start gap-4">
                       <div className="relative">
@@ -211,6 +215,7 @@ export default function TalentBrandPage() {
                         )}
                       </div>
                     )}
+
                   </CardContent>
                 </Card>
               ))}

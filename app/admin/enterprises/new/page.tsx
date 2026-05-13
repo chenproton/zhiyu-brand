@@ -20,6 +20,7 @@ import {
   COOPERATION_STATUS_LABELS,
   COOPERATION_RATING_LABELS,
   INDUSTRIES,
+  SECONDARY_COLLEGES,
 } from '@/lib/types'
 import type { CooperationStatus, CooperationRating } from '@/lib/types'
 
@@ -43,6 +44,7 @@ export default function NewEnterprisePage() {
     address: '',
     establishedYear: '',
     employeeCount: '',
+    secondaryCollege: '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -280,6 +282,22 @@ export default function NewEnterprisePage() {
                     onChange={(e) => setFormData((prev) => ({ ...prev, employeeCount: e.target.value }))}
                     placeholder="如：500"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>关联二级学院</Label>
+                  <Select
+                    value={formData.secondaryCollege}
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, secondaryCollege: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择二级学院" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SECONDARY_COLLEGES.map((college) => (
+                        <SelectItem key={college} value={college}>{college}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>
