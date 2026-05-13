@@ -26,10 +26,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Search, Eye, Plus, Edit, Trash2, Star, ChevronRight, ChevronLeft } from "lucide-react"
+import { ArrowLeft, Search, Eye, Plus, Edit, Trash2, Star, ChevronRight, ChevronLeft, X } from "lucide-react"
 import { teacherBrands, experts } from "@/lib/mock-data"
 import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS, EXPERT_RATING_LABELS } from "@/lib/types"
 import type { TeacherBrand, Expert, BrandStatus } from "@/lib/types"
+import { AchievementManager } from "@/app/admin/projects/_components/achievement-manager"
 
 function generateId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
@@ -161,6 +162,17 @@ export default function TeacherBrandPage() {
   const [editingTeacher, setEditingTeacher] = useState<TeacherBrand | null>(null)
   const [teacherForm, setTeacherForm] = useState(emptyTeacherForm)
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([])
+  const [teacherAchievements, setTeacherAchievements] = useState<{
+    id: string
+    name: string
+    type: string
+    description: string
+    createdAt: Date
+    attachments?: string[]
+    secondaryColleges?: string[]
+  }[]>([])
+  const [teacherCourses, setTeacherCourses] = useState<string[]>([])
+  const [teacherEditTab, setTeacherEditTab] = useState("basic")
 
   // Expert dialog
   const [expertDialogOpen, setExpertDialogOpen] = useState(false)
@@ -200,6 +212,15 @@ export default function TeacherBrandPage() {
       isFeatured: teacher.isFeatured,
       status: teacher.status,
     })
+    setTeacherAchievements(teacher.achievements.map((name, idx) => ({
+      id: `ta-${idx}`,
+      name,
+      type: '自定义',
+      description: '',
+      createdAt: new Date(),
+    })))
+    setTeacherCourses([...teacher.courses])
+    setTeacherEditTab("basic")
     setTeacherDialogOpen(true)
   }
 
@@ -228,6 +249,7 @@ export default function TeacherBrandPage() {
       .split(/,|，/)
       .map((s) => s.trim())
       .filter(Boolean)
+    const achievements = teacherAchievements.map((a) => a.name)
 
     if (editingTeacher) {
       setTeachers((prev) =>
@@ -238,7 +260,8 @@ export default function TeacherBrandPage() {
                 ...teacherForm,
                 name: t.name,
                 researchFields,
-                courses: [],
+                courses: teacherCourses,
+                achievements,
                 awards,
                 updatedAt: new Date(),
               }
@@ -255,8 +278,8 @@ export default function TeacherBrandPage() {
         avatar: undefined,
         introduction: teacherForm.introduction,
         researchFields,
-        achievements: [],
-        courses: [],
+        achievements,
+        courses: teacherCourses,
         awards,
         isFeatured: teacherForm.isFeatured,
         status: teacherForm.status,
@@ -571,114 +594,159 @@ export default function TeacherBrandPage() {
               selectedTitle="已选教师"
             />
           ) : (
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
+            <Tabs value={teacherEditTab} onValueChange={setTeacherEditTab} className="py-4">
+              <TabsList className="mb-4">
+                <TabsTrigger value="basic">基本信息</TabsTrigger>
+                <TabsTrigger value="achievements">教师成果</TabsTrigger>
+                <TabsTrigger value="courses">任教课程</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="basic" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="t-name">姓名</Label>
+                    <Input
+                      id="t-name"
+                      value={teacherForm.name}
+                      disabled
+                      placeholder="请输入姓名"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      教师名称不可修改，修改仅影响品牌展示，不会回写教师库
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="t-department">院系</Label>
+                    <Input
+                      id="t-department"
+                      value={teacherForm.department}
+                      onChange={(e) => setTeacherForm({ ...teacherForm, department: e.target.value })}
+                      placeholder="请输入院系"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="t-title">职称</Label>
+                    <Input
+                      id="t-title"
+                      value={teacherForm.title}
+                      onChange={(e) => setTeacherForm({ ...teacherForm, title: e.target.value })}
+                      placeholder="请输入职称"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="t-type">类型</Label>
+                    <Select
+                      value={teacherForm.type}
+                      onValueChange={(v) => setTeacherForm({ ...teacherForm, type: v as TeacherBrand["type"] })}
+                    >
+                      <SelectTrigger id="t-type">
+                        <SelectValue placeholder="选择类型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="dual-qualified">双师型教师</SelectItem>
+                        <SelectItem value="teaching-master">教学名师</SelectItem>
+                        <SelectItem value="backbone">骨干教师</SelectItem>
+                        <SelectItem value="award-winning">获奖教师</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="t-name">姓名</Label>
+                  <Label htmlFor="t-intro">简介</Label>
+                  <Textarea
+                    id="t-intro"
+                    value={teacherForm.introduction}
+                    onChange={(e) => setTeacherForm({ ...teacherForm, introduction: e.target.value })}
+                    placeholder="请输入教师简介"
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="t-fields">研究领域（逗号分隔）</Label>
                   <Input
-                    id="t-name"
-                    value={teacherForm.name}
-                    disabled
-                    placeholder="请输入姓名"
+                    id="t-fields"
+                    value={teacherForm.researchFields}
+                    onChange={(e) => setTeacherForm({ ...teacherForm, researchFields: e.target.value })}
+                    placeholder="例如：人工智能，大数据，智能制造"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    教师名称不可修改，修改仅影响品牌展示，不会回写教师库
-                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="t-department">院系</Label>
+                  <Label htmlFor="t-awards">获奖荣誉（逗号分隔）</Label>
                   <Input
-                    id="t-department"
-                    value={teacherForm.department}
-                    onChange={(e) => setTeacherForm({ ...teacherForm, department: e.target.value })}
-                    placeholder="请输入院系"
+                    id="t-awards"
+                    value={teacherForm.awards}
+                    onChange={(e) => setTeacherForm({ ...teacherForm, awards: e.target.value })}
+                    placeholder="例如：省级教学名师，国家级教学成果奖"
                   />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 items-end">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="t-featured"
+                      checked={teacherForm.isFeatured}
+                      onCheckedChange={(v) => setTeacherForm({ ...teacherForm, isFeatured: v })}
+                    />
+                    <Label htmlFor="t-featured">重点展示</Label>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="t-status">状态</Label>
+                    <Select
+                      value={teacherForm.status}
+                      onValueChange={(v) => setTeacherForm({ ...teacherForm, status: v as BrandStatus })}
+                    >
+                      <SelectTrigger id="t-status">
+                        <SelectValue placeholder="选择状态" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">草稿</SelectItem>
+                        <SelectItem value="pending">待审核</SelectItem>
+                        <SelectItem value="published">已发布</SelectItem>
+                        <SelectItem value="archived">已归档</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="achievements">
+                <AchievementManager
+                  items={teacherAchievements}
+                  onChange={setTeacherAchievements}
+                  title="成果管理"
+                  description="添加教师成果或引用成果库中的成果"
+                />
+              </TabsContent>
+
+              <TabsContent value="courses" className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="t-title">职称</Label>
+                  <Label>任教课程（逗号分隔）</Label>
                   <Input
-                    id="t-title"
-                    value={teacherForm.title}
-                    onChange={(e) => setTeacherForm({ ...teacherForm, title: e.target.value })}
-                    placeholder="请输入职称"
+                    value={teacherCourses.join("，")}
+                    onChange={(e) => setTeacherCourses(e.target.value.split(/,|，/).map((s) => s.trim()).filter(Boolean))}
+                    placeholder="例如：高等数学，线性代数，概率论"
                   />
+                  <p className="text-xs text-muted-foreground">输入课程名称，用逗号分隔</p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="t-type">类型</Label>
-                  <Select
-                    value={teacherForm.type}
-                    onValueChange={(v) => setTeacherForm({ ...teacherForm, type: v as TeacherBrand["type"] })}
-                  >
-                    <SelectTrigger id="t-type">
-                      <SelectValue placeholder="选择类型" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="dual-qualified">双师型教师</SelectItem>
-                      <SelectItem value="teaching-master">教学名师</SelectItem>
-                      <SelectItem value="backbone">骨干教师</SelectItem>
-                      <SelectItem value="award-winning">获奖教师</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="t-intro">简介</Label>
-                <Textarea
-                  id="t-intro"
-                  value={teacherForm.introduction}
-                  onChange={(e) => setTeacherForm({ ...teacherForm, introduction: e.target.value })}
-                  placeholder="请输入教师简介"
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="t-fields">研究领域（逗号分隔）</Label>
-                <Input
-                  id="t-fields"
-                  value={teacherForm.researchFields}
-                  onChange={(e) => setTeacherForm({ ...teacherForm, researchFields: e.target.value })}
-                  placeholder="例如：人工智能，大数据，智能制造"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="t-awards">获奖荣誉（逗号分隔）</Label>
-                <Input
-                  id="t-awards"
-                  value={teacherForm.awards}
-                  onChange={(e) => setTeacherForm({ ...teacherForm, awards: e.target.value })}
-                  placeholder="例如：省级教学名师，国家级教学成果奖"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4 items-end">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="t-featured"
-                    checked={teacherForm.isFeatured}
-                    onCheckedChange={(v) => setTeacherForm({ ...teacherForm, isFeatured: v })}
-                  />
-                  <Label htmlFor="t-featured">重点展示</Label>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="t-status">状态</Label>
-                  <Select
-                    value={teacherForm.status}
-                    onValueChange={(v) => setTeacherForm({ ...teacherForm, status: v as BrandStatus })}
-                  >
-                    <SelectTrigger id="t-status">
-                      <SelectValue placeholder="选择状态" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">草稿</SelectItem>
-                      <SelectItem value="pending">待审核</SelectItem>
-                      <SelectItem value="published">已发布</SelectItem>
-                      <SelectItem value="archived">已归档</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
+                {teacherCourses.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {teacherCourses.map((course, idx) => (
+                      <Badge key={idx} variant="secondary" className="gap-1 pr-1">
+                        {course}
+                        <button
+                          type="button"
+                          onClick={() => setTeacherCourses((prev) => prev.filter((_, i) => i !== idx))}
+                          className="hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           )}
 
           <DialogFooter>

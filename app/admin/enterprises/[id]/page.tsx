@@ -269,7 +269,7 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">关联二级学院</span>
-                  <span className="text-sm">{enterprise.secondaryCollege || '-'}</span>
+                  <span className="text-sm">{enterprise.secondaryColleges?.join('、') || '-'}</span>
                 </div>
               </CardContent>
             </Card>
@@ -289,6 +289,75 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                         key={index}
                         src={photo}
                         alt={`营业执照 ${index + 1}`}
+                        className="w-full h-48 object-contain rounded-lg border"
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {enterprise.intellectualPropertyPhotos && enterprise.intellectualPropertyPhotos.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Image className="h-4 w-4" />
+                    知识产权
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-3">
+                    {enterprise.intellectualPropertyPhotos.map((photo, index) => (
+                      <img
+                        key={index}
+                        src={photo}
+                        alt={`知识产权 ${index + 1}`}
+                        className="w-full h-48 object-contain rounded-lg border"
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {enterprise.qualificationPhotos && enterprise.qualificationPhotos.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Image className="h-4 w-4" />
+                    企业资质证明材料
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-3">
+                    {enterprise.qualificationPhotos.map((photo, index) => (
+                      <img
+                        key={index}
+                        src={photo}
+                        alt={`资质证明 ${index + 1}`}
+                        className="w-full h-48 object-contain rounded-lg border"
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {enterprise.coverPhotos && enterprise.coverPhotos.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Image className="h-4 w-4" />
+                    企业展示封面
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-3">
+                    {enterprise.coverPhotos.map((photo, index) => (
+                      <img
+                        key={index}
+                        src={photo}
+                        alt={`展示封面 ${index + 1}`}
                         className="w-full h-48 object-contain rounded-lg border"
                       />
                     ))}

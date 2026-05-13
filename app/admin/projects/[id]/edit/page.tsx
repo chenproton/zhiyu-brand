@@ -44,7 +44,7 @@ export default function EditProjectPage() {
     partnerIds: [] as string[],
     type: '',
     phase: 'initiation' as ProjectPhase,
-    secondaryCollege: '',
+    secondaryColleges: [] as string[],
     description: '',
     startDate: '',
     endDate: '',
@@ -67,7 +67,7 @@ export default function EditProjectPage() {
       partnerIds: project.partnerIds?.length ? project.partnerIds : [project.partnerId],
       type: project.type,
       phase: project.phase,
-      secondaryCollege: project.secondaryCollege || '',
+      secondaryColleges: project.secondaryColleges || [],
       description: project.description,
       startDate: project.startDate.toISOString().split('T')[0],
       endDate: project.endDate.toISOString().split('T')[0],
@@ -91,7 +91,7 @@ export default function EditProjectPage() {
       project.partnerName = partners.find((p) => p.id === formData.partnerIds[0])?.name || ''
       project.type = formData.type
       project.phase = formData.phase
-      project.secondaryCollege = formData.secondaryCollege || undefined
+      project.secondaryColleges = formData.secondaryColleges.length > 0 ? formData.secondaryColleges : undefined
       project.description = formData.description
       project.startDate = new Date(formData.startDate)
       project.endDate = new Date(formData.endDate)
@@ -206,20 +206,27 @@ export default function EditProjectPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="secondaryCollege">关联二级学院</Label>
-                      <Select
-                        value={formData.secondaryCollege}
-                        onValueChange={(value) => setFormData((prev) => ({ ...prev, secondaryCollege: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="请选择关联二级学院" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SECONDARY_COLLEGES.map((college) => (
-                            <SelectItem key={college} value={college}>{college}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="secondaryColleges">关联二级学院</Label>
+                      <div className="flex flex-wrap gap-2 p-3 border rounded-md">
+                        {SECONDARY_COLLEGES.map((college) => (
+                          <Badge
+                            key={college}
+                            variant={formData.secondaryColleges.includes(college) ? 'default' : 'outline'}
+                            className="cursor-pointer"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                secondaryColleges: prev.secondaryColleges.includes(college)
+                                  ? prev.secondaryColleges.filter((c) => c !== college)
+                                  : [...prev.secondaryColleges, college],
+                              }))
+                            }
+                          >
+                            {college}
+                          </Badge>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
                     </div>
                   </div>
 

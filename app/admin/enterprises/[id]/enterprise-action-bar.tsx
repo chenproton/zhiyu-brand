@@ -120,7 +120,7 @@ export function AddAgreementButton() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>协议内容</Label>
+              <Label>协议简介</Label>
               <Textarea
                 rows={6}
                 value={formData.content}
@@ -223,7 +223,7 @@ export function AgreementDetailButton({ agreement }: { agreement: EnterpriseAgre
               </div>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground mb-1">协议内容</p>
+              <p className="text-sm text-muted-foreground mb-1">协议简介</p>
               <div className="text-sm bg-muted p-3 rounded-md leading-relaxed">
                 {agreement.content || '暂无内容'}
               </div>

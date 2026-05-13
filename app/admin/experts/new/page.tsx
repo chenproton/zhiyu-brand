@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, Save, X, Search, Plus } from 'lucide-react'
+import { ArrowLeft, Save, X, Search, Plus, Upload } from 'lucide-react'
 import { EXPERT_TYPES, INDUSTRIES, SECONDARY_COLLEGES } from '@/lib/types'
 import type { ExpertGender, ExpertType } from '@/lib/types'
 
@@ -69,7 +69,9 @@ export default function NewExpertPage() {
   const [positionSearch, setPositionSearch] = useState('')
   const [positionDropdownOpen, setPositionDropdownOpen] = useState(false)
 
-  const [secondaryCollege, setSecondaryCollege] = useState('')
+  const [secondaryColleges, setSecondaryColleges] = useState<string[]>([])
+  const [avatar, setAvatar] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleRemoveSpecialty = (index: number) => {
     setSpecialties(specialties.filter((_, i) => i !== index))
@@ -86,6 +88,14 @@ export default function NewExpertPage() {
       pos.toLowerCase().includes(positionSearch.toLowerCase()) &&
       !relatedPositions.includes(pos)
   )
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files[0]) {
+      setAvatar(URL.createObjectURL(files[0]))
+    }
+    e.target.value = ''
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -192,25 +202,66 @@ export default function NewExpertPage() {
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="secondaryCollege">关联二级学院</Label>
-                    <Select value={secondaryCollege} onValueChange={(v) => setSecondaryCollege(v)}>
-                      <SelectTrigger id="secondaryCollege">
-                        <SelectValue placeholder="请选择二级学院" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SECONDARY_COLLEGES.map((college) => (
-                          <SelectItem key={college} value={college}>{college}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="avatar">专家照片</Label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <div className="flex items-center gap-3">
+                    {avatar && (
+                      <div className="relative">
+                        <img src={avatar} alt="专家照片" className="w-24 h-32 object-cover rounded-lg border" />
+                        <button
+                          type="button"
+                          onClick={() => setAvatar('')}
+                          className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-24 h-32 flex flex-col items-center justify-center gap-2 border-dashed"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">上传照片</span>
+                    </Button>
                   </div>
                 </div>
 
-                {/* 关联行业 */}
                 <div className="space-y-2">
-                  <Label>关联行业</Label>
+                  <Label>关联二级学院</Label>
+                  <div className="flex flex-wrap gap-2 p-3 border rounded-md">
+                    {SECONDARY_COLLEGES.map((college) => (
+                      <Badge
+                        key={college}
+                        variant={secondaryColleges.includes(college) ? 'default' : 'outline'}
+                        className="cursor-pointer"
+                        onClick={() =>
+                          setSecondaryColleges((prev) =>
+                            prev.includes(college)
+                              ? prev.filter((c) => c !== college)
+                              : [...prev, college]
+                          )
+                        }
+                      >
+                        {college}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
+                </div>
+
+                {/* 所属行业领域 */}
+                <div className="space-y-2">
+                  <Label>所属行业领域</Label>
                   <div className="flex gap-2">
                     <Select
                       value=""
@@ -242,6 +293,68 @@ export default function NewExpertPage() {
                   </div>
                 </div>
 
+                {/* 擅长岗位领域 */}
+                <div className="space-y-2">
+                  <Label>擅长岗位领域</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="搜索岗位..."
+                      value={positionSearch}
+                      onChange={(e) => {
+                        setPositionSearch(e.target.value)
+                        setPositionDropdownOpen(true)
+                      }}
+                      onFocus={() => setPositionDropdownOpen(true)}
+                      className="pl-9"
+                    />
+                    {positionDropdownOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setPositionDropdownOpen(false)}
+                        />
+                        <div className="absolute z-20 mt-1 w-full bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                          {filteredPositions.length > 0 ? (
+                            filteredPositions.map((pos) => (
+                              <button
+                                key={pos}
+                                type="button"
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                                onClick={() => {
+                                  togglePosition(pos)
+                                  setPositionSearch('')
+                                  setPositionDropdownOpen(false)
+                                }}
+                              >
+                                {pos}
+                              </button>
+                            ))
+                          ) : (
+                            <div className="px-3 py-2 text-sm text-muted-foreground">
+                              {positionSearch ? '无匹配岗位' : '无更多岗位'}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {relatedPositions.map((pos) => (
+                      <Badge key={pos} variant="secondary" className="gap-1">
+                        {pos}
+                        <button
+                          type="button"
+                          onClick={() => togglePosition(pos)}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
               </CardContent>
             </Card>
 
@@ -258,72 +371,6 @@ export default function NewExpertPage() {
                 />
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>关联岗位</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="搜索岗位..."
-                    value={positionSearch}
-                    onChange={(e) => {
-                      setPositionSearch(e.target.value)
-                      setPositionDropdownOpen(true)
-                    }}
-                    onFocus={() => setPositionDropdownOpen(true)}
-                    className="pl-9"
-                  />
-                  {positionDropdownOpen && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setPositionDropdownOpen(false)}
-                      />
-                      <div className="absolute z-20 mt-1 w-full bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                        {filteredPositions.length > 0 ? (
-                          filteredPositions.map((pos) => (
-                            <button
-                              key={pos}
-                              type="button"
-                              className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
-                              onClick={() => {
-                                togglePosition(pos)
-                                setPositionSearch('')
-                                setPositionDropdownOpen(false)
-                              }}
-                            >
-                              {pos}
-                            </button>
-                          ))
-                        ) : (
-                          <div className="px-3 py-2 text-sm text-muted-foreground">
-                            {positionSearch ? '无匹配岗位' : '无更多岗位'}
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {relatedPositions.map((pos) => (
-                    <Badge key={pos} variant="secondary" className="gap-1">
-                      {pos}
-                      <button
-                        type="button"
-                        onClick={() => togglePosition(pos)}
-                        className="ml-1 hover:text-destructive"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
 
           </div>
 

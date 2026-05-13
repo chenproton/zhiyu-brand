@@ -34,9 +34,14 @@ export default function HomePage() {
     return () => window.removeEventListener("popstate", readCollege)
   }, [])
 
-  const filterByCollege = <T extends { secondaryCollege?: string }>(items: T[]) => {
+  const filterByCollege = (items: any[]) => {
     if (selectedCollege === "all") return items
-    return items.filter((item) => item.secondaryCollege === selectedCollege)
+    return items.filter((item) => {
+      if (item.secondaryColleges) {
+        return item.secondaryColleges.includes(selectedCollege)
+      }
+      return item.secondaryCollege === selectedCollege
+    })
   }
 
   const filteredPartners = filterByCollege(partners)

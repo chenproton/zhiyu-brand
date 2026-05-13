@@ -48,8 +48,12 @@ export default async function ExpertDetailPage({ params }: PageProps) {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
-              <Users className="w-10 h-10 text-gray-400" />
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
+              {expert.avatar ? (
+                <img src={expert.avatar} alt={expert.name} className="w-full h-full object-cover" />
+              ) : (
+                <Users className="w-10 h-10 text-gray-400" />
+              )}
             </div>
             <div>
               <div className="flex items-center gap-3">
@@ -87,7 +91,7 @@ export default async function ExpertDetailPage({ params }: PageProps) {
             {/* Related Industries */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">关联行业</CardTitle>
+                <CardTitle className="text-base">所属行业领域</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
@@ -116,7 +120,7 @@ export default async function ExpertDetailPage({ params }: PageProps) {
             {expert.relatedPositions && expert.relatedPositions.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">关联岗位</CardTitle>
+                  <CardTitle className="text-base">擅长岗位领域</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
@@ -131,7 +135,7 @@ export default async function ExpertDetailPage({ params }: PageProps) {
             )}
 
             {/* Secondary College */}
-            {expert.secondaryCollege && (
+            {expert.secondaryColleges && expert.secondaryColleges.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">关联二级学院</CardTitle>
@@ -139,7 +143,7 @@ export default async function ExpertDetailPage({ params }: PageProps) {
                 <CardContent>
                   <div className="flex items-start gap-3">
                     <School className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-gray-600">{expert.secondaryCollege}</span>
+                    <span className="text-sm text-gray-600">{expert.secondaryColleges.join('、')}</span>
                   </div>
                 </CardContent>
               </Card>

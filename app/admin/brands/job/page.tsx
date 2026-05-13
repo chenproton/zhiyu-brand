@@ -193,27 +193,27 @@ export default function JobBrandPage() {
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filteredJobs.map((job) => (
               <Card key={job.id} className="overflow-hidden">
-                <div className="aspect-[3/2] bg-muted relative overflow-hidden">
+                <div className="aspect-[16/9] bg-muted relative overflow-hidden">
                   <img
-                    src={job.coverImage || "/placeholder.svg?height=200&width=300"}
+                    src={job.coverImage || "/placeholder.svg?height=180&width=320"}
                     alt={job.name}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-2 left-2 flex gap-1">
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="text-[10px]">
                       {JOB_CATEGORY_LABELS[job.jobCategory || "non-teaching"]}
                     </Badge>
-                    <Badge variant={job.status === "published" ? "secondary" : "outline"}>
+                    <Badge variant={job.status === "published" ? "secondary" : "outline"} className="text-[10px]">
                       {BRAND_STATUS_LABELS[job.status]}
                     </Badge>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <h3 className="font-semibold text-base text-white">{job.name}</h3>
-                    <p className="text-white/80 text-xs">{job.industry}</p>
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <h3 className="font-semibold text-sm text-white">{job.name}</h3>
+                    <p className="text-white/80 text-[10px]">{job.industry}</p>
                   </div>
                 </div>
                 <CardContent className="pt-3 pb-3">
@@ -221,20 +221,13 @@ export default function JobBrandPage() {
                     {job.description}
                   </p>
 
-                  <div className="grid grid-cols-3 gap-2 py-2 border-y mb-3">
+                  <div className="grid grid-cols-2 gap-2 py-2 border-y mb-3">
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1 font-medium text-foreground text-sm">
                         <TrendingUp className="h-3 w-3 text-muted-foreground" />
                         {job.averageSalary}
                       </div>
                       <p className="text-[10px] text-muted-foreground">薪资范围</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 font-medium text-foreground text-sm">
-                        <Users className="h-3 w-3 text-muted-foreground" />
-                        {job.demandCount}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground">需求量</p>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1 font-medium text-foreground text-sm">

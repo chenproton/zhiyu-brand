@@ -27,7 +27,7 @@ export default function NewAchievementPage() {
     authors: [] as string[],
     newAuthor: "",
     attachments: [] as string[],
-    secondaryCollege: "",
+    secondaryColleges: [] as string[],
   })
 
   const handleAddAuthor = () => {
@@ -253,22 +253,26 @@ export default function NewAchievementPage() {
                 <CardDescription>选择成果归属的二级学院</CardDescription>
               </CardHeader>
               <CardContent>
-                <Select
-                  value={formData.secondaryCollege}
-                  onValueChange={(value) => setFormData({ ...formData, secondaryCollege: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择二级学院（可选）" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">不关联学院</SelectItem>
-                    {SECONDARY_COLLEGES.map((college) => (
-                      <SelectItem key={college} value={college}>
-                        {college}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-wrap gap-2">
+                  {SECONDARY_COLLEGES.map((college) => (
+                    <Badge
+                      key={college}
+                      variant={formData.secondaryColleges.includes(college) ? 'default' : 'outline'}
+                      className="cursor-pointer"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          secondaryColleges: prev.secondaryColleges.includes(college)
+                            ? prev.secondaryColleges.filter((c) => c !== college)
+                            : [...prev.secondaryColleges, college],
+                        }))
+                      }
+                    >
+                      {college}
+                    </Badge>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">点击标签进行选择，支持多选</p>
               </CardContent>
             </Card>
 

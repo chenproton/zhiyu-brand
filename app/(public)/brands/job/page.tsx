@@ -97,52 +97,45 @@ export default function JobBrandPage() {
         </div>
 
         {/* Job Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {filteredJobs.map((job) => (
             <Card key={job.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
-              <div className="aspect-[3/2] bg-muted relative overflow-hidden">
+              <div className="aspect-[16/9] bg-muted relative overflow-hidden">
                 <img
-                  src={job.coverImage || "/placeholder.svg?height=200&width=300"}
+                  src={job.coverImage || "/placeholder.svg?height=180&width=320"}
                   alt={job.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute top-3 left-3 flex gap-2">
-                  <Badge variant={getLevelBadgeVariant(job.level)}>
+                <div className="absolute top-2 left-2 flex gap-1">
+                  <Badge variant={getLevelBadgeVariant(job.level)} className="text-[10px]">
                     {BRAND_LEVEL_LABELS[job.level]}
                   </Badge>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="font-semibold text-xl text-white">{job.name}</h3>
-                  <p className="text-white/80 text-sm">{job.industry}</p>
+                <div className="absolute bottom-3 left-3 right-3">
+                  <h3 className="font-semibold text-base text-white">{job.name}</h3>
+                  <p className="text-white/80 text-xs">{job.industry}</p>
                 </div>
               </div>
-              <CardContent className="pt-4">
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+              <CardContent className="pt-3">
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                   {job.description}
                 </p>
 
-                <div className="grid grid-cols-3 gap-4 py-3 border-y mb-4">
+                <div className="grid grid-cols-2 gap-2 py-2 border-y mb-3">
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 font-medium text-foreground">
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex items-center justify-center gap-1 font-medium text-foreground text-sm">
+                      <TrendingUp className="h-3 w-3 text-muted-foreground" />
                       {job.averageSalary}
                     </div>
-                    <p className="text-xs text-muted-foreground">薪资范围</p>
+                    <p className="text-[10px] text-muted-foreground">薪资范围</p>
                   </div>
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 font-semibold">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      {job.demandCount}
-                    </div>
-                    <p className="text-xs text-muted-foreground">需求量</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 font-semibold">
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex items-center justify-center gap-1 font-medium text-foreground text-sm">
+                      <Eye className="h-3 w-3 text-muted-foreground" />
                       {job.viewCount}
                     </div>
-                    <p className="text-xs text-muted-foreground">浏览</p>
+                    <p className="text-[10px] text-muted-foreground">浏览</p>
                   </div>
                 </div>
 

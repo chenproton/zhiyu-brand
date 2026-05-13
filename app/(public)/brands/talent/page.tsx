@@ -87,50 +87,43 @@ export default function TalentBrandPage() {
           </div>
 
           <TabsContent value="cases">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {filteredCases.map((case_) => (
                 <Card key={case_.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
-                  <div className="aspect-[4/3] bg-muted relative overflow-hidden">
+                  <div className="aspect-[16/9] bg-muted relative overflow-hidden">
                     <img
-                      src={case_.photo || "/placeholder.svg?height=300&width=400"}
+                      src={case_.coverImage || case_.photo || "/placeholder.svg?height=180&width=320"}
                       alt={case_.studentName}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4 text-white">
-                      <h3 className="font-semibold text-lg">{case_.studentName}</h3>
-                      <p className="text-sm text-white/80">{case_.major} | {case_.graduationYear}届</p>
+                    <div className="absolute bottom-3 left-3 right-3 text-white">
+                      <h3 className="font-semibold text-base">{case_.studentName}</h3>
+                      <p className="text-xs text-white/80">{case_.major} | {case_.graduationYear}届</p>
                     </div>
                   </div>
-                  <CardContent className="pt-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Avatar className="h-10 w-10">
+                  <CardContent className="pt-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Avatar className="h-8 w-8">
                         <AvatarImage src={case_.companyLogo} />
-                        <AvatarFallback>
-                          <Building2 className="h-5 w-5" />
+                        <AvatarFallback className="text-xs">
+                          <Building2 className="h-4 w-4" />
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="font-medium text-sm">{case_.company}</p>
-                        <p className="text-sm text-muted-foreground">{case_.position}</p>
+                        <p className="text-xs text-muted-foreground">{case_.position}</p>
                       </div>
                     </div>
                     {case_.salary && (
-                      <div className="flex items-center gap-2 mb-3">
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground font-medium">{case_.salary}</span>
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-foreground text-sm font-medium">{case_.salary}</span>
                       </div>
                     )}
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                    <p className="text-xs text-muted-foreground line-clamp-2">
                       {case_.story}
                     </p>
-                    <div className="flex flex-wrap gap-1">
-                      {case_.abilityTags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -175,6 +168,16 @@ export default function TalentBrandPage() {
                         </div>
                         <p className="text-sm text-muted-foreground">{profile.major}</p>
                         <p className="text-xs text-muted-foreground">{profile.grade}</p>
+                        <p className="text-xs text-muted-foreground">{profile.department}</p>
+                        {profile.targetPositions && profile.targetPositions.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {profile.targetPositions.slice(0, 2).map((pos) => (
+                              <Badge key={pos} variant="outline" className="text-[10px] px-1 py-0 h-4">
+                                {pos}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -196,13 +199,22 @@ export default function TalentBrandPage() {
                     <div className="mt-4">
                       <p className="text-sm font-medium mb-2">能力标签</p>
                       <div className="flex flex-wrap gap-1">
-                        {profile.abilityTags.map((tag) => (
+                        {profile.abilityTags.slice(0, 5).map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
                         ))}
+                        {profile.abilityTags.length > 5 && (
+                          <Badge variant="outline" className="text-xs">+{profile.abilityTags.length - 5}</Badge>
+                        )}
                       </div>
                     </div>
+
+                    {profile.lastVerifiedAt && (
+                      <p className="text-[10px] text-muted-foreground mt-3">
+                        上次验证：{profile.lastVerifiedAt.toLocaleDateString("zh-CN")}
+                      </p>
+                    )}
 
                     {profile.employmentStatus === "employed" && profile.employmentCompany && (
                       <div className="mt-4 pt-4 border-t">

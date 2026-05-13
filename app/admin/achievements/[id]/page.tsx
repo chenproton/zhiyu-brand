@@ -189,7 +189,7 @@ export default function AchievementDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">关联二级学院</p>
-                <p className="font-medium">{achievement.secondaryCollege || '—'}</p>
+                <p className="font-medium">{achievement.secondaryColleges?.join('、') || '—'}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">发布日期</p>

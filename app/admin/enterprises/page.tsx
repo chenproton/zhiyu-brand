@@ -125,7 +125,7 @@ export default function EnterprisesListPage() {
           </Button>
           <Button variant="outline" size="sm" onClick={() => { setImportDialogOpen(true); setImportStep('upload') }}>
             <Upload className="h-4 w-4 mr-1" />
-            导入平台企业
+            导入商城企业
           </Button>
           <Link href="/admin/enterprises/new">
             <Button size="sm">
@@ -161,6 +161,9 @@ export default function EnterprisesListPage() {
               <TableHead>合作状态</TableHead>
               <TableHead>合作评级</TableHead>
               <TableHead>校企合作协议</TableHead>
+              <TableHead>创建人</TableHead>
+              <TableHead>创建时间</TableHead>
+              <TableHead>更新时间</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -196,6 +199,15 @@ export default function EnterprisesListPage() {
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">{enterprise.agreements?.length || 0}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm">{enterprise.createdBy || '-'}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm">{enterprise.createdAt.toLocaleDateString('zh-CN')}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm">{enterprise.updatedAt.toLocaleDateString('zh-CN')}</span>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -240,7 +252,7 @@ export default function EnterprisesListPage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                   暂无符合条件的企业
                 </TableCell>
               </TableRow>
@@ -264,7 +276,7 @@ export default function EnterprisesListPage() {
       <Dialog open={importDialogOpen} onOpenChange={(open) => { setImportDialogOpen(open); if (!open) { setImportStep('upload'); setImportedData(null) } }}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>导入平台企业</DialogTitle>
+            <DialogTitle>导入商城企业</DialogTitle>
             <DialogDescription>
               {importStep === 'upload' ? '上传企业数据文件，系统将自动解析并导入企业及其关联的专家列表' : '预览解析结果，确认后完成导入'}
             </DialogDescription>

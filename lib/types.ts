@@ -71,7 +71,11 @@ export interface Enterprise {
     evaluator: string
     remark?: string
   }
-  secondaryCollege?: string
+  secondaryColleges?: string[]
+  intellectualPropertyPhotos?: string[]
+  qualificationPhotos?: string[]
+  coverPhotos?: string[]
+  createdBy?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -107,7 +111,8 @@ export interface Partner {
   address?: string
   establishedYear?: number
   employeeCount?: number
-  secondaryCollege?: string
+  secondaryColleges?: string[]
+  hiredStudents?: string[]
   createdAt: Date
   updatedAt: Date
 }
@@ -195,7 +200,8 @@ export interface Project {
   projectAgreements?: ProjectAgreement[]
   // 项目阶段与进展
   phases?: ProjectPhaseItem[]
-  secondaryCollege?: string
+  secondaryColleges?: string[]
+  createdBy?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -220,7 +226,8 @@ export interface Expert {
   status: 'active' | 'inactive'
   workExperience?: string
   relatedPositions?: string[]
-  secondaryCollege?: string
+  secondaryColleges?: string[]
+  createdBy?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -258,7 +265,8 @@ export interface Achievement {
   publishDate: Date
   status: 'draft' | 'published' | 'archived'
   viewCount: number
-  secondaryCollege?: string
+  secondaryColleges?: string[]
+  createdBy?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -624,6 +632,8 @@ export interface TalentProfile {
   taskCompletionRate: number
   comprehensiveRank: number
   abilityTags: string[]
+  targetPositions?: string[]
+  lastVerifiedAt?: Date
   employmentStatus?: 'employed' | 'seeking' | 'studying'
   employmentCompany?: string
   employmentPosition?: string
@@ -646,6 +656,7 @@ export interface EmploymentCase {
   abilityTags: string[]
   story: string
   photo?: string
+  coverImage?: string
   status: BrandStatus
   viewCount: number
   createdAt: Date

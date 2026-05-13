@@ -150,6 +150,9 @@ export default function ProjectsListPage() {
               <TableHead>里程碑进度</TableHead>
               <TableHead>阶段</TableHead>
               <TableHead>发布状态</TableHead>
+              <TableHead>创建人</TableHead>
+              <TableHead>创建时间</TableHead>
+              <TableHead>更新时间</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -198,6 +201,15 @@ export default function ProjectsListPage() {
                     </TableCell>
                     <TableCell>
                       <ProjectPublishStatusBadge status={project.publishStatus} />
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{project.createdBy || '-'}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{project.createdAt.toLocaleDateString('zh-CN')}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{project.updatedAt.toLocaleDateString('zh-CN')}</span>
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -254,7 +266,7 @@ export default function ProjectsListPage() {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                   暂无符合条件的合作项目
                 </TableCell>
               </TableRow>

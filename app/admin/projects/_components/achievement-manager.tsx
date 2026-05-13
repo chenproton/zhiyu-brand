@@ -47,7 +47,7 @@ interface AchievementItem {
   description: string
   createdAt: Date
   attachments?: string[]
-  secondaryCollege?: string
+  secondaryColleges?: string[]
 }
 
 interface AchievementManagerProps {
@@ -75,7 +75,7 @@ export function AchievementManager({
     type: '',
     description: '',
     attachments: [] as string[],
-    secondaryCollege: '',
+    secondaryColleges: [] as string[],
   })
 
   const filteredAchievements = useMemo(() => {
@@ -129,10 +129,10 @@ export function AchievementManager({
       description: customForm.description.trim(),
       createdAt: new Date(),
       attachments: customForm.attachments,
-      secondaryCollege: customForm.secondaryCollege || undefined,
+      secondaryColleges: customForm.secondaryColleges.length > 0 ? customForm.secondaryColleges : undefined,
     }
     onChange([...items, item])
-    setCustomForm({ name: '', type: '', description: '', attachments: [], secondaryCollege: '' })
+    setCustomForm({ name: '', type: '', description: '', attachments: [], secondaryColleges: [] })
     setCustomDialogOpen(false)
   }
 
@@ -256,18 +256,26 @@ export function AchievementManager({
             </div>
             <div className="space-y-2">
               <Label>关联二级学院</Label>
-              <select
-                value={customForm.secondaryCollege}
-                onChange={(e) => setCustomForm((prev) => ({ ...prev, secondaryCollege: e.target.value }))}
-                className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
-              >
-                <option value="">请选择二级学院</option>
+              <div className="flex flex-wrap gap-2">
                 {SECONDARY_COLLEGES.map((college) => (
-                  <option key={college} value={college}>
+                  <Badge
+                    key={college}
+                    variant={customForm.secondaryColleges.includes(college) ? 'default' : 'outline'}
+                    className="cursor-pointer"
+                    onClick={() =>
+                      setCustomForm((prev) => ({
+                        ...prev,
+                        secondaryColleges: prev.secondaryColleges.includes(college)
+                          ? prev.secondaryColleges.filter((c) => c !== college)
+                          : [...prev.secondaryColleges, college],
+                      }))
+                    }
+                  >
                     {college}
-                  </option>
+                  </Badge>
                 ))}
-              </select>
+              </div>
+              <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
             </div>
             <div className="space-y-2">
               <Label>成果描述</Label>
@@ -279,7 +287,7 @@ export function AchievementManager({
               />
             </div>
             <div className="space-y-2">
-              <Label>附件上传</Label>
+              <Label>成果佐证材料上传</Label>
               <input
                 type="file"
                 multiple

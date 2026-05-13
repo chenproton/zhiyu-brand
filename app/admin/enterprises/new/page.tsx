@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ArrowLeft, Save, Upload, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import {
   COOPERATION_STATUS_LABELS,
   COOPERATION_RATING_LABELS,
@@ -27,6 +28,9 @@ import type { CooperationStatus, CooperationRating } from '@/lib/types'
 export default function NewEnterprisePage() {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const ipFileInputRef = useRef<HTMLInputElement>(null)
+  const qualFileInputRef = useRef<HTMLInputElement>(null)
+  const coverFileInputRef = useRef<HTMLInputElement>(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -38,13 +42,16 @@ export default function NewEnterprisePage() {
     description: '',
     unifiedSocialCreditCode: '',
     businessLicensePhotos: [] as string[],
+    intellectualPropertyPhotos: [] as string[],
+    qualificationPhotos: [] as string[],
+    coverPhotos: [] as string[],
     contactPerson: '',
     contactPhone: '',
     contactEmail: '',
     address: '',
     establishedYear: '',
     employeeCount: '',
-    secondaryCollege: '',
+    secondaryColleges: [] as string[],
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,21 +62,28 @@ export default function NewEnterprisePage() {
     router.push('/admin/enterprises')
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
       const newPhotos = Array.from(files).map((file) => URL.createObjectURL(file))
-      setFormData((prev) => ({ ...prev, businessLicensePhotos: [...prev.businessLicensePhotos, ...newPhotos] }))
+      setFormData((prev) => ({ ...prev, [field]: [...(prev[field] as string[]), ...newPhotos] }))
     }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
+    e.target.value = ''
   }
 
-  const removePhoto = (index: number) => {
+  const removePhoto = (field: keyof typeof formData, index: number) => {
     setFormData((prev) => ({
       ...prev,
-      businessLicensePhotos: prev.businessLicensePhotos.filter((_, i) => i !== index),
+      [field]: (prev[field] as string[]).filter((_, i) => i !== index),
+    }))
+  }
+
+  const toggleSecondaryCollege = (college: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      secondaryColleges: prev.secondaryColleges.includes(college)
+        ? prev.secondaryColleges.filter((c) => c !== college)
+        : [...prev.secondaryColleges, college],
     }))
   }
 
@@ -186,7 +200,7 @@ export default function NewEnterprisePage() {
                   accept="image/*"
                   multiple
                   className="hidden"
-                  onChange={handleFileChange}
+                  onChange={handleFileChange('businessLicensePhotos')}
                 />
                 <div className="flex flex-wrap gap-3">
                   {formData.businessLicensePhotos.map((photo, index) => (
@@ -198,7 +212,7 @@ export default function NewEnterprisePage() {
                       />
                       <button
                         type="button"
-                        onClick={() => removePhoto(index)}
+                        onClick={() => removePhoto('businessLicensePhotos', index)}
                         className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
                       >
                         <X className="h-3 w-3" />
@@ -285,19 +299,19 @@ export default function NewEnterprisePage() {
                 </div>
                 <div className="space-y-2">
                   <Label>关联二级学院</Label>
-                  <Select
-                    value={formData.secondaryCollege}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, secondaryCollege: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择二级学院" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SECONDARY_COLLEGES.map((college) => (
-                        <SelectItem key={college} value={college}>{college}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex flex-wrap gap-2 p-3 border rounded-md">
+                    {SECONDARY_COLLEGES.map((college) => (
+                      <Badge
+                        key={college}
+                        variant={formData.secondaryColleges.includes(college) ? 'default' : 'outline'}
+                        className="cursor-pointer"
+                        onClick={() => toggleSecondaryCollege(college)}
+                      >
+                        {college}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
                 </div>
               </CardContent>
             </Card>

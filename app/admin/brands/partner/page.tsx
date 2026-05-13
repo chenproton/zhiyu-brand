@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
@@ -29,6 +29,7 @@ import { jobs, partners } from "@/lib/mock-data"
 import { JobActionButtons, NonTeachingJobDialog, TeachingJobDialog } from "@/components/admin/job-brand-tools"
 import {
   INDUSTRIES,
+  SECONDARY_COLLEGES,
 } from "@/lib/types"
 import type { Job, Partner, PartnerType } from "@/lib/types"
 
@@ -48,6 +49,7 @@ const emptyPartner: Omit<Partner, "id" | "createdAt" | "updatedAt"> = {
   address: undefined,
   establishedYear: undefined,
   employeeCount: undefined,
+  secondaryColleges: [],
 }
 
 const CUSTOM_PARTNERS_KEY = "brand_custom_partners"
@@ -274,7 +276,7 @@ export default function PartnerBrandPage() {
         <div className="flex gap-2">
           <Button variant="outline" onClick={openCreate}>
             <Plus className="h-4 w-4 mr-2" />
-            新增独立雇主品牌
+            新增独立雇主企业
           </Button>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -348,14 +350,23 @@ export default function PartnerBrandPage() {
                 </div>
               )}
 
-              <div className="mt-3 flex flex-wrap gap-1">
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                  教学岗位 {localJobs.filter((job) => job.partnerId === partner.id && job.jobCategory === "teaching").length}
-                </Badge>
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                  非教学岗位 {localJobs.filter((job) => job.partnerId === partner.id && job.jobCategory === "non-teaching").length}
-                </Badge>
-              </div>
+              {(() => {
+                const partnerJobs = localJobs.filter((job) => job.partnerId === partner.id)
+                return partnerJobs.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {partnerJobs.slice(0, 3).map((job) => (
+                      <Badge key={job.id} variant="outline" className="text-[10px] px-1.5 py-0">
+                        {job.title}
+                      </Badge>
+                    ))}
+                    {partnerJobs.length > 3 && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        +{partnerJobs.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                ) : null
+              })()}
 
               <div className="flex items-center justify-between pt-4 mt-4 border-t">
                 <div className="flex gap-1.5">
@@ -522,128 +533,170 @@ export default function PartnerBrandPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 新增独立雇主品牌 Dialog */}
+      {/* 新增独立雇主企业 Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>新增独立雇主品牌</DialogTitle>
-            <DialogDescription>从零创建一个新的雇主品牌</DialogDescription>
+            <DialogTitle>新增独立雇主企业</DialogTitle>
+            <DialogDescription>从零创建一个新的独立雇主企业档案</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>主体名称</Label>
-              <Input
-                value={createForm.name}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="请输入主体名称"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>主体类型</Label>
-                <Select
-                  value={createForm.type}
-                  onValueChange={(v) => setCreateForm((prev) => ({ ...prev, type: v as PartnerType }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="enterprise">企业</SelectItem>
-                    <SelectItem value="association">行业协会</SelectItem>
-                    <SelectItem value="park">产业园区</SelectItem>
-                    <SelectItem value="institution">机构</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>所属行业</Label>
-                <Select
-                  value={createForm.industry}
-                  onValueChange={(v) => setCreateForm((prev) => ({ ...prev, industry: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INDUSTRIES.map((ind) => (
-                      <SelectItem key={ind} value={ind}>
-                        {ind}
-                      </SelectItem>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">基本信息</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2 md:col-span-2">
+                  <Label>企业名称 *</Label>
+                  <Input
+                    value={createForm.name}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="请输入企业全称"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>主体类型</Label>
+                  <Select
+                    value={createForm.type}
+                    onValueChange={(v) => setCreateForm((prev) => ({ ...prev, type: v as PartnerType }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="enterprise">企业</SelectItem>
+                      <SelectItem value="association">行业协会</SelectItem>
+                      <SelectItem value="park">产业园区</SelectItem>
+                      <SelectItem value="institution">机构</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>所属行业</Label>
+                  <Select
+                    value={createForm.industry}
+                    onValueChange={(v) => setCreateForm((prev) => ({ ...prev, industry: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDUSTRIES.map((ind) => (
+                        <SelectItem key={ind} value={ind}>
+                          {ind}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>地区</Label>
+                  <Input
+                    value={createForm.region}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, region: e.target.value }))}
+                    placeholder="如 江苏省苏州市"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>品牌描述</Label>
+                  <Textarea
+                    value={createForm.description}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, description: e.target.value }))}
+                    rows={3}
+                    placeholder="请输入品牌描述..."
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">联系信息</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>联系人</Label>
+                  <Input
+                    value={createForm.contactPerson || ""}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, contactPerson: e.target.value }))}
+                    placeholder="请输入联系人姓名"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>联系电话</Label>
+                  <Input
+                    value={createForm.contactPhone || ""}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, contactPhone: e.target.value }))}
+                    placeholder="请输入联系电话"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>联系邮箱</Label>
+                  <Input
+                    value={createForm.contactEmail || ""}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, contactEmail: e.target.value }))}
+                    placeholder="请输入联系邮箱"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>详细地址</Label>
+                  <Input
+                    value={createForm.address || ""}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, address: e.target.value }))}
+                    placeholder="请输入详细地址"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">其他信息</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>成立年份</Label>
+                  <Input
+                    type="number"
+                    value={createForm.establishedYear || ""}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, establishedYear: e.target.value ? Number(e.target.value) : undefined }))}
+                    placeholder="如 2010"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>员工人数</Label>
+                  <Input
+                    type="number"
+                    value={createForm.employeeCount || ""}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, employeeCount: e.target.value ? Number(e.target.value) : undefined }))}
+                    placeholder="如 500"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>关联二级学院</Label>
+                  <div className="flex flex-wrap gap-2 p-3 border rounded-md">
+                    {SECONDARY_COLLEGES.map((college) => (
+                      <Badge
+                        key={college}
+                        variant={(createForm.secondaryColleges || []).includes(college) ? 'default' : 'outline'}
+                        className="cursor-pointer"
+                        onClick={() =>
+                          setCreateForm((prev) => ({
+                            ...prev,
+                            secondaryColleges: (prev.secondaryColleges || []).includes(college)
+                              ? (prev.secondaryColleges || []).filter((c) => c !== college)
+                              : [...(prev.secondaryColleges || []), college],
+                          }))
+                        }
+                      >
+                        {college}
+                      </Badge>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>地区</Label>
-              <Input
-                value={createForm.region}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, region: e.target.value }))}
-                placeholder="如 江苏省苏州市"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>联系人</Label>
-              <Input
-                value={createForm.contactPerson || ""}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, contactPerson: e.target.value }))}
-                placeholder="请输入联系人姓名"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>联系电话</Label>
-              <Input
-                value={createForm.contactPhone || ""}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, contactPhone: e.target.value }))}
-                placeholder="请输入联系电话"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>联系邮箱</Label>
-              <Input
-                value={createForm.contactEmail || ""}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, contactEmail: e.target.value }))}
-                placeholder="请输入联系邮箱"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>详细地址</Label>
-              <Input
-                value={createForm.address || ""}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, address: e.target.value }))}
-                placeholder="请输入详细地址"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>成立年份</Label>
-                <Input
-                  type="number"
-                  value={createForm.establishedYear || ""}
-                  onChange={(e) => setCreateForm((prev) => ({ ...prev, establishedYear: e.target.value ? Number(e.target.value) : undefined }))}
-                  placeholder="如 2010"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>员工人数</Label>
-                <Input
-                  type="number"
-                  value={createForm.employeeCount || ""}
-                  onChange={(e) => setCreateForm((prev) => ({ ...prev, employeeCount: e.target.value ? Number(e.target.value) : undefined }))}
-                  placeholder="如 500"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>品牌描述</Label>
-              <Textarea
-                value={createForm.description}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, description: e.target.value }))}
-                rows={3}
-                placeholder="请输入品牌描述..."
-              />
-            </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>

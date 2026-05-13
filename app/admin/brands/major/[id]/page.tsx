@@ -569,7 +569,7 @@ export default function MajorBrandDetailPage() {
           <TabsTrigger value="directions">专业就业方向 ({directionJobs.length})</TabsTrigger>
           <TabsTrigger value="companies">专业合作企业 ({companies.length})</TabsTrigger>
           <TabsTrigger value="achievements">专业特色成果 ({achievementItems.length})</TabsTrigger>
-          <TabsTrigger value="courses">专业核心课程 ({courses.length})</TabsTrigger>
+          <TabsTrigger value="courses">专业课程体系 ({courses.length})</TabsTrigger>
         </TabsList>
 
         {/* Tab 1: 专业基本信息 */}
@@ -919,18 +919,28 @@ export default function MajorBrandDetailPage() {
           </Card>
         </TabsContent>
 
-        {/* Tab 6: 专业核心课程 */}
+        {/* Tab 6: 专业课程体系 */}
         <TabsContent value="courses">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base">专业核心课程</CardTitle>
-                <CardDescription>添加专业核心课程及说明</CardDescription>
+                <CardTitle className="text-base">专业课程体系</CardTitle>
+                <CardDescription>添加专业课程体系及说明</CardDescription>
               </div>
-              <Button size="sm" onClick={() => setCourseDialog({ open: true, item: null })}>
-                <Plus className="h-4 w-4 mr-1" />
-                新增课程
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => alert("开发中")}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  引用体系课程
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => alert("开发中")}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  引用排课课程
+                </Button>
+                <Button size="sm" onClick={() => setCourseDialog({ open: true, item: null })}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  新增课程
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {courses.length > 0 ? (
@@ -968,7 +978,7 @@ export default function MajorBrandDetailPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">暂无核心课程</div>
+                <div className="text-center py-8 text-muted-foreground">暂无课程体系</div>
               )}
             </CardContent>
           </Card>
@@ -1049,11 +1059,11 @@ export default function MajorBrandDetailPage() {
         onSave={handleSaveCompany}
       />
 
-      {/* 核心课程编辑弹窗 */}
+      {/* 课程体系编辑弹窗 */}
       <NameDescDialog
         open={courseDialog.open}
         onOpenChange={(open) => setCourseDialog({ open })}
-        title={courseDialog.item ? "编辑核心课程" : "新增核心课程"}
+        title={courseDialog.item ? "编辑课程体系" : "新增课程体系"}
         nameLabel="课程名称"
         descLabel="课程描述"
         namePlaceholder="填写课程名称"

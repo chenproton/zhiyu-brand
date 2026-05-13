@@ -223,7 +223,7 @@ export default function ProjectDetailPage() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">关联二级学院</p>
-                    <p className="font-medium">{project.secondaryCollege || '未设置'}</p>
+                    <p className="font-medium">{project.secondaryColleges?.join('、') || '未设置'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">创建时间</p>

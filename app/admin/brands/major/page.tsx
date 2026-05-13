@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Eye, Pencil, Search, Settings, Trash2, TrendingUp, Users } from "lucide-react"
+import { ArrowLeft, Eye, Pencil, Search, Settings, TrendingUp, Users } from "lucide-react"
 import { majorBrands } from "@/lib/mock-data"
 import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
 import type { MajorBrand } from "@/lib/types"
@@ -105,11 +105,9 @@ export default function MajorBrandPage() {
                 {major.coreCourses.slice(0, 3).map((course) => <Badge key={course} variant="outline" className="text-xs font-normal">{course}</Badge>)}
               </div>
               <div className="flex gap-2 border-t pt-4">
-                <Link href={`/admin/brands/major/${major.id}`} className="flex-1"><Button variant="outline" size="sm" className="w-full h-8 text-xs"><Eye className="mr-1 h-3.5 w-3.5" />预览</Button></Link>
                 <Link href={`/admin/brands/major/${major.id}`} className="flex-1">
                   <Button variant="outline" size="sm" className="w-full h-8 text-xs"><Pencil className="mr-1 h-3.5 w-3.5" />编辑</Button>
                 </Link>
-                <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs" onClick={() => deleteMajor(major.id)}><Trash2 className="mr-1 h-3.5 w-3.5" />删除</Button>
               </div>
             </CardContent>
           </Card>

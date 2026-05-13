@@ -89,6 +89,7 @@ export const enterprises: Enterprise[] = [
     "附件1.pdf"
   ],
   createdAt: new Date('2021-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e001-02",
@@ -103,6 +104,7 @@ export const enterprises: Enterprise[] = [
     "附件2.pdf"
   ],
   createdAt: new Date('2022-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e001-03",
@@ -116,6 +118,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e001-04",
@@ -129,6 +132,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2024-03-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e001-05",
@@ -142,6 +146,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2021-04-15'),
+  createdBy: '管理员',
 }
   ],
   ratingRecord: {
@@ -150,8 +155,9 @@ export const enterprises: Enterprise[] = [
   evaluator: "学校产教融合办公室",
   remark: "合作深入，成果显著",
 },
-  secondaryCollege: '智能制造学院',
+  secondaryColleges: ['智能制造学院'],
   createdAt: new Date('2010-01-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 {
@@ -194,6 +200,7 @@ export const enterprises: Enterprise[] = [
     "附件1.pdf"
   ],
   createdAt: new Date('2021-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e002-02",
@@ -207,6 +214,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2022-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e002-03",
@@ -220,6 +228,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
 }
   ],
   ratingRecord: {
@@ -228,8 +237,9 @@ export const enterprises: Enterprise[] = [
   evaluator: "学校产教融合办公室",
   remark: "合作深入，成果显著",
 },
-  secondaryCollege: '信息技术学院',
+  secondaryColleges: ['信息技术学院'],
   createdAt: new Date('2008-01-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 {
@@ -272,6 +282,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2021-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e003-02",
@@ -285,6 +296,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2022-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e003-03",
@@ -299,6 +311,7 @@ export const enterprises: Enterprise[] = [
     "附件3.pdf"
   ],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e003-04",
@@ -312,6 +325,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2024-03-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e003-05",
@@ -325,6 +339,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2021-04-15'),
+  createdBy: '管理员',
 }
   ],
   ratingRecord: {
@@ -333,8 +348,9 @@ export const enterprises: Enterprise[] = [
   evaluator: "学校产教融合办公室",
   remark: "合作深入，成果显著",
 },
-  secondaryCollege: '经济管理学院',
+  secondaryColleges: ['经济管理学院'],
   createdAt: new Date('2021-01-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 {
@@ -376,6 +392,7 @@ export const enterprises: Enterprise[] = [
     "附件1.pdf"
   ],
   createdAt: new Date('2021-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e004-02",
@@ -389,6 +406,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2022-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e004-03",
@@ -402,6 +420,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e004-04",
@@ -415,6 +434,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2024-03-15'),
+  createdBy: '管理员',
 }
   ],
   ratingRecord: {
@@ -423,8 +443,9 @@ export const enterprises: Enterprise[] = [
   evaluator: "学校产教融合办公室",
   remark: "合作良好，持续发展",
 },
-  secondaryCollege: '艺术设计学院',
+  secondaryColleges: ['艺术设计学院'],
   createdAt: new Date('2012-01-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 {
@@ -466,6 +487,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2021-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e005-02",
@@ -479,6 +501,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2022-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e005-03",
@@ -492,6 +515,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
 },
     {
   id: "ea-e005-04",
@@ -505,6 +529,7 @@ export const enterprises: Enterprise[] = [
     "协议正文.pdf"
   ],
   createdAt: new Date('2024-03-15'),
+  createdBy: '管理员',
 }
   ],
   ratingRecord: {
@@ -513,8 +538,9 @@ export const enterprises: Enterprise[] = [
   evaluator: "学校产教融合办公室",
   remark: "合作深入，成果显著",
 },
-  secondaryCollege: '新能源工程学院',
+  secondaryColleges: ['新能源工程学院'],
   createdAt: new Date('2022-01-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 ]
@@ -543,8 +569,10 @@ export const partners: Partner[] = [
   address: "苏州市工业园区创业街100号",
   establishedYear: 2010,
   employeeCount: 500,
-  secondaryCollege: '智能制造学院',
+  secondaryColleges: ['智能制造学院'],
+  hiredStudents: ['tp001', 'tp003'],
   createdAt: new Date('2010-01-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 {
@@ -569,8 +597,10 @@ export const partners: Partner[] = [
   address: "南京市江北新区新能源大道88号",
   establishedYear: 2008,
   employeeCount: 2000,
-  secondaryCollege: '信息技术学院',
+  secondaryColleges: ['信息技术学院'],
+  hiredStudents: ['tp003', 'tp005'],
   createdAt: new Date('2008-01-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 {
@@ -596,8 +626,10 @@ export const partners: Partner[] = [
   address: "华东职业技术学院产教融合楼",
   establishedYear: 2021,
   employeeCount: 50,
-  secondaryCollege: '经济管理学院',
+  secondaryColleges: ['经济管理学院'],
+  hiredStudents: ['tp005', 'tp007'],
   createdAt: new Date('2021-01-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 {
@@ -621,8 +653,10 @@ export const partners: Partner[] = [
   address: "上海市浦东新区张江高科技园区",
   establishedYear: 2012,
   employeeCount: 800,
-  secondaryCollege: '艺术设计学院',
+  secondaryColleges: ['艺术设计学院'],
+  hiredStudents: ['tp007', 'tp009'],
   createdAt: new Date('2012-01-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 {
@@ -647,8 +681,10 @@ export const partners: Partner[] = [
   address: "华东职业技术学院文创楼",
   establishedYear: 2022,
   employeeCount: 30,
-  secondaryCollege: '新能源工程学院',
+  secondaryColleges: ['新能源工程学院'],
+  hiredStudents: ['tp009', 'tp011'],
   createdAt: new Date('2022-01-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 ]
@@ -969,6 +1005,7 @@ export const projects: Project[] = [
   type: "教学资源",
   description: "包含课程资源共建项目相关的配套资源和技术文档",
   createdAt: new Date('2024-05-03'),
+  createdBy: '管理员',
 },
     {
   id: "sr21",
@@ -976,6 +1013,7 @@ export const projects: Project[] = [
   type: "教学资源",
   description: "包含课程资源共建项目相关的配套资源和技术文档",
   createdAt: new Date('2024-04-20'),
+  createdBy: '管理员',
 },
     {
   id: "sr22",
@@ -983,6 +1021,7 @@ export const projects: Project[] = [
   type: "教学资源",
   description: "包含课程资源共建项目相关的配套资源和技术文档",
   createdAt: new Date('2024-05-09'),
+  createdBy: '管理员',
 },
     {
   id: "sr23",
@@ -990,6 +1029,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含课程资源共建项目相关的配套资源和技术文档",
   createdAt: new Date('2024-01-22'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [
@@ -1002,6 +1042,7 @@ export const projects: Project[] = [
   status: "active",
   content: "补充约定课程资源共建项目的进度和验收标准",
   createdAt: new Date('2023-12-15'),
+  createdBy: '管理员',
 }
   ],
   phases: [
@@ -1051,8 +1092,9 @@ export const projects: Project[] = [
   progress: 100,
 }
   ],
-  secondaryCollege: '智能制造学院',
+  secondaryColleges: ['智能制造学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -1125,6 +1167,7 @@ export const projects: Project[] = [
   type: "课程成果",
   description: "包含智能视觉检测技术研发项目相关的配套资源和技术文档",
   createdAt: new Date('2024-06-10'),
+  createdBy: '管理员',
 },
     {
   id: "sr31",
@@ -1132,6 +1175,7 @@ export const projects: Project[] = [
   type: "管理成果",
   description: "包含智能视觉检测技术研发项目相关的配套资源和技术文档",
   createdAt: new Date('2024-05-20'),
+  createdBy: '管理员',
 },
     {
   id: "sr32",
@@ -1139,6 +1183,7 @@ export const projects: Project[] = [
   type: "场景成果",
   description: "包含智能视觉检测技术研发项目相关的配套资源和技术文档",
   createdAt: new Date('2024-02-12'),
+  createdBy: '管理员',
 },
     {
   id: "sr33",
@@ -1146,6 +1191,7 @@ export const projects: Project[] = [
   type: "场景成果",
   description: "包含智能视觉检测技术研发项目相关的配套资源和技术文档",
   createdAt: new Date('2024-05-25'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [
@@ -1158,6 +1204,7 @@ export const projects: Project[] = [
   status: "active",
   content: "补充约定智能视觉检测技术研发项目的进度和验收标准",
   createdAt: new Date('2023-12-15'),
+  createdBy: '管理员',
 }
   ],
   phases: [
@@ -1207,8 +1254,9 @@ export const projects: Project[] = [
   progress: 100,
 }
   ],
-  secondaryCollege: '信息技术学院',
+  secondaryColleges: ['信息技术学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -1283,6 +1331,7 @@ export const projects: Project[] = [
   type: "教学资源",
   description: "包含双师型教师培养项目相关的配套资源和技术文档",
   createdAt: new Date('2024-01-25'),
+  createdBy: '管理员',
 },
     {
   id: "sr41",
@@ -1290,6 +1339,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含双师型教师培养项目相关的配套资源和技术文档",
   createdAt: new Date('2024-02-05'),
+  createdBy: '管理员',
 },
     {
   id: "sr42",
@@ -1297,6 +1347,7 @@ export const projects: Project[] = [
   type: "管理成果",
   description: "包含双师型教师培养项目相关的配套资源和技术文档",
   createdAt: new Date('2024-04-18'),
+  createdBy: '管理员',
 },
     {
   id: "sr43",
@@ -1304,6 +1355,7 @@ export const projects: Project[] = [
   type: "场景成果",
   description: "包含双师型教师培养项目相关的配套资源和技术文档",
   createdAt: new Date('2024-03-17'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [
@@ -1316,6 +1368,7 @@ export const projects: Project[] = [
   status: "active",
   content: "补充约定双师型教师培养项目的进度和验收标准",
   createdAt: new Date('2023-12-15'),
+  createdBy: '管理员',
 }
   ],
   phases: [
@@ -1365,8 +1418,9 @@ export const projects: Project[] = [
   progress: 100,
 }
   ],
-  secondaryCollege: '经济管理学院',
+  secondaryColleges: ['经济管理学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -1433,6 +1487,7 @@ export const projects: Project[] = [
   type: "课程成果",
   description: "包含创新创业孵化项目相关的配套资源和技术文档",
   createdAt: new Date('2024-03-01'),
+  createdBy: '管理员',
 },
     {
   id: "sr51",
@@ -1440,6 +1495,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含创新创业孵化项目相关的配套资源和技术文档",
   createdAt: new Date('2024-05-08'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [
@@ -1452,6 +1508,7 @@ export const projects: Project[] = [
   status: "active",
   content: "补充约定创新创业孵化项目的进度和验收标准",
   createdAt: new Date('2023-12-15'),
+  createdBy: '管理员',
 }
   ],
   phases: [
@@ -1492,8 +1549,9 @@ export const projects: Project[] = [
   progress: 100,
 }
   ],
-  secondaryCollege: '艺术设计学院',
+  secondaryColleges: ['艺术设计学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -1558,6 +1616,7 @@ export const projects: Project[] = [
   type: "管理成果",
   description: "包含技能竞赛组织项目相关的配套资源和技术文档",
   createdAt: new Date('2024-04-07'),
+  createdBy: '管理员',
 },
     {
   id: "sr61",
@@ -1565,6 +1624,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含技能竞赛组织项目相关的配套资源和技术文档",
   createdAt: new Date('2024-02-24'),
+  createdBy: '管理员',
 },
     {
   id: "sr62",
@@ -1572,6 +1632,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含技能竞赛组织项目相关的配套资源和技术文档",
   createdAt: new Date('2024-05-16'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [],
@@ -1613,8 +1674,9 @@ export const projects: Project[] = [
   progress: 100,
 }
   ],
-  secondaryCollege: '新能源工程学院',
+  secondaryColleges: ['新能源工程学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -1685,6 +1747,7 @@ export const projects: Project[] = [
   type: "场景成果",
   description: "包含课程资源共建项目相关的配套资源和技术文档",
   createdAt: new Date('2024-02-18'),
+  createdBy: '管理员',
 },
     {
   id: "sr71",
@@ -1692,6 +1755,7 @@ export const projects: Project[] = [
   type: "教学资源",
   description: "包含课程资源共建项目相关的配套资源和技术文档",
   createdAt: new Date('2024-02-14'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [],
@@ -1742,8 +1806,9 @@ export const projects: Project[] = [
   progress: 46,
 }
   ],
-  secondaryCollege: '生物医药学院',
+  secondaryColleges: ['生物医药学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -1809,6 +1874,7 @@ export const projects: Project[] = [
   type: "教学资源",
   description: "包含技能竞赛组织项目相关的配套资源和技术文档",
   createdAt: new Date('2024-04-16'),
+  createdBy: '管理员',
 },
     {
   id: "sr81",
@@ -1816,6 +1882,7 @@ export const projects: Project[] = [
   type: "场景成果",
   description: "包含技能竞赛组织项目相关的配套资源和技术文档",
   createdAt: new Date('2024-04-02'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [],
@@ -1857,8 +1924,9 @@ export const projects: Project[] = [
   progress: 100,
 }
   ],
-  secondaryCollege: '现代服务学院',
+  secondaryColleges: ['现代服务学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -1932,6 +2000,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含双师型教师培养项目相关的配套资源和技术文档",
   createdAt: new Date('2024-06-18'),
+  createdBy: '管理员',
 },
     {
   id: "sr91",
@@ -1939,6 +2008,7 @@ export const projects: Project[] = [
   type: "课程成果",
   description: "包含双师型教师培养项目相关的配套资源和技术文档",
   createdAt: new Date('2024-06-11'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [],
@@ -1989,8 +2059,9 @@ export const projects: Project[] = [
   progress: 53,
 }
   ],
-  secondaryCollege: '国际教育学院',
+  secondaryColleges: ['国际教育学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -2063,6 +2134,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含AI应用技术人才培养项目相关的配套资源和技术文档",
   createdAt: new Date('2024-02-19'),
+  createdBy: '管理员',
 },
     {
   id: "sr101",
@@ -2070,6 +2142,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含AI应用技术人才培养项目相关的配套资源和技术文档",
   createdAt: new Date('2024-01-20'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [],
@@ -2120,8 +2193,9 @@ export const projects: Project[] = [
   progress: 0,
 }
   ],
-  secondaryCollege: '创新创业学院',
+  secondaryColleges: ['创新创业学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -2184,6 +2258,7 @@ export const projects: Project[] = [
   type: "课程成果",
   description: "包含创新创业孵化项目相关的配套资源和技术文档",
   createdAt: new Date('2024-01-15'),
+  createdBy: '管理员',
 },
     {
   id: "sr111",
@@ -2191,6 +2266,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含创新创业孵化项目相关的配套资源和技术文档",
   createdAt: new Date('2024-05-04'),
+  createdBy: '管理员',
 },
     {
   id: "sr112",
@@ -2198,6 +2274,7 @@ export const projects: Project[] = [
   type: "课程成果",
   description: "包含创新创业孵化项目相关的配套资源和技术文档",
   createdAt: new Date('2024-05-07'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [
@@ -2210,6 +2287,7 @@ export const projects: Project[] = [
   status: "active",
   content: "补充约定创新创业孵化项目的进度和验收标准",
   createdAt: new Date('2023-12-15'),
+  createdBy: '管理员',
 }
   ],
   phases: [
@@ -2250,8 +2328,9 @@ export const projects: Project[] = [
   progress: 69,
 }
   ],
-  secondaryCollege: '智能制造学院',
+  secondaryColleges: ['智能制造学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -2318,6 +2397,7 @@ export const projects: Project[] = [
   type: "课程成果",
   description: "包含新能源技术实训基地建设相关的配套资源和技术文档",
   createdAt: new Date('2024-01-24'),
+  createdBy: '管理员',
 },
     {
   id: "sr121",
@@ -2325,6 +2405,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含新能源技术实训基地建设相关的配套资源和技术文档",
   createdAt: new Date('2024-02-09'),
+  createdBy: '管理员',
 },
     {
   id: "sr122",
@@ -2332,6 +2413,7 @@ export const projects: Project[] = [
   type: "师资成果",
   description: "包含新能源技术实训基地建设相关的配套资源和技术文档",
   createdAt: new Date('2024-05-07'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [
@@ -2344,6 +2426,7 @@ export const projects: Project[] = [
   status: "active",
   content: "补充约定新能源技术实训基地建设的进度和验收标准",
   createdAt: new Date('2023-12-15'),
+  createdBy: '管理员',
 }
   ],
   phases: [
@@ -2384,8 +2467,9 @@ export const projects: Project[] = [
   progress: 100,
 }
   ],
-  secondaryCollege: '信息技术学院',
+  secondaryColleges: ['信息技术学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -2452,6 +2536,7 @@ export const projects: Project[] = [
   type: "场景成果",
   description: "包含技能竞赛组织项目相关的配套资源和技术文档",
   createdAt: new Date('2024-06-09'),
+  createdBy: '管理员',
 },
     {
   id: "sr131",
@@ -2459,6 +2544,7 @@ export const projects: Project[] = [
   type: "场景成果",
   description: "包含技能竞赛组织项目相关的配套资源和技术文档",
   createdAt: new Date('2024-06-15'),
+  createdBy: '管理员',
 },
     {
   id: "sr132",
@@ -2466,6 +2552,7 @@ export const projects: Project[] = [
   type: "技术成果",
   description: "包含技能竞赛组织项目相关的配套资源和技术文档",
   createdAt: new Date('2024-06-14'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [
@@ -2478,6 +2565,7 @@ export const projects: Project[] = [
   status: "active",
   content: "补充约定技能竞赛组织项目的进度和验收标准",
   createdAt: new Date('2023-12-15'),
+  createdBy: '管理员',
 }
   ],
   phases: [
@@ -2518,8 +2606,9 @@ export const projects: Project[] = [
   progress: 100,
 }
   ],
-  secondaryCollege: '经济管理学院',
+  secondaryColleges: ['经济管理学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -2583,6 +2672,7 @@ export const projects: Project[] = [
   type: "师资成果",
   description: "包含创新创业孵化项目相关的配套资源和技术文档",
   createdAt: new Date('2024-01-12'),
+  createdBy: '管理员',
 },
     {
   id: "sr141",
@@ -2590,6 +2680,7 @@ export const projects: Project[] = [
   type: "场景成果",
   description: "包含创新创业孵化项目相关的配套资源和技术文档",
   createdAt: new Date('2024-06-08'),
+  createdBy: '管理员',
 },
     {
   id: "sr142",
@@ -2597,6 +2688,7 @@ export const projects: Project[] = [
   type: "管理成果",
   description: "包含创新创业孵化项目相关的配套资源和技术文档",
   createdAt: new Date('2024-01-12'),
+  createdBy: '管理员',
 }
   ],
   projectAgreements: [
@@ -2609,6 +2701,7 @@ export const projects: Project[] = [
   status: "active",
   content: "补充约定创新创业孵化项目的进度和验收标准",
   createdAt: new Date('2023-12-15'),
+  createdBy: '管理员',
 }
   ],
   phases: [
@@ -2649,8 +2742,9 @@ export const projects: Project[] = [
   progress: 100,
 }
   ],
-  secondaryCollege: '艺术设计学院',
+  secondaryColleges: ['艺术设计学院'],
   createdAt: new Date('2023-02-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 ]
@@ -2678,8 +2772,9 @@ export const experts: Expert[] = [
   contactPhone: "13899913412",
   isContactHidden: true,
   status: "active",
-  secondaryCollege: '智能制造学院',
+  secondaryColleges: ['智能制造学院'],
   createdAt: new Date('2022-04-09'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-06'),
 },
 {
@@ -2703,8 +2798,9 @@ export const experts: Expert[] = [
   contactPhone: "13836786211",
   isContactHidden: true,
   status: "active",
-  secondaryCollege: '信息技术学院',
+  secondaryColleges: ['信息技术学院'],
   createdAt: new Date('2022-08-12'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -2728,8 +2824,9 @@ export const experts: Expert[] = [
   contactPhone: "13835921441",
   isContactHidden: false,
   status: "active",
-  secondaryCollege: '经济管理学院',
+  secondaryColleges: ['经济管理学院'],
   createdAt: new Date('2022-05-28'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-03'),
 },
 {
@@ -2753,8 +2850,9 @@ export const experts: Expert[] = [
   contactPhone: "13881969657",
   isContactHidden: false,
   status: "active",
-  secondaryCollege: '艺术设计学院',
+  secondaryColleges: ['艺术设计学院'],
   createdAt: new Date('2022-01-04'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-09'),
 },
 {
@@ -2778,8 +2876,9 @@ export const experts: Expert[] = [
   contactPhone: "13824549543",
   isContactHidden: false,
   status: "active",
-  secondaryCollege: '新能源工程学院',
+  secondaryColleges: ['新能源工程学院'],
   createdAt: new Date('2022-06-24'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-26'),
 },
 {
@@ -2803,8 +2902,9 @@ export const experts: Expert[] = [
   contactPhone: "13887388337",
   isContactHidden: false,
   status: "active",
-  secondaryCollege: '生物医药学院',
+  secondaryColleges: ['生物医药学院'],
   createdAt: new Date('2022-01-23'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-14'),
 },
 {
@@ -2828,8 +2928,9 @@ export const experts: Expert[] = [
   contactPhone: "13836445607",
   isContactHidden: false,
   status: "active",
-  secondaryCollege: '现代服务学院',
+  secondaryColleges: ['现代服务学院'],
   createdAt: new Date('2022-02-22'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-11'),
 },
 {
@@ -2853,8 +2954,9 @@ export const experts: Expert[] = [
   contactPhone: "13899508850",
   isContactHidden: false,
   status: "active",
-  secondaryCollege: '国际教育学院',
+  secondaryColleges: ['国际教育学院'],
   createdAt: new Date('2022-07-23'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-10'),
 },
 {
@@ -2878,8 +2980,9 @@ export const experts: Expert[] = [
   contactPhone: "13833357554",
   isContactHidden: true,
   status: "active",
-  secondaryCollege: '创新创业学院',
+  secondaryColleges: ['创新创业学院'],
   createdAt: new Date('2022-05-13'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-18'),
 },
 {
@@ -2903,8 +3006,9 @@ export const experts: Expert[] = [
   contactPhone: "13867698610",
   isContactHidden: true,
   status: "active",
-  secondaryCollege: '智能制造学院',
+  secondaryColleges: ['智能制造学院'],
   createdAt: new Date('2022-10-21'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-11'),
 },
 {
@@ -2928,8 +3032,9 @@ export const experts: Expert[] = [
   contactPhone: "13873509974",
   isContactHidden: true,
   status: "active",
-  secondaryCollege: '信息技术学院',
+  secondaryColleges: ['信息技术学院'],
   createdAt: new Date('2022-12-06'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-22'),
 },
 {
@@ -2953,8 +3058,9 @@ export const experts: Expert[] = [
   contactPhone: "13894951883",
   isContactHidden: true,
   status: "active",
-  secondaryCollege: '经济管理学院',
+  secondaryColleges: ['经济管理学院'],
   createdAt: new Date('2022-02-27'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-25'),
 },
 {
@@ -2978,8 +3084,9 @@ export const experts: Expert[] = [
   contactPhone: "13836726767",
   isContactHidden: false,
   status: "active",
-  secondaryCollege: '艺术设计学院',
+  secondaryColleges: ['艺术设计学院'],
   createdAt: new Date('2022-01-08'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-16'),
 },
 {
@@ -3003,8 +3110,9 @@ export const experts: Expert[] = [
   contactPhone: "13836096655",
   isContactHidden: true,
   status: "active",
-  secondaryCollege: '新能源工程学院',
+  secondaryColleges: ['新能源工程学院'],
   createdAt: new Date('2022-07-16'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-13'),
 },
 {
@@ -3028,8 +3136,9 @@ export const experts: Expert[] = [
   contactPhone: "13867062156",
   isContactHidden: false,
   status: "active",
-  secondaryCollege: '生物医药学院',
+  secondaryColleges: ['生物医药学院'],
   createdAt: new Date('2022-12-17'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-15'),
 },
 {
@@ -3051,8 +3160,9 @@ export const experts: Expert[] = [
   contactPhone: "13812345678",
   isContactHidden: false,
   status: "active",
-  secondaryCollege: '现代服务学院',
+  secondaryColleges: ['现代服务学院'],
   createdAt: new Date('2021-03-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-05-20'),
 },
 {
@@ -3074,8 +3184,9 @@ export const experts: Expert[] = [
   contactPhone: "13887654321",
   isContactHidden: true,
   status: "active",
-  secondaryCollege: '国际教育学院',
+  secondaryColleges: ['国际教育学院'],
   createdAt: new Date('2020-07-08'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-04-12'),
 },
 {
@@ -3097,8 +3208,9 @@ export const experts: Expert[] = [
   contactPhone: "13811112222",
   isContactHidden: false,
   status: "active",
-  secondaryCollege: '创新创业学院',
+  secondaryColleges: ['创新创业学院'],
   createdAt: new Date('2019-01-10'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-01'),
 },
 ]
@@ -3421,8 +3533,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-06-19'),
   status: "published",
   viewCount: 305,
-  secondaryCollege: '智能制造学院',
+  secondaryColleges: ['智能制造学院'],
   createdAt: new Date('2023-04-10'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-08'),
 },
 {
@@ -3440,8 +3553,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-02-09'),
   status: "published",
   viewCount: 211,
-  secondaryCollege: '信息技术学院',
+  secondaryColleges: ['信息技术学院'],
   createdAt: new Date('2023-09-10'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-23'),
 },
 {
@@ -3459,8 +3573,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-01-19'),
   status: "published",
   viewCount: 1061,
-  secondaryCollege: '经济管理学院',
+  secondaryColleges: ['经济管理学院'],
   createdAt: new Date('2023-08-15'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-11'),
 },
 {
@@ -3478,8 +3593,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-01-27'),
   status: "published",
   viewCount: 920,
-  secondaryCollege: '艺术设计学院',
+  secondaryColleges: ['艺术设计学院'],
   createdAt: new Date('2023-08-03'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-19'),
 },
 {
@@ -3497,8 +3613,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-03-03'),
   status: "published",
   viewCount: 342,
-  secondaryCollege: '新能源工程学院',
+  secondaryColleges: ['新能源工程学院'],
   createdAt: new Date('2023-09-25'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-14'),
 },
 {
@@ -3513,8 +3630,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-05-14'),
   status: "published",
   viewCount: 1264,
-  secondaryCollege: '生物医药学院',
+  secondaryColleges: ['生物医药学院'],
   createdAt: new Date('2023-10-02'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),
 },
 {
@@ -3532,8 +3650,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-01-06'),
   status: "published",
   viewCount: 455,
-  secondaryCollege: '现代服务学院',
+  secondaryColleges: ['现代服务学院'],
   createdAt: new Date('2023-09-03'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-06'),
 },
 {
@@ -3551,8 +3670,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-03-02'),
   status: "published",
   viewCount: 690,
-  secondaryCollege: '国际教育学院',
+  secondaryColleges: ['国际教育学院'],
   createdAt: new Date('2023-12-10'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-23'),
 },
 {
@@ -3567,8 +3687,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-06-19'),
   status: "published",
   viewCount: 970,
-  secondaryCollege: '创新创业学院',
+  secondaryColleges: ['创新创业学院'],
   createdAt: new Date('2023-02-18'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-08'),
 },
 {
@@ -3586,8 +3707,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-02-26'),
   status: "published",
   viewCount: 1318,
-  secondaryCollege: '智能制造学院',
+  secondaryColleges: ['智能制造学院'],
   createdAt: new Date('2023-12-27'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-19'),
 },
 {
@@ -3605,8 +3727,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-06-13'),
   status: "published",
   viewCount: 1124,
-  secondaryCollege: '信息技术学院',
+  secondaryColleges: ['信息技术学院'],
   createdAt: new Date('2023-09-16'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-15'),
 },
 {
@@ -3627,8 +3750,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-01-03'),
   status: "published",
   viewCount: 1480,
-  secondaryCollege: '经济管理学院',
+  secondaryColleges: ['经济管理学院'],
   createdAt: new Date('2023-10-19'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-01'),
 },
 {
@@ -3646,8 +3770,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-05-21'),
   status: "draft",
   viewCount: 1976,
-  secondaryCollege: '艺术设计学院',
+  secondaryColleges: ['艺术设计学院'],
   createdAt: new Date('2023-05-06'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-19'),
 },
 {
@@ -3662,8 +3787,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-03-22'),
   status: "published",
   viewCount: 1856,
-  secondaryCollege: '新能源工程学院',
+  secondaryColleges: ['新能源工程学院'],
   createdAt: new Date('2023-03-11'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-14'),
 },
 {
@@ -3681,8 +3807,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-05-02'),
   status: "draft",
   viewCount: 280,
-  secondaryCollege: '生物医药学院',
+  secondaryColleges: ['生物医药学院'],
   createdAt: new Date('2023-06-09'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-11'),
 },
 {
@@ -3703,8 +3830,9 @@ export const achievements: Achievement[] = [
   publishDate: new Date('2024-01-22'),
   status: "draft",
   viewCount: 946,
-  secondaryCollege: '现代服务学院',
+  secondaryColleges: ['现代服务学院'],
   createdAt: new Date('2023-01-07'),
+  createdBy: '管理员',
   updatedAt: new Date('2024-06-17'),
 },
 ]
@@ -4174,6 +4302,8 @@ export const talentProfiles: TalentProfile[] = [
     "NLP",
     "Python"
   ],
+  targetPositions: ["前端开发", "后端开发"],
+  lastVerifiedAt: new Date('2024-10-01'),
   employmentStatus: "studying",
   remark: "在计算机视觉方向表现突出，曾获省级人工智能竞赛一等奖",
   isFeatured: true,
@@ -4198,6 +4328,8 @@ export const talentProfiles: TalentProfile[] = [
     "Hadoop",
     "数据可视化"
   ],
+  targetPositions: ["后端开发", "产品经理"],
+  lastVerifiedAt: new Date('2024-11-02'),
   employmentStatus: "seeking",
   remark: "数据挖掘能力强，正在寻找大数据分析师岗位",
   isFeatured: true,
@@ -4223,6 +4355,8 @@ export const talentProfiles: TalentProfile[] = [
     "SQL",
     "Python"
   ],
+  targetPositions: ["产品经理", "数据分析"],
+  lastVerifiedAt: new Date('2024-12-03'),
   employmentStatus: "employed",
   employmentCompany: "苏州智联科技有限公司",
   employmentPosition: "工程师",
@@ -4250,6 +4384,8 @@ export const talentProfiles: TalentProfile[] = [
     "Flutter",
     "移动UI"
   ],
+  targetPositions: ["数据分析", "算法工程师"],
+  lastVerifiedAt: new Date('2024-10-04'),
   employmentStatus: "employed",
   employmentCompany: "江苏新能源集团",
   employmentPosition: "运营专员",
@@ -4275,6 +4411,8 @@ export const talentProfiles: TalentProfile[] = [
     "数据清洗",
     "数据可视化"
   ],
+  targetPositions: ["算法工程师", "UI设计"],
+  lastVerifiedAt: new Date('2024-11-05'),
   employmentStatus: "studying",
   isFeatured: true,
   secondaryCollege: '新能源工程学院',
@@ -4298,6 +4436,8 @@ export const talentProfiles: TalentProfile[] = [
     "Hadoop",
     "数据清洗"
   ],
+  targetPositions: ["UI设计", "测试工程师"],
+  lastVerifiedAt: new Date('2024-12-06'),
   employmentStatus: "seeking",
   isFeatured: true,
   secondaryCollege: '生物医药学院',
@@ -4322,6 +4462,8 @@ export const talentProfiles: TalentProfile[] = [
     "直播带货",
     "跨境电商"
   ],
+  targetPositions: ["测试工程师", "运维工程师"],
+  lastVerifiedAt: new Date('2024-10-07'),
   employmentStatus: "employed",
   employmentCompany: "杭州智能制造有限公司",
   employmentPosition: "工程师",
@@ -4347,6 +4489,8 @@ export const talentProfiles: TalentProfile[] = [
     "自动控制",
     "电路基础"
   ],
+  targetPositions: ["运维工程师", "项目管理"],
+  lastVerifiedAt: new Date('2024-11-08'),
   employmentStatus: "seeking",
   isFeatured: true,
   secondaryCollege: '国际教育学院',
@@ -4370,6 +4514,8 @@ export const talentProfiles: TalentProfile[] = [
     "电商运营",
     "跨境电商"
   ],
+  targetPositions: ["项目管理", "技术顾问"],
+  lastVerifiedAt: new Date('2024-12-09'),
   employmentStatus: "studying",
   isFeatured: true,
   secondaryCollege: '创新创业学院',
@@ -4394,6 +4540,8 @@ export const talentProfiles: TalentProfile[] = [
     "iOS",
     "Flutter"
   ],
+  targetPositions: ["技术顾问", "前端开发"],
+  lastVerifiedAt: new Date('2024-10-10'),
   employmentStatus: "employed",
   employmentCompany: "江苏新能源集团",
   employmentPosition: "运营专员",
@@ -4418,6 +4566,8 @@ export const talentProfiles: TalentProfile[] = [
     "PLC",
     "机械制图"
   ],
+  targetPositions: ["前端开发", "后端开发"],
+  lastVerifiedAt: new Date('2024-11-11'),
   employmentStatus: "employed",
   employmentCompany: "上海云智科技股份有限公司",
   employmentPosition: "技术员",
@@ -4442,6 +4592,8 @@ export const talentProfiles: TalentProfile[] = [
     "数据分析",
     "机器学习"
   ],
+  targetPositions: ["后端开发", "产品经理"],
+  lastVerifiedAt: new Date('2024-12-12'),
   employmentStatus: "studying",
   isFeatured: false,
   secondaryCollege: '经济管理学院',
@@ -4466,6 +4618,8 @@ export const talentProfiles: TalentProfile[] = [
     "工业机器人",
     "CAD设计"
   ],
+  targetPositions: ["产品经理", "数据分析"],
+  lastVerifiedAt: new Date('2024-10-13'),
   employmentStatus: "seeking",
   isFeatured: false,
   secondaryCollege: '艺术设计学院',
@@ -4490,6 +4644,8 @@ export const talentProfiles: TalentProfile[] = [
     "云计算",
     "数据库"
   ],
+  targetPositions: ["数据分析", "算法工程师"],
+  lastVerifiedAt: new Date('2024-11-14'),
   employmentStatus: "seeking",
   isFeatured: false,
   secondaryCollege: '新能源工程学院',
@@ -4513,6 +4669,8 @@ export const talentProfiles: TalentProfile[] = [
     "Spring Boot",
     "前端开发"
   ],
+  targetPositions: ["算法工程师", "UI设计"],
+  lastVerifiedAt: new Date('2024-12-15'),
   employmentStatus: "seeking",
   isFeatured: false,
   secondaryCollege: '生物医药学院',
@@ -4537,6 +4695,8 @@ export const talentProfiles: TalentProfile[] = [
     "BI工具",
     "数据可视化"
   ],
+  targetPositions: ["UI设计", "测试工程师"],
+  lastVerifiedAt: new Date('2024-10-16'),
   employmentStatus: "seeking",
   isFeatured: false,
   secondaryCollege: '现代服务学院',
@@ -4561,6 +4721,8 @@ export const talentProfiles: TalentProfile[] = [
     "PLC",
     "机电维修"
   ],
+  targetPositions: ["测试工程师", "运维工程师"],
+  lastVerifiedAt: new Date('2024-11-17'),
   employmentStatus: "seeking",
   isFeatured: false,
   secondaryCollege: '国际教育学院',
@@ -4584,6 +4746,8 @@ export const talentProfiles: TalentProfile[] = [
     "Android",
     "iOS"
   ],
+  targetPositions: ["运维工程师", "项目管理"],
+  lastVerifiedAt: new Date('2024-12-18'),
   employmentStatus: "studying",
   isFeatured: false,
   secondaryCollege: '创新创业学院',
@@ -4607,6 +4771,8 @@ export const talentProfiles: TalentProfile[] = [
     "数据清洗",
     "数据可视化"
   ],
+  targetPositions: ["项目管理", "技术顾问"],
+  lastVerifiedAt: new Date('2024-10-19'),
   employmentStatus: "studying",
   isFeatured: false,
   secondaryCollege: '智能制造学院',
@@ -4630,6 +4796,8 @@ export const talentProfiles: TalentProfile[] = [
     "CAD设计",
     "数控加工"
   ],
+  targetPositions: ["技术顾问", "前端开发"],
+  lastVerifiedAt: new Date('2024-11-20'),
   employmentStatus: "studying",
   isFeatured: false,
   secondaryCollege: '信息技术学院',
@@ -4653,6 +4821,8 @@ export const talentProfiles: TalentProfile[] = [
     "电工电子",
     "PLC"
   ],
+  targetPositions: ["前端开发", "后端开发"],
+  lastVerifiedAt: new Date('2024-12-21'),
   employmentStatus: "seeking",
   isFeatured: false,
   secondaryCollege: '经济管理学院',
@@ -4677,6 +4847,8 @@ export const talentProfiles: TalentProfile[] = [
     "Hadoop",
     "Python"
   ],
+  targetPositions: ["后端开发", "产品经理"],
+  lastVerifiedAt: new Date('2024-10-22'),
   employmentStatus: "studying",
   isFeatured: false,
   secondaryCollege: '艺术设计学院',
@@ -4699,6 +4871,8 @@ export const talentProfiles: TalentProfile[] = [
     "Hadoop",
     "数据清洗"
   ],
+  targetPositions: ["产品经理", "数据分析"],
+  lastVerifiedAt: new Date('2024-11-23'),
   employmentStatus: "employed",
   employmentCompany: "苏州智联科技有限公司",
   employmentPosition: "设计师",
@@ -4723,6 +4897,8 @@ export const talentProfiles: TalentProfile[] = [
     "Linux",
     "云计算"
   ],
+  targetPositions: ["数据分析", "算法工程师"],
+  lastVerifiedAt: new Date('2024-12-24'),
   employmentStatus: "seeking",
   isFeatured: false,
   secondaryCollege: '生物医药学院',
@@ -4747,6 +4923,8 @@ export const talentProfiles: TalentProfile[] = [
     "营销策划",
     "跨境电商"
   ],
+  targetPositions: ["算法工程师", "UI设计"],
+  lastVerifiedAt: new Date('2024-10-25'),
   employmentStatus: "seeking",
   isFeatured: false,
   secondaryCollege: '现代服务学院',
@@ -4769,6 +4947,8 @@ export const talentProfiles: TalentProfile[] = [
     "跨境电商",
     "数据分析"
   ],
+  targetPositions: ["UI设计", "测试工程师"],
+  lastVerifiedAt: new Date('2024-11-26'),
   employmentStatus: "studying",
   isFeatured: false,
   secondaryCollege: '国际教育学院',
@@ -4791,6 +4971,8 @@ export const talentProfiles: TalentProfile[] = [
     "电力系统",
     "光伏技术"
   ],
+  targetPositions: ["测试工程师", "运维工程师"],
+  lastVerifiedAt: new Date('2024-12-27'),
   employmentStatus: "studying",
   isFeatured: false,
   secondaryCollege: '创新创业学院',
@@ -4815,6 +4997,8 @@ export const talentProfiles: TalentProfile[] = [
     "iOS",
     "Android"
   ],
+  targetPositions: ["运维工程师", "项目管理"],
+  lastVerifiedAt: new Date('2024-10-28'),
   employmentStatus: "seeking",
   isFeatured: false,
   secondaryCollege: '智能制造学院',
@@ -4838,6 +5022,8 @@ export const talentProfiles: TalentProfile[] = [
     "机器学习",
     "计算机视觉"
   ],
+  targetPositions: ["项目管理", "技术顾问"],
+  lastVerifiedAt: new Date('2024-11-01'),
   employmentStatus: "seeking",
   isFeatured: false,
   secondaryCollege: '信息技术学院',
@@ -4862,6 +5048,8 @@ export const talentProfiles: TalentProfile[] = [
     "电机拖动",
     "变频器"
   ],
+  targetPositions: ["技术顾问", "前端开发"],
+  lastVerifiedAt: new Date('2024-12-02'),
   employmentStatus: "studying",
   isFeatured: false,
   secondaryCollege: '经济管理学院',
@@ -4886,9 +5074,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在苏州智联科技有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1045,
-  secondaryCollege: '智能制造学院',
   createdAt: new Date('2024-03-10'),
   updatedAt: new Date('2024-06-13'),
 },
@@ -4907,9 +5095,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在上海云智科技股份有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "draft",
   viewCount: 881,
-  secondaryCollege: '信息技术学院',
   createdAt: new Date('2024-03-24'),
   updatedAt: new Date('2024-06-28'),
 },
@@ -4929,9 +5117,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在江苏新能源集团实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 934,
-  secondaryCollege: '经济管理学院',
   createdAt: new Date('2024-05-13'),
   updatedAt: new Date('2024-06-21'),
 },
@@ -4950,9 +5138,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在江苏新能源集团实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1042,
-  secondaryCollege: '艺术设计学院',
   createdAt: new Date('2024-03-06'),
   updatedAt: new Date('2024-06-07'),
 },
@@ -4971,9 +5159,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在杭州智能制造有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1655,
-  secondaryCollege: '新能源工程学院',
   createdAt: new Date('2024-03-25'),
   updatedAt: new Date('2024-06-20'),
 },
@@ -4994,9 +5182,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在南京生物医药有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1141,
-  secondaryCollege: '生物医药学院',
   createdAt: new Date('2024-03-22'),
   updatedAt: new Date('2024-06-24'),
 },
@@ -5015,9 +5203,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在杭州智能制造有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1956,
-  secondaryCollege: '现代服务学院',
   createdAt: new Date('2024-04-27'),
   updatedAt: new Date('2024-06-07'),
 },
@@ -5038,9 +5226,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在南京生物医药有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 812,
-  secondaryCollege: '国际教育学院',
   createdAt: new Date('2024-01-21'),
   updatedAt: new Date('2024-06-16'),
 },
@@ -5060,9 +5248,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在南京生物医药有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "draft",
   viewCount: 1351,
-  secondaryCollege: '创新创业学院',
   createdAt: new Date('2024-02-27'),
   updatedAt: new Date('2024-06-14'),
 },
@@ -5081,9 +5269,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在江苏新能源集团实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1090,
-  secondaryCollege: '智能制造学院',
   createdAt: new Date('2024-01-12'),
   updatedAt: new Date('2024-06-08'),
 },
@@ -5102,9 +5290,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在上海云智科技股份有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1999,
-  secondaryCollege: '信息技术学院',
   createdAt: new Date('2024-04-23'),
   updatedAt: new Date('2024-06-27'),
 },
@@ -5123,9 +5311,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在杭州智能制造有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1423,
-  secondaryCollege: '经济管理学院',
   createdAt: new Date('2024-06-20'),
   updatedAt: new Date('2024-06-17'),
 },
@@ -5144,9 +5332,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在苏州智联科技有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "draft",
   viewCount: 1608,
-  secondaryCollege: '艺术设计学院',
   createdAt: new Date('2024-05-15'),
   updatedAt: new Date('2024-06-03'),
 },
@@ -5167,9 +5355,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在杭州智能制造有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1559,
-  secondaryCollege: '新能源工程学院',
   createdAt: new Date('2024-03-08'),
   updatedAt: new Date('2024-06-19'),
 },
@@ -5189,9 +5377,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在江苏新能源集团实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "draft",
   viewCount: 389,
-  secondaryCollege: '生物医药学院',
   createdAt: new Date('2024-06-13'),
   updatedAt: new Date('2024-06-12'),
 },
@@ -5212,9 +5400,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在苏州智联科技有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1418,
-  secondaryCollege: '现代服务学院',
   createdAt: new Date('2024-03-27'),
   updatedAt: new Date('2024-06-21'),
 },
@@ -5233,9 +5421,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在杭州智能制造有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 900,
-  secondaryCollege: '国际教育学院',
   createdAt: new Date('2024-02-02'),
   updatedAt: new Date('2024-06-26'),
 },
@@ -5256,9 +5444,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在苏州智联科技有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 1031,
-  secondaryCollege: '创新创业学院',
   createdAt: new Date('2024-01-28'),
   updatedAt: new Date('2024-06-21'),
 },
@@ -5279,9 +5467,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在上海云智科技股份有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "draft",
   viewCount: 1717,
-  secondaryCollege: '智能制造学院',
   createdAt: new Date('2024-04-12'),
   updatedAt: new Date('2024-06-26'),
 },
@@ -5301,9 +5489,9 @@ export const employmentCases: EmploymentCase[] = [
   ],
   story: "在校期间积极参与校企合作项目，在上海云智科技股份有限公司实习期间表现优异，毕业后顺利转正。目前在岗位上快速成长，已成为团队骨干成员。",
   photo: "/placeholder.svg?height=200&width=200",
+  coverImage: "/placeholder.svg?height=200&width=200",
   status: "published",
   viewCount: 957,
-  secondaryCollege: '信息技术学院',
   createdAt: new Date('2024-01-03'),
   updatedAt: new Date('2024-06-11'),
 },

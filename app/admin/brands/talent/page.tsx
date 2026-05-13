@@ -26,15 +26,8 @@ import {
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command"
-import { ArrowLeft, Search, Eye, Plus, Trash2, Pencil, Settings, X, Check, ChevronDown } from "lucide-react"
+
+import { ArrowLeft, Search, Eye, Plus, Trash2, Settings, X, Check, ChevronDown } from "lucide-react"
 import {
   talentProfiles as initialTalentProfiles,
   employmentCases as initialEmploymentCases,
@@ -99,13 +92,6 @@ export default function TalentBrandPage() {
   )
   const [activeMajorTab, setActiveMajorTab] = useState<string>(enabledMajors[0] || "")
 
-  // Profile edit
-  const [profileEditDialogOpen, setProfileEditDialogOpen] = useState(false)
-  const [editingProfile, setEditingProfile] = useState<TalentProfile | null>(null)
-  const [editAbilityTagsArr, setEditAbilityTagsArr] = useState<string[]>([])
-  const [editRemark, setEditRemark] = useState("")
-  const [abilitySearch, setAbilitySearch] = useState("")
-
   // Case add/edit
   const [caseDialogOpen, setCaseDialogOpen] = useState(false)
   const [caseEditDialogOpen, setCaseEditDialogOpen] = useState(false)
@@ -118,6 +104,7 @@ export default function TalentBrandPage() {
   const [casePosition, setCasePosition] = useState("")
   const [caseSalary, setCaseSalary] = useState("")
   const [caseStory, setCaseStory] = useState("")
+  const [caseCoverImage, setCaseCoverImage] = useState("")
   const [caseStatus, setCaseStatus] = useState<BrandStatus>("draft")
 
   // Company picker
@@ -196,38 +183,6 @@ export default function TalentBrandPage() {
     )
   }, [talentProfiles, studentSearch])
 
-  const openProfileEdit = (profile: TalentProfile) => {
-    setEditingProfile(profile)
-    setEditAbilityTagsArr(profile.abilityTags)
-    setEditRemark(profile.remark || "")
-    setAbilitySearch("")
-    setProfileEditDialogOpen(true)
-  }
-
-  const handleUpdateProfile = () => {
-    if (!editingProfile) return
-    setTalentProfiles((prev) =>
-      prev.map((p) =>
-        p.id === editingProfile.id
-          ? {
-              ...p,
-              abilityTags: editAbilityTagsArr,
-              remark: editRemark || undefined,
-              updatedAt: new Date(),
-            }
-          : p
-      )
-    )
-    setProfileEditDialogOpen(false)
-    setEditingProfile(null)
-  }
-
-  const handleDeleteProfile = (id: string) => {
-    if (confirm("确定要删除该人才画像吗？")) {
-      setTalentProfiles((prev) => prev.filter((p) => p.id !== id))
-    }
-  }
-
   const resetCaseForm = () => {
     setSelectedStudentId("")
     setStudentSearch("")
@@ -235,6 +190,7 @@ export default function TalentBrandPage() {
     setCasePosition("")
     setCaseSalary("")
     setCaseStory("")
+    setCaseCoverImage("")
     setCaseStatus("draft")
   }
 
@@ -244,6 +200,7 @@ export default function TalentBrandPage() {
     setCasePosition(caseItem.position)
     setCaseSalary(caseItem.salary || "")
     setCaseStory(caseItem.story)
+    setCaseCoverImage(caseItem.coverImage || "")
     setCaseStatus(caseItem.status)
     setCaseEditDialogOpen(true)
   }
@@ -261,9 +218,10 @@ export default function TalentBrandPage() {
       companyLogo: "/placeholder.svg?height=64&width=64",
       position: casePosition,
       salary: caseSalary || undefined,
-      abilityTags: student.abilityTags.slice(0, 3),
+      abilityTags: [],
       story: caseStory,
       photo: "/placeholder.svg?height=200&width=200",
+      coverImage: caseCoverImage || undefined,
       status: caseStatus,
       viewCount: 0,
       createdAt: new Date(),
@@ -286,6 +244,7 @@ export default function TalentBrandPage() {
               position: casePosition,
               salary: caseSalary || undefined,
               story: caseStory,
+              coverImage: caseCoverImage || undefined,
               status: caseStatus,
               updatedAt: new Date(),
             }
@@ -316,12 +275,6 @@ export default function TalentBrandPage() {
     () => talentProfiles.find((s) => s.id === selectedStudentId) || null,
     [talentProfiles, selectedStudentId]
   )
-
-  const toggleAbilityTag = (tag: string) => {
-    setEditAbilityTagsArr((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    )
-  }
 
   return (
     <div className="space-y-6">
@@ -414,9 +367,24 @@ export default function TalentBrandPage() {
                                       </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <p className="font-medium text-sm truncate">{profile.studentName}</p>
+                                      <div className="flex items-center gap-1.5">
+                                        <p className="font-medium text-sm truncate">{profile.studentName}</p>
+                                        <Badge
+                                          variant={
+                                            profile.certificationLevel === "高级"
+                                              ? "default"
+                                              : profile.certificationLevel === "中级"
+                                              ? "secondary"
+                                              : "outline"
+                                          }
+                                          className="text-[10px] px-1 py-0 h-4 shrink-0"
+                                        >
+                                          {profile.certificationLevel}
+                                        </Badge>
+                                      </div>
                                       <p className="text-xs text-muted-foreground">{maskStudentId(profile.studentId)}</p>
                                       <p className="text-xs text-muted-foreground">{profile.major} · {profile.grade}</p>
+                                      <p className="text-xs text-muted-foreground">{profile.department}</p>
                                     </div>
                                     <div className="text-center shrink-0">
                                       <p className="text-lg font-bold text-foreground leading-none">{profile.abilityScore}</p>
@@ -424,15 +392,25 @@ export default function TalentBrandPage() {
                                     </div>
                                   </div>
 
-                                  <div className="flex flex-wrap gap-1 mt-3">
-                                    {profile.abilityTags.slice(0, 4).map((tag) => (
+                                  {profile.targetPositions && profile.targetPositions.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                      {profile.targetPositions.slice(0, 2).map((pos) => (
+                                        <Badge key={pos} variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+                                          {pos}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  <div className="flex flex-wrap gap-1 mt-2">
+                                    {profile.abilityTags.slice(0, 3).map((tag) => (
                                       <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
                                         {tag}
                                       </Badge>
                                     ))}
-                                    {profile.abilityTags.length > 4 && (
+                                    {profile.abilityTags.length > 3 && (
                                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-                                        +{profile.abilityTags.length - 4}
+                                        +{profile.abilityTags.length - 3}
                                       </Badge>
                                     )}
                                   </div>
@@ -445,21 +423,11 @@ export default function TalentBrandPage() {
                                     <div className="mt-2 h-8" />
                                   )}
 
-                                  <div className="flex items-center justify-between pt-3 mt-auto border-t">
-                                    <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => alert("即将前往学生画像标签页")}>
-                                      学生画像
-                                    </Button>
-                                    <div className="flex gap-1.5">
-                                      <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => openProfileEdit(profile)}>
-                                        <Pencil className="h-3 w-3 mr-1" />
-                                        编辑
-                                      </Button>
-                                      <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => handleDeleteProfile(profile.id)}>
-                                        <Trash2 className="h-3 w-3 mr-1" />
-                                        删除
-                                      </Button>
-                                    </div>
-                                  </div>
+                                  {profile.lastVerifiedAt && (
+                                    <p className="text-[10px] text-muted-foreground mt-2">
+                                      上次验证：{profile.lastVerifiedAt.toLocaleDateString("zh-CN")}
+                                    </p>
+                                  )}
                                 </CardContent>
                               </Card>
                             ))}
@@ -499,17 +467,17 @@ export default function TalentBrandPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredCases.map((case_) => (
                   <Card key={case_.id} className="overflow-hidden">
-                    <div className="aspect-[4/3] bg-muted relative overflow-hidden">
+                    <div className="aspect-[16/9] bg-muted relative overflow-hidden">
                       <img
-                        src={case_.photo || "/placeholder.svg?height=300&width=400"}
+                        src={case_.coverImage || case_.photo || "/placeholder.svg?height=180&width=320"}
                         alt={case_.studentName}
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute bottom-3 left-3 right-3 text-white">
+                      <div className="absolute bottom-2 left-2 right-2 text-white">
                         <h3 className="font-semibold text-sm">{case_.studentName}</h3>
                         <p className="text-xs text-white/80">{case_.major} | {case_.graduationYear}届</p>
                       </div>
@@ -522,9 +490,9 @@ export default function TalentBrandPage() {
                     </div>
                     <CardContent className="p-3">
                       <div className="flex items-center gap-2 mb-2">
-                        <Avatar className="h-8 w-8">
+                        <Avatar className="h-7 w-7">
                           <AvatarImage src={case_.companyLogo} />
-                          <AvatarFallback className="text-xs">{case_.company[0]}</AvatarFallback>
+                          <AvatarFallback className="text-[10px]">{case_.company[0]}</AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
                           <p className="font-medium text-sm truncate">{case_.company}</p>
@@ -539,13 +507,6 @@ export default function TalentBrandPage() {
                       <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
                         {case_.story}
                       </p>
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {case_.abilityTags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-[10px] px-1 py-0 h-4">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
                       <div className="flex items-center justify-between pt-2 border-t">
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Eye className="h-3 w-3 text-muted-foreground" />
@@ -625,98 +586,6 @@ export default function TalentBrandPage() {
               取消
             </Button>
             <Button onClick={handleSaveConfigs}>保存</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 编辑人才 Dialog */}
-      <Dialog open={profileEditDialogOpen} onOpenChange={setProfileEditDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>编辑人才画像</DialogTitle>
-            <DialogDescription>修改人才品牌展示字段</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>学生姓名</Label>
-              <Input value={editingProfile?.studentName || ""} disabled />
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-2">
-                <Label>学号</Label>
-                <Input value={editingProfile?.studentId || ""} disabled />
-              </div>
-              <div className="space-y-2">
-                <Label>专业</Label>
-                <Input value={editingProfile?.major || ""} disabled />
-              </div>
-              <div className="space-y-2">
-                <Label>级别</Label>
-                <Input value={editingProfile?.grade || ""} disabled />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>能力评级</Label>
-              <Input type="number" value={editingProfile?.abilityScore || ""} disabled />
-              <p className="text-xs text-muted-foreground">能力评级由系统数据自动计算，不可编辑</p>
-            </div>
-            <div className="space-y-2">
-              <Label>能力点标签</Label>
-              <div className="flex flex-wrap gap-1 mb-2">
-                {editAbilityTagsArr.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="cursor-pointer gap-1 pr-1">
-                    {tag}
-                    <X
-                      className="h-3 w-3"
-                      onClick={() => toggleAbilityTag(tag)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-              <Command className="rounded-lg border shadow-sm">
-                <CommandInput
-                  placeholder="搜索能力标签..."
-                  value={abilitySearch}
-                  onValueChange={setAbilitySearch}
-                />
-                {abilitySearch.trim() && (
-                  <CommandList className="max-h-[200px]">
-                    <CommandEmpty>未找到匹配的标签</CommandEmpty>
-                    <CommandGroup>
-                      {ABILITY_OPTIONS
-                        .filter((opt) => !editAbilityTagsArr.includes(opt))
-                        .filter((opt) => opt.toLowerCase().includes(abilitySearch.toLowerCase()))
-                        .map((opt) => (
-                          <CommandItem
-                            key={opt}
-                            onSelect={() => { toggleAbilityTag(opt); setAbilitySearch(""); }}
-                            className="cursor-pointer"
-                          >
-                            <Check className="mr-2 h-4 w-4 opacity-0" />
-                            {opt}
-                          </CommandItem>
-                        ))}
-                    </CommandGroup>
-                  </CommandList>
-                )}
-              </Command>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="profile-remark">备注</Label>
-              <Textarea
-                id="profile-remark"
-                value={editRemark}
-                onChange={(e) => setEditRemark(e.target.value)}
-                placeholder="请输入备注信息..."
-                rows={2}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setProfileEditDialogOpen(false)}>
-              取消
-            </Button>
-            <Button onClick={handleUpdateProfile}>保存修改</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -837,6 +706,16 @@ export default function TalentBrandPage() {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="caseCoverImage">封面图片 URL</Label>
+              <Input
+                id="caseCoverImage"
+                placeholder="请输入封面图片地址..."
+                value={caseCoverImage}
+                onChange={(e) => setCaseCoverImage(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">留空则使用默认封面</p>
+            </div>
+            <div className="space-y-2">
               <Label>发布状态</Label>
               <Select value={caseStatus} onValueChange={(v) => setCaseStatus(v as BrandStatus)}>
                 <SelectTrigger>
@@ -924,6 +803,16 @@ export default function TalentBrandPage() {
                 value={caseStory}
                 onChange={(e) => setCaseStory(e.target.value)}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editCaseCoverImage">封面图片 URL</Label>
+              <Input
+                id="editCaseCoverImage"
+                placeholder="请输入封面图片地址..."
+                value={caseCoverImage}
+                onChange={(e) => setCaseCoverImage(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">留空则使用默认封面</p>
             </div>
             <div className="space-y-2">
               <Label>发布状态</Label>

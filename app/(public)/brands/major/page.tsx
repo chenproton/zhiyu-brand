@@ -159,7 +159,7 @@ export default function MajorBrandPage() {
                     <div>
                       <div className="flex items-center gap-2 mb-3">
                         <BookOpen className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">核心课程</span>
+                        <span className="font-medium">课程体系</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {major.coreCourses.map((course) => (

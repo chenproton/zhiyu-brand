@@ -262,6 +262,9 @@ export default function ExpertsListPage() {
                   <th className="text-left px-4 py-3 font-medium">评级</th>
                   <th className="text-left px-4 py-3 font-medium">联系方式</th>
                   <th className="text-left px-4 py-3 font-medium">状态</th>
+                  <th className="text-left px-4 py-3 font-medium">创建人</th>
+                  <th className="text-left px-4 py-3 font-medium">创建时间</th>
+                  <th className="text-left px-4 py-3 font-medium">更新时间</th>
                   <th className="text-right px-4 py-3 font-medium sticky right-0 bg-muted">操作</th>
                 </tr>
               </thead>
@@ -329,6 +332,15 @@ export default function ExpertsListPage() {
                       >
                         {expert.status === 'active' ? '启用' : '禁用'}
                       </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {expert.createdBy || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {expert.createdAt.toLocaleDateString('zh-CN')}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {expert.updatedAt.toLocaleDateString('zh-CN')}
                     </td>
                     <td className="px-4 py-3 text-right sticky right-0 bg-background">
                       <div className="flex items-center justify-end gap-1">

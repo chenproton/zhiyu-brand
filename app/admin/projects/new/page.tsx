@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -31,8 +31,9 @@ const PROJECT_TYPES = [
   '课程开发项目',
 ]
 
-export default function NewProjectPage() {
+function NewProjectForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -40,11 +41,18 @@ export default function NewProjectPage() {
     partnerIds: [] as string[],
     type: '',
     phase: 'initiation' as ProjectPhase,
-    secondaryCollege: '',
+    secondaryColleges: [] as string[],
     description: '',
     startDate: '',
     endDate: '',
   })
+
+  useEffect(() => {
+    const preselected = searchParams.getAll('partnerId')
+    if (preselected.length > 0) {
+      setFormData((prev) => ({ ...prev, partnerIds: preselected }))
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,7 +67,7 @@ export default function NewProjectPage() {
       partnerIds: formData.partnerIds,
       type: formData.type,
       phase: formData.phase,
-      secondaryCollege: formData.secondaryCollege || undefined,
+      secondaryColleges: formData.secondaryColleges.length > 0 ? formData.secondaryColleges : undefined,
       description: formData.description,
       startDate: new Date(formData.startDate),
       endDate: new Date(formData.endDate),
@@ -153,20 +161,27 @@ export default function NewProjectPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="secondaryCollege">关联二级学院</Label>
-                      <Select
-                        value={formData.secondaryCollege}
-                        onValueChange={(value) => setFormData((prev) => ({ ...prev, secondaryCollege: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="请选择关联二级学院" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SECONDARY_COLLEGES.map((college) => (
-                            <SelectItem key={college} value={college}>{college}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="secondaryColleges">关联二级学院</Label>
+                      <div className="flex flex-wrap gap-2 p-3 border rounded-md">
+                        {SECONDARY_COLLEGES.map((college) => (
+                          <Badge
+                            key={college}
+                            variant={formData.secondaryColleges.includes(college) ? 'default' : 'outline'}
+                            className="cursor-pointer"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                secondaryColleges: prev.secondaryColleges.includes(college)
+                                  ? prev.secondaryColleges.filter((c) => c !== college)
+                                  : [...prev.secondaryColleges, college],
+                              }))
+                            }
+                          >
+                            {college}
+                          </Badge>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
                     </div>
                   </div>
 
@@ -244,5 +259,13 @@ export default function NewProjectPage() {
         </div>
       </form>
     </div>
+  )
+}
+
+export default function NewProjectPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20 text-muted-foreground">加载中...</div>}>
+      <NewProjectForm />
+    </Suspense>
   )
 }

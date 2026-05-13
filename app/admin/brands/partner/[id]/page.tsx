@@ -35,8 +35,12 @@ import {
   Calendar,
   Users,
   Briefcase,
+  Search,
+  Plus,
+  X,
 } from "lucide-react"
-import { partners, jobs as mockJobs } from "@/lib/mock-data"
+import { partners, jobs as mockJobs, talentProfiles } from "@/lib/mock-data"
+import { Input } from "@/components/ui/input"
 import {
   PARTNER_TYPE_LABELS,
 } from "@/lib/types"
@@ -73,6 +77,11 @@ export default function PartnerDetailPage() {
   const [localJobs, setLocalJobs] = useState<Job[]>([...mockJobs])
   const [activeTab, setActiveTab] = useState("info")
 
+  // Hired students
+  const [hiredStudentIds, setHiredStudentIds] = useState<string[]>(partner?.hiredStudents || [])
+  const [studentPickerOpen, setStudentPickerOpen] = useState(false)
+  const [studentSearch, setStudentSearch] = useState("")
+
   // Dialogs for job association
   const [associateNonTeachingOpen, setAssociateNonTeachingOpen] = useState(false)
   const [associateTeachingOpen, setAssociateTeachingOpen] = useState(false)
@@ -82,6 +91,34 @@ export default function PartnerDetailPage() {
     () => localJobs.filter((j) => j.partnerId === id),
     [localJobs, id]
   )
+
+  const hiredStudents = useMemo(
+    () => talentProfiles.filter((s) => hiredStudentIds.includes(s.id)),
+    [hiredStudentIds]
+  )
+
+  const searchedStudents = useMemo(() => {
+    if (!studentSearch.trim()) return []
+    const term = studentSearch.toLowerCase()
+    return talentProfiles.filter(
+      (s) =>
+        !hiredStudentIds.includes(s.id) &&
+        (s.studentName.toLowerCase().includes(term) ||
+          s.studentId.toLowerCase().includes(term) ||
+          s.major.toLowerCase().includes(term))
+    )
+  }, [studentSearch, hiredStudentIds])
+
+  const handleAssociateStudent = (studentId: string) => {
+    setHiredStudentIds((prev) => [...prev, studentId])
+    setStudentSearch("")
+  }
+
+  const handleRemoveStudent = (studentId: string) => {
+    if (confirm("确定要移除该学生的关联吗？")) {
+      setHiredStudentIds((prev) => prev.filter((id) => id !== studentId))
+    }
+  }
 
   const handleSaveJob = (job: Job) => {
     setLocalJobs((prev) => {
@@ -224,6 +261,7 @@ export default function PartnerDetailPage() {
         <TabsList>
           <TabsTrigger value="info">基本信息</TabsTrigger>
           <TabsTrigger value="jobs">关联岗位 ({associatedJobs.length})</TabsTrigger>
+          <TabsTrigger value="hiredStudents">已招聘学生 ({hiredStudents.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
@@ -386,7 +424,117 @@ export default function PartnerDetailPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="hiredStudents">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base">已招聘学生</CardTitle>
+              </div>
+              <Button size="sm" onClick={() => setStudentPickerOpen(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                关联学生
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {hiredStudents.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  暂无已招聘学生
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {hiredStudents.map((student) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                          {student.studentName[0]}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{student.studentName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {student.studentId} · {student.major} · {student.grade}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-500"
+                        onClick={() => handleRemoveStudent(student.id)}
+                      >
+                        移除
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* 学生关联选择 Dialog */}
+      <Dialog open={studentPickerOpen} onOpenChange={setStudentPickerOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-hidden p-0">
+          <DialogHeader className="px-4 pt-4 pb-2">
+            <DialogTitle>关联学生</DialogTitle>
+            <DialogDescription>搜索并选择要关联的学生</DialogDescription>
+          </DialogHeader>
+          <div className="px-4 pb-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="搜索学生姓名、学号或专业..."
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+                className="pl-9"
+              />
+              {studentSearch && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+                  onClick={() => setStudentSearch("")}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          </div>
+          <div className="max-h-[300px] overflow-y-auto px-4 pb-4">
+            {searchedStudents.length > 0 ? (
+              <div className="space-y-1">
+                {searchedStudents.map((student) => (
+                  <div
+                    key={student.id}
+                    className="flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-muted text-sm border-b last:border-b-0"
+                    onClick={() => handleAssociateStudent(student.id)}
+                  >
+                    <div>
+                      <span className="font-medium">{student.studentName}</span>
+                      <span className="text-muted-foreground ml-2">{student.studentId}</span>
+                      <span className="text-muted-foreground ml-2">{student.major}</span>
+                    </div>
+                    <Plus className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                ))}
+              </div>
+            ) : studentSearch.trim() ? (
+              <p className="text-sm text-muted-foreground text-center py-4">未找到匹配的学生</p>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">请输入搜索关键词</p>
+            )}
+          </div>
+          <DialogFooter className="px-4 pb-4">
+            <Button variant="outline" onClick={() => { setStudentSearch(""); setStudentPickerOpen(false) }}>
+              关闭
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <NonTeachingJobDialog
         open={associateNonTeachingOpen}

@@ -153,13 +153,15 @@ export default function AchievementsPage() {
                   <TableHead>关联主体</TableHead>
                   <TableHead>关联项目</TableHead>
                   <TableHead>发布日期</TableHead>
+                  <TableHead>关联人/创建人</TableHead>
+                  <TableHead>关联时间</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredAchievements.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       暂无成果数据
                     </TableCell>
                   </TableRow>
@@ -199,6 +201,12 @@ export default function AchievementsPage() {
                         )}
                       </TableCell>
                       <TableCell>{achievement.publishDate.toLocaleDateString('zh-CN')}</TableCell>
+                      <TableCell>
+                        <span className="text-sm">{achievement.createdBy || '-'}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{achievement.createdAt.toLocaleDateString('zh-CN')}</span>
+                      </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
