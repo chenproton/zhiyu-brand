@@ -56,12 +56,12 @@ function getImage(index: number) {
 }
 
 const brandCategories = [
-  { id: "talent", title: "人才品牌", icon: Users, href: "/brands/talent", color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
-  { id: "partner", title: "雇主品牌", icon: Building2, href: "/brands/partner", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
-  { id: "job", title: "岗位品牌", icon: Briefcase, href: "/brands/job", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100" },
-  { id: "major", title: "专业品牌", icon: GraduationCap, href: "/brands/major", color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-100" },
-  { id: "teacher", title: "师资品牌", icon: UserCircle, href: "/brands/teacher", color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100" },
-  { id: "culture", title: "文化思政", icon: Heart, href: "/brands/culture", color: "text-pink-600", bg: "bg-pink-50", border: "border-pink-100" },
+  { id: "talent", title: "人才品牌", icon: Users, href: "/brands/talent", color: "text-slate-700" },
+  { id: "partner", title: "雇主品牌", icon: Building2, href: "/brands/partner", color: "text-slate-700" },
+  { id: "job", title: "岗位品牌", icon: Briefcase, href: "/brands/job", color: "text-slate-700" },
+  { id: "major", title: "专业品牌", icon: GraduationCap, href: "/brands/major", color: "text-slate-700" },
+  { id: "teacher", title: "师资品牌", icon: UserCircle, href: "/brands/teacher", color: "text-slate-700" },
+  { id: "culture", title: "文化思政", icon: Heart, href: "/brands/culture", color: "text-slate-700" },
 ]
 
 const stats = [
@@ -279,29 +279,26 @@ function TalentCard({ profile, index }: { profile: typeof talentProfiles[0]; ind
 function JobCard({ job, img }: { job: typeof jobBrands[0]; img: string }) {
   return (
     <Link href="/brands/job">
-      <Card className="group border-0 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden bg-white">
-        <div className="relative h-40 overflow-hidden">
-          <img src={img} alt={job.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4">
-            <h4 className="font-bold text-white text-xl drop-shadow-md">{job.name}</h4>
-            <p className="text-white/80 text-sm">{job.industry}</p>
+      <Card className="group border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 rounded-3xl overflow-hidden bg-white">
+        <div className="flex h-28">
+          <div className="w-32 relative overflow-hidden shrink-0">
+            <img src={img} alt={job.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/10" />
           </div>
-          <div className="absolute top-4 right-4">
-            <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm font-bold border-0">
-              推荐品牌
-            </Badge>
-          </div>
+          <CardContent className="flex-1 p-4 flex flex-col justify-center">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <h4 className="font-bold text-slate-900 text-sm truncate">{job.name}</h4>
+              <Badge variant="outline" className="text-[10px] font-medium border-amber-200 text-amber-700 bg-amber-50 shrink-0">
+                推荐
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-400 line-clamp-1 mb-2">{job.industry} · {job.description}</p>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="font-bold text-emerald-600">{job.averageSalary || "面议"}</span>
+              <span className="text-slate-400">需求 {job.demandCount} 人</span>
+            </div>
+          </CardContent>
         </div>
-        <CardContent className="p-5">
-          <p className="text-sm text-slate-400 line-clamp-2 mb-4">{job.description}</p>
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-emerald-600">{job.averageSalary || "面议"}</span>
-            <span className="text-sm text-slate-500 flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" /> 需求 {job.demandCount} 人
-            </span>
-          </div>
-        </CardContent>
       </Card>
     </Link>
   )
@@ -641,10 +638,10 @@ export default function LandingPage() {
               const Icon = cat.icon
               return (
                 <Link key={cat.id} href={cat.href}>
-                  <Card className={`h-full border-0 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 rounded-3xl cursor-pointer ${cat.bg} ${cat.border} border`}>
+                  <Card className="h-full border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 rounded-3xl cursor-pointer bg-white">
                     <CardContent className="p-6 text-center">
-                      <div className="w-14 h-14 rounded-2xl bg-white shadow-md flex items-center justify-center mx-auto mb-4">
-                        <Icon className={`h-7 w-7 ${cat.color}`} />
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center mx-auto mb-4">
+                        <Icon className="h-7 w-7 text-slate-600" />
                       </div>
                       <h3 className="font-bold text-slate-800">{cat.title}</h3>
                     </CardContent>
