@@ -73,6 +73,11 @@ const stats = [
   { label: "品牌内容", value: talentProfiles.length + jobBrands.length + majorBrands.length + teacherBrands.length + cultureBrands.length, icon: Star },
 ]
 
+const AVATARS = Array.from({ length: 16 }, (_, i) => `/images/avatars/p${i + 1}.jpg`)
+function getAvatar(index: number) {
+  return AVATARS[index % AVATARS.length]
+}
+
 const featuredPartners = partners.filter(p => p.status === "active").slice(0, 6)
 const featuredProjects = projects.filter(p => p.publishStatus === "published").slice(0, 3)
 const featuredAchievements = achievements.filter(a => a.status === "published").slice(0, 3)
@@ -188,14 +193,14 @@ function AchievementCard({ ach, img }: { ach: typeof achievements[0]; img: strin
   )
 }
 
-function ExpertCard({ expert }: { expert: typeof experts[0] }) {
+function ExpertCard({ expert, avatarSrc }: { expert: typeof experts[0]; avatarSrc?: string }) {
   return (
     <Link href="/experts">
       <Card className="group border-0 shadow-sm hover:shadow-xl transition-all duration-500 rounded-3xl overflow-hidden bg-white text-center">
         <div className="h-24 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 relative">
           <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
             <Avatar className="h-20 w-20 ring-4 ring-white shadow-xl">
-              <AvatarImage src={expert.avatar} />
+              <AvatarImage src={avatarSrc || expert.avatar} />
               <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-violet-100 to-indigo-100 text-violet-700">
                 {expert.name.slice(0, 1)}
               </AvatarFallback>
@@ -223,7 +228,7 @@ function ExpertCard({ expert }: { expert: typeof experts[0] }) {
   )
 }
 
-function TalentCard({ profile, index }: { profile: typeof talentProfiles[0]; index: number }) {
+function TalentCard({ profile, index, avatarSrc }: { profile: typeof talentProfiles[0]; index: number; avatarSrc?: string }) {
   const gradients = [
     "from-blue-500 via-blue-600 to-indigo-600",
     "from-violet-500 via-purple-600 to-fuchsia-600",
@@ -239,7 +244,7 @@ function TalentCard({ profile, index }: { profile: typeof talentProfiles[0]; ind
         </div>
         <div className="absolute -bottom-10 left-6">
           <Avatar className="h-20 w-20 ring-4 ring-white shadow-xl">
-            <AvatarImage src={profile.avatar} />
+            <AvatarImage src={avatarSrc || profile.avatar} />
             <AvatarFallback className="text-xl font-bold bg-white text-slate-800">
               {profile.studentName[0]}
             </AvatarFallback>
@@ -328,14 +333,14 @@ function MajorCard({ major, img }: { major: typeof majorBrands[0]; img: string }
   )
 }
 
-function TeacherCard({ teacher }: { teacher: typeof teacherBrands[0] }) {
+function TeacherCard({ teacher, avatarSrc }: { teacher: typeof teacherBrands[0]; avatarSrc?: string }) {
   return (
     <Link href="/brands/teacher">
       <Card className="group border-0 shadow-sm hover:shadow-xl transition-all duration-500 rounded-3xl overflow-hidden bg-white">
         <div className="h-20 bg-gradient-to-r from-rose-400 via-pink-500 to-purple-500 relative">
           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
             <img
-              src={teacher.avatar || "/placeholder.svg"}
+              src={avatarSrc || teacher.avatar || "/placeholder.svg"}
               alt={teacher.name}
               className="w-16 h-16 rounded-full object-cover ring-4 ring-white shadow-xl bg-white"
               onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg" }}
@@ -620,8 +625,8 @@ export default function LandingPage() {
 
           <SectionSubHeading title="专家资源库" />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-5">
-            {featuredExperts.map((expert) => (
-              <ExpertCard key={expert.id} expert={expert} />
+            {featuredExperts.map((expert, i) => (
+              <ExpertCard key={expert.id} expert={expert} avatarSrc={getAvatar(i)} />
             ))}
           </div>
         </div>
@@ -655,7 +660,7 @@ export default function LandingPage() {
           <SectionSubHeading title="精选人才" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
             {featuredTalent.map((profile, i) => (
-              <TalentCard key={profile.id} profile={profile} index={i} />
+              <TalentCard key={profile.id} profile={profile} index={i} avatarSrc={getAvatar(i + 5)} />
             ))}
           </div>
 
@@ -715,8 +720,8 @@ export default function LandingPage() {
           {/* 师资品牌 */}
           <SectionSubHeading title="师资品牌" />
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 mb-20">
-            {featuredTeachers.map((teacher) => (
-              <TeacherCard key={teacher.id} teacher={teacher} />
+            {featuredTeachers.map((teacher, i) => (
+              <TeacherCard key={teacher.id} teacher={teacher} avatarSrc={getAvatar(i + 10)} />
             ))}
           </div>
 
