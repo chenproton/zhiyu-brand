@@ -34,6 +34,28 @@ export function PlatformTopNav({ config }: { config: PlatformNavigationConfig })
   const BrandIcon = resolvePlatformIcon(config.brandIcon || "settings")
   const userMenuItems = config.userMenuItems ?? fallbackUserMenuItems
 
+  const [selectedCollege, setSelectedCollege] = useState("all")
+  useEffect(() => {
+    const readCollege = () => {
+      const params = new URLSearchParams(window.location.search)
+      setSelectedCollege(params.get("college") || "all")
+    }
+    readCollege()
+    window.addEventListener("popstate", readCollege)
+    return () => window.removeEventListener("popstate", readCollege)
+  }, [])
+  const handleCollegeChange = (value: string) => {
+    const params = new URLSearchParams(window.location.search)
+    if (value === "all") {
+      params.delete("college")
+    } else {
+      params.set("college", value)
+    }
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`
+    window.history.pushState(null, "", newUrl)
+    window.dispatchEvent(new Event("popstate"))
+  }
+
 
 
   useEffect(() => {
@@ -122,8 +144,31 @@ export function PlatformTopNav({ config }: { config: PlatformNavigationConfig })
         </nav>
       </div>
 
-      <div className="flex items-center gap-6">
-        {config.showCurrentTime !== false && mounted ? <div className="text-sm text-gray-400">{currentTime}</div> : null}
+      <div className="flex items-center gap-4">
+        {config.showCollegeFilter && config.collegeOptions && config.collegeOptions.length > 0 && (
+          <select
+            value={selectedCollege}
+            onChange={(e) => handleCollegeChange(e.target.value)}
+            className="h-8 rounded-md border border-gray-200 bg-white px-2 pr-6 text-sm text-gray-600 outline-none hover:border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary transition-colors cursor-pointer"
+          >
+            <option value="all">全校</option>
+            {config.collegeOptions.map((college) => (
+              <option key={college} value={college}>{college}</option>
+            ))}
+          </select>
+        )}
+
+        {config.enterpriseLoginHref && (
+          <Link
+            href={config.enterpriseLoginHref}
+            className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300"
+          >
+            <Building2 className="h-4 w-4" />
+            企业登录
+          </Link>
+        )}
+
+        {config.showCurrentTime !== false && mounted ? <div className="text-sm text-gray-400 hidden lg:block">{currentTime}</div> : null}
 
         {config.showUserMenu !== false ? (
           <div className="relative" ref={menuRef}>
@@ -289,63 +334,6 @@ export function PlatformSideNav({ config }: { config: PlatformNavigationConfig }
   )
 }
 
-function SubNavBar({ config }: { config: PlatformNavigationConfig }) {
-  const [selectedCollege, setSelectedCollege] = useState("all")
-
-  useEffect(() => {
-    const readCollege = () => {
-      const params = new URLSearchParams(window.location.search)
-      setSelectedCollege(params.get("college") || "all")
-    }
-    readCollege()
-    window.addEventListener("popstate", readCollege)
-    return () => window.removeEventListener("popstate", readCollege)
-  }, [])
-
-  const handleCollegeChange = (value: string) => {
-    const params = new URLSearchParams(window.location.search)
-    if (value === "all") {
-      params.delete("college")
-    } else {
-      params.set("college", value)
-    }
-    const newUrl = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`
-    window.history.pushState(null, "", newUrl)
-    window.dispatchEvent(new Event("popstate"))
-  }
-
-  if (!config.showCollegeFilter && !config.enterpriseLoginHref) return null
-
-  return (
-    <div className="fixed top-14 left-0 right-0 z-40 flex h-10 items-center justify-end gap-4 px-6">
-      {config.showCollegeFilter && config.collegeOptions && config.collegeOptions.length > 0 && (
-        <select
-          value={selectedCollege}
-          onChange={(e) => handleCollegeChange(e.target.value)}
-          className="h-7 rounded-md border border-gray-200 bg-white/80 px-2 pr-7 text-xs text-gray-700 outline-none backdrop-blur-sm focus:border-primary focus:ring-1 focus:ring-primary"
-        >
-          <option value="all">全校</option>
-          {config.collegeOptions.map((college) => (
-            <option key={college} value={college}>
-              {college}
-            </option>
-          ))}
-        </select>
-      )}
-
-      {config.enterpriseLoginHref && (
-        <Link
-          href={config.enterpriseLoginHref}
-          className="flex items-center gap-1 rounded-md border border-gray-200 bg-white/80 px-2.5 py-1 text-xs text-gray-700 backdrop-blur-sm transition-colors hover:bg-white"
-        >
-          <Building2 className="h-3.5 w-3.5" />
-          企业登录
-        </Link>
-      )}
-    </div>
-  )
-}
-
 export function PlatformShell({
   config,
   children,
@@ -353,14 +341,10 @@ export function PlatformShell({
   config: PlatformNavigationConfig
   children: React.ReactNode
 }) {
-  const hasSubNav = config.showCollegeFilter || !!config.enterpriseLoginHref
-  const topOffset = hasSubNav ? "pt-24" : "pt-14"
-
   return (
     <>
       <PlatformTopNav config={config} />
-      {hasSubNav && <SubNavBar config={config} />}
-      <div className={cn("flex min-h-screen bg-[#f5f7fa]", topOffset, config.shellClassName)}>
+      <div className={cn("flex min-h-screen bg-[#f5f7fa]", "pt-14", config.shellClassName)}>
         {config.hideSideNav ? null : <PlatformSideNav config={config} />}
         <main className={cn("min-w-0 flex-1", config.mainClassName)}>
           <div className={cn("p-6", config.contentClassName)}>{children}</div>
