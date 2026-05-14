@@ -99,6 +99,7 @@ export default function PartnerDetailPage() {
   const [studentPickerOpen, setStudentPickerOpen] = useState(false)
   const [studentSearch, setStudentSearch] = useState("")
   const [selectedJobForStudent, setSelectedJobForStudent] = useState("")
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([])
 
   // Dialogs for job association
   const [associateNonTeachingOpen, setAssociateNonTeachingOpen] = useState(false)
@@ -142,13 +143,28 @@ export default function PartnerDetailPage() {
     )
   }, [studentSearch, hiredStudentIds])
 
-  const handleAssociateStudent = (studentId: string) => {
+  const toggleStudentSelection = (studentId: string) => {
+    setSelectedStudentIds((prev) =>
+      prev.includes(studentId) ? prev.filter((id) => id !== studentId) : [...prev, studentId]
+    )
+  }
+
+  const handleConfirmAssociateStudents = () => {
     if (!selectedJobForStudent) {
       alert('请先选择雇佣岗位')
       return
     }
-    setHiredStudentsData((prev) => [...prev, { studentId, jobId: selectedJobForStudent }])
+    if (selectedStudentIds.length === 0) {
+      alert('请至少选择一名学生')
+      return
+    }
+    setHiredStudentsData((prev) => [
+      ...prev,
+      ...selectedStudentIds.map((studentId) => ({ studentId, jobId: selectedJobForStudent })),
+    ])
     setStudentSearch("")
+    setSelectedStudentIds([])
+    setStudentPickerOpen(false)
   }
 
   const handleRemoveStudent = (studentId: string) => {
@@ -570,20 +586,27 @@ export default function PartnerDetailPage() {
           <div className="max-h-[300px] overflow-y-auto px-4 pb-4">
             {searchedStudents.length > 0 ? (
               <div className="space-y-1">
-                {searchedStudents.map((student) => (
-                  <div
-                    key={student.id}
-                    className="flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-muted text-sm border-b last:border-b-0"
-                    onClick={() => handleAssociateStudent(student.id)}
-                  >
-                    <div>
-                      <span className="font-medium">{student.studentName}</span>
-                      <span className="text-muted-foreground ml-2">{student.studentId}</span>
-                      <span className="text-muted-foreground ml-2">{student.major}</span>
+                {searchedStudents.map((student) => {
+                  const isSelected = selectedStudentIds.includes(student.id)
+                  return (
+                    <div
+                      key={student.id}
+                      className={`flex items-center justify-between p-2 rounded-md cursor-pointer text-sm border-b last:border-b-0 ${isSelected ? 'bg-primary/10' : 'hover:bg-muted'}`}
+                      onClick={() => toggleStudentSelection(student.id)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={`h-4 w-4 rounded border flex items-center justify-center ${isSelected ? 'bg-primary border-primary' : 'border-muted-foreground'}`}>
+                          {isSelected && <div className="h-2 w-2 bg-white rounded-sm" />}
+                        </div>
+                        <div>
+                          <span className="font-medium">{student.studentName}</span>
+                          <span className="text-muted-foreground ml-2">{student.studentId}</span>
+                          <span className="text-muted-foreground ml-2">{student.major}</span>
+                        </div>
+                      </div>
                     </div>
-                    <Plus className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : studentSearch.trim() ? (
               <p className="text-sm text-muted-foreground text-center py-4">未找到匹配的学生</p>
@@ -592,8 +615,11 @@ export default function PartnerDetailPage() {
             )}
           </div>
           <DialogFooter className="px-4 pb-4">
-            <Button variant="outline" onClick={() => { setStudentSearch(""); setStudentPickerOpen(false) }}>
+            <Button variant="outline" onClick={() => { setStudentSearch(""); setSelectedStudentIds([]); setStudentPickerOpen(false) }}>
               关闭
+            </Button>
+            <Button onClick={handleConfirmAssociateStudents} disabled={selectedStudentIds.length === 0}>
+              确认关联 ({selectedStudentIds.length})
             </Button>
           </DialogFooter>
         </DialogContent>

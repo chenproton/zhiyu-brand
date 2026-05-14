@@ -110,6 +110,7 @@ export default function JobBrandPage() {
       status: "draft",
       viewCount: 0,
       jobCategory: category,
+      secondaryCollege: job.secondaryCollege,
       createdAt: new Date(),
       updatedAt: new Date(),
     }

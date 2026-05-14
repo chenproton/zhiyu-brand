@@ -200,7 +200,12 @@ export default function EnterprisesListPage() {
                     <CooperationRatingBadge rating={enterprise.rating} />
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm">{enterprise.agreements?.length || 0}</span>
+                    <Link
+                      href={`/admin/enterprises/${enterprise.id}?tab=agreements`}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      {enterprise.agreements?.length || 0}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Link
@@ -215,7 +220,7 @@ export default function EnterprisesListPage() {
                       href={`/admin/enterprises/${enterprise.id}?tab=achievements`}
                       className="text-sm font-medium text-primary hover:underline"
                     >
-                      {achievements.filter((a) => a.partnerIds?.includes(enterprise.id)).length}
+                      {achievements.filter((a) => a.partnerId === enterprise.id).length}
                     </Link>
                   </TableCell>
                   <TableCell>

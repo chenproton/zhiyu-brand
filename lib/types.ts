@@ -893,6 +893,7 @@ export interface Job {
   deadline?: Date
   // 能力模型配置
   abilityConfig?: JobAbilityConfig
+  secondaryCollege?: string
   createdAt: Date
   updatedAt: Date
 }

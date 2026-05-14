@@ -211,6 +211,7 @@ export default function TeacherBrandPage() {
       introduction: teacher.introduction,
       researchFields: teacher.researchFields.join("，"),
       awards: teacher.awards.join("，"),
+      secondaryCollege: teacher.secondaryCollege || "",
       isFeatured: teacher.isFeatured,
       status: teacher.status,
     })
@@ -316,7 +317,7 @@ export default function TeacherBrandPage() {
       partnerName: expert.partnerName || "",
       specialties: expert.specialties.join("，"),
       experience: String(expert.experience),
-      secondaryCollege: expert.secondaryCollege || "",
+      secondaryCollege: expert.secondaryColleges?.[0] || "",
       rating: expert.rating,
     })
     setExpertDialogOpen(true)
@@ -356,7 +357,7 @@ export default function TeacherBrandPage() {
                 partnerName: expertForm.partnerName,
                 specialties,
                 experience,
-                secondaryCollege: expertForm.secondaryCollege,
+                secondaryColleges: expertForm.secondaryCollege ? [expertForm.secondaryCollege] : [],
                 rating: expertForm.rating,
                 updatedAt: new Date(),
               }
@@ -371,7 +372,7 @@ export default function TeacherBrandPage() {
         partnerName: expertForm.partnerName,
         specialties,
         experience,
-        secondaryCollege: expertForm.secondaryCollege,
+        secondaryColleges: expertForm.secondaryCollege ? [expertForm.secondaryCollege] : [],
         rating: expertForm.rating,
         status: "active",
         updatedAt: new Date(),

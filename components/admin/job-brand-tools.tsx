@@ -31,7 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Check, Pencil, Plus, Search, Trash2 } from "lucide-react"
-import { INDUSTRIES, JOB_CATEGORY_LABELS, JOB_STATUS_LABELS, MAJORS } from "@/lib/types"
+import { INDUSTRIES, JOB_CATEGORY_LABELS, JOB_STATUS_LABELS, MAJORS, SECONDARY_COLLEGES } from "@/lib/types"
 import { jobBrands } from "@/lib/mock-data"
 import type { Job, Partner } from "@/lib/types"
 
@@ -44,6 +44,7 @@ type JobFormState = {
   description: string
   responsibilities: string
   requirements: string
+  secondaryCollege: string
 }
 
 const emptyForm: JobFormState = {
@@ -55,6 +56,7 @@ const emptyForm: JobFormState = {
   description: "",
   responsibilities: "",
   requirements: "",
+  secondaryCollege: "",
 }
 
 function lines(value: string) {
@@ -99,6 +101,7 @@ export function makeNonTeachingJob(partner: Pick<Partner, "id" | "name" | "logo"
     isRecommended: false,
     viewCount: 0,
     applicationCount: 0,
+    secondaryCollege: form.secondaryCollege,
     createdAt: new Date(),
     updatedAt: new Date(),
   }
@@ -130,6 +133,7 @@ export function NonTeachingJobDialog({
           description: initialJob.description,
           responsibilities: initialJob.responsibilities.join("\n"),
           requirements: initialJob.requirements.join("\n"),
+          secondaryCollege: initialJob.secondaryCollege || "",
         }
       : emptyForm
   )
@@ -156,6 +160,7 @@ export function NonTeachingJobDialog({
           description: form.description,
           responsibilities: lines(form.responsibilities),
           requirements: lines(form.requirements),
+          secondaryCollege: form.secondaryCollege,
           updatedAt: new Date(),
         }
       : makeNonTeachingJob(partner, form)
@@ -205,6 +210,17 @@ export function NonTeachingJobDialog({
             </div>
           </div>
           <div className="space-y-2">
+            <Label>关联二级学院</Label>
+            <Select value={form.secondaryCollege} onValueChange={(val) => setForm((prev) => ({ ...prev, secondaryCollege: val }))}>
+              <SelectTrigger><SelectValue placeholder="选择二级学院" /></SelectTrigger>
+              <SelectContent>
+                {SECONDARY_COLLEGES.map((college) => (
+                  <SelectItem key={college} value={college}>{college}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <Label>岗位介绍</Label>
             <Textarea rows={3} value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} placeholder="简要描述该岗位的职责和要求" />
           </div>
@@ -243,6 +259,7 @@ export function TeachingJobDialog({
 }) {
   const [search, setSearch] = useState("")
   const [selectedId, setSelectedId] = useState("")
+  const [secondaryCollege, setSecondaryCollege] = useState("")
   const filtered = useMemo(
     () => jobBrands.filter((item) => item.status === "published" && (item.name.includes(search) || item.industry.includes(search))),
     [search]
@@ -277,6 +294,7 @@ export function TeachingJobDialog({
       suitableMajors: selected.suitableMajors,
       skills: [],
       description: selected.description,
+      secondaryCollege,
       status: "draft",
       isUrgent: false,
       isRecommended: false,
@@ -300,6 +318,17 @@ export function TeachingJobDialog({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input className="pl-9" placeholder="搜索岗位名称或行业" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>关联二级学院</Label>
+            <Select value={secondaryCollege} onValueChange={setSecondaryCollege}>
+              <SelectTrigger><SelectValue placeholder="选择二级学院" /></SelectTrigger>
+              <SelectContent>
+                {SECONDARY_COLLEGES.map((college) => (
+                  <SelectItem key={college} value={college}>{college}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="max-h-80 overflow-y-auto rounded-md border">
             {filtered.map((brand) => (

@@ -425,10 +425,15 @@ export default function PermissionsPage() {
           <h1 className="text-2xl font-bold">合作权限管理</h1>
           <p className="text-muted-foreground">为企业/专家创建账号并分配资源权限与测评权限</p>
         </div>
-        <Button onClick={handleAdd}>
-          <Plus className="h-4 w-4 mr-2" />
-          新增权限授权
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setAdminContactDialogOpen(true)}>
+            管理员联系方式配置
+          </Button>
+          <Button onClick={handleAdd}>
+            <Plus className="h-4 w-4 mr-2" />
+            新增权限授权
+          </Button>
+        </div>
       </div>
 
       {/* 统计卡片 */}
