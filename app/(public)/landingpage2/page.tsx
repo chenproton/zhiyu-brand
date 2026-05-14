@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   Building2, FolderKanban, Users, Trophy, Briefcase, Star,
@@ -22,6 +22,7 @@ import {
   PARTNER_TYPE_LABELS, PROJECT_PHASE_LABELS, ACHIEVEMENT_TYPE_LABELS,
   EXPERT_RATING_LABELS, TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS,
   EMPLOYMENT_PROJECT_STATUS_LABELS, EMPLOYMENT_PROJECT_TYPE_LABELS,
+  SECONDARY_COLLEGES,
 } from "@/lib/types"
 
 /* ============================================================
@@ -99,6 +100,36 @@ const featuredEmployment = employmentProjects.slice(0, 6)
    SECTIONS
    ============================================================ */
 
+function CollegeSelect() {
+  const [selectedCollege, setSelectedCollege] = useState("all")
+  useEffect(() => {
+    const readCollege = () => {
+      const params = new URLSearchParams(window.location.search)
+      setSelectedCollege(params.get("college") || "all")
+    }
+    readCollege()
+    window.addEventListener("popstate", readCollege)
+    return () => window.removeEventListener("popstate", readCollege)
+  }, [])
+  const handleChange = (value: string) => {
+    const params = new URLSearchParams(window.location.search)
+    if (value === "all") params.delete("college")
+    else params.set("college", value)
+    window.history.pushState(null, "", `${window.location.pathname}${params.toString() ? `?${params}` : ""}`)
+    window.dispatchEvent(new Event("popstate"))
+  }
+  return (
+    <select
+      value={selectedCollege}
+      onChange={(e) => handleChange(e.target.value)}
+      className="h-8 rounded-md border border-gray-200 bg-white/80 px-2 pr-6 text-sm text-gray-600 outline-none backdrop-blur-sm hover:border-gray-300 focus:border-black focus:ring-1 focus:ring-black transition-colors cursor-pointer"
+    >
+      <option value="all">全校</option>
+      {SECONDARY_COLLEGES.map((c) => <option key={c} value={c}>{c}</option>)}
+    </select>
+  )
+}
+
 function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-gray-200/40 transition-all duration-300">
@@ -120,6 +151,11 @@ function Navbar() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <CollegeSelect />
+            <Link href="/partner/login" className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-white/80 px-3 py-1.5 text-sm text-gray-600 backdrop-blur-sm transition-colors hover:bg-white hover:text-gray-900 hover:border-gray-300">
+              <Building2 className="h-4 w-4" />
+              企业登录
+            </Link>
             <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-gray-500 hover:text-black hover:bg-gray-100/80 transition-all duration-200 rounded-lg">
               登录
             </Button>

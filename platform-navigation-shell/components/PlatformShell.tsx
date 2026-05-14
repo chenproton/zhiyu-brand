@@ -145,7 +145,7 @@ export function PlatformTopNav({ config }: { config: PlatformNavigationConfig })
       </div>
 
       <div className="flex items-center gap-4">
-        {config.showCollegeFilter && config.collegeOptions && config.collegeOptions.length > 0 && (
+        {config.showCollegeFilter && config.collegeOptions && config.collegeOptions.length > 0 && !pathname.startsWith("/landingpage") && (
           <select
             value={selectedCollege}
             onChange={(e) => handleCollegeChange(e.target.value)}
@@ -158,7 +158,7 @@ export function PlatformTopNav({ config }: { config: PlatformNavigationConfig })
           </select>
         )}
 
-        {config.enterpriseLoginHref && (
+        {config.enterpriseLoginHref && !pathname.startsWith("/landingpage") && (
           <Link
             href={config.enterpriseLoginHref}
             className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300"

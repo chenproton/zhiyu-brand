@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useState, useEffect } from "react"
 import {
   Building2, FolderKanban, Users, Trophy, Briefcase, Star,
   ArrowRight, GraduationCap, UserCircle, Heart, MapPin,
@@ -20,6 +21,7 @@ import {
   PARTNER_TYPE_LABELS, PROJECT_PHASE_LABELS, ACHIEVEMENT_TYPE_LABELS,
   EXPERT_RATING_LABELS, TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS,
   EMPLOYMENT_PROJECT_STATUS_LABELS, EMPLOYMENT_PROJECT_TYPE_LABELS,
+  SECONDARY_COLLEGES,
 } from "@/lib/types"
 
 function maskStudentId(id: string) {
@@ -475,6 +477,36 @@ function SectionSubHeading({ title, action }: { title: string; action?: React.Re
   )
 }
 
+function CollegeSelect() {
+  const [selectedCollege, setSelectedCollege] = useState("all")
+  useEffect(() => {
+    const readCollege = () => {
+      const params = new URLSearchParams(window.location.search)
+      setSelectedCollege(params.get("college") || "all")
+    }
+    readCollege()
+    window.addEventListener("popstate", readCollege)
+    return () => window.removeEventListener("popstate", readCollege)
+  }, [])
+  const handleChange = (value: string) => {
+    const params = new URLSearchParams(window.location.search)
+    if (value === "all") params.delete("college")
+    else params.set("college", value)
+    window.history.pushState(null, "", `${window.location.pathname}${params.toString() ? `?${params}` : ""}`)
+    window.dispatchEvent(new Event("popstate"))
+  }
+  return (
+    <select
+      value={selectedCollege}
+      onChange={(e) => handleChange(e.target.value)}
+      className="h-8 rounded-md border border-slate-200 bg-white/80 px-2 pr-6 text-sm text-slate-600 outline-none backdrop-blur-sm hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer"
+    >
+      <option value="all">全校</option>
+      {SECONDARY_COLLEGES.map((c) => <option key={c} value={c}>{c}</option>)}
+    </select>
+  )
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
@@ -495,7 +527,14 @@ export default function LandingPage() {
               <Link href="/brands" className="hover:text-blue-600 transition-colors">品牌</Link>
               <Link href="/jobs" className="hover:text-blue-600 transition-colors">就业</Link>
             </div>
-            <GradientButton href="/contact">联系我们</GradientButton>
+            <div className="flex items-center gap-3">
+              <CollegeSelect />
+              <Link href="/partner/login" className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white/80 px-3 py-1.5 text-sm text-slate-600 backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 hover:border-slate-300">
+                <Building2 className="h-4 w-4" />
+                企业登录
+              </Link>
+              <GradientButton href="/contact">联系我们</GradientButton>
+            </div>
           </div>
         </div>
       </nav>
