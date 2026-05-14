@@ -28,6 +28,28 @@ export function PlatformTopNav({ config }) {
     const menuRef = useRef(null);
     const BrandIcon = resolvePlatformIcon(config.brandIcon || "settings");
     const userMenuItems = config.userMenuItems ?? fallbackUserMenuItems;
+    const [selectedCollege, setSelectedCollege] = useState("all");
+    useEffect(() => {
+        const readCollege = () => {
+            const params = new URLSearchParams(window.location.search);
+            setSelectedCollege(params.get("college") || "all");
+        };
+        readCollege();
+        window.addEventListener("popstate", readCollege);
+        return () => window.removeEventListener("popstate", readCollege);
+    }, []);
+    const handleCollegeChange = (value) => {
+        const params = new URLSearchParams(window.location.search);
+        if (value === "all") {
+            params.delete("college");
+        }
+        else {
+            params.set("college", value);
+        }
+        const newUrl = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`;
+        window.history.pushState(null, "", newUrl);
+        window.dispatchEvent(new Event("popstate"));
+    };
     useEffect(() => {
         setMounted(true);
         const updateTime = () => {
@@ -75,7 +97,7 @@ export function PlatformTopNav({ config }) {
                                     ? "font-medium text-primary"
                                     : "text-gray-500 hover:bg-gray-50 hover:text-gray-800");
                             return item.disabled ? (_jsxs("span", { className: itemClassName, children: [_jsx(Icon, { className: "h-4 w-4" }), item.label] }, item.id)) : (_jsxs(Link, { href: item.href, className: itemClassName, children: [_jsx(Icon, { className: "h-4 w-4" }), item.label, active ? _jsx("span", { className: "absolute bottom-0 left-4 right-4 h-0.5 rounded-full bg-primary" }) : null] }, item.id));
-                        }) })] }), _jsxs("div", { className: "flex items-center gap-6", children: [config.showCurrentTime !== false && mounted ? _jsx("div", { className: "text-sm text-gray-400", children: currentTime }) : null, config.showUserMenu !== false ? (_jsxs("div", { className: "relative", ref: menuRef, children: [_jsxs("button", { type: "button", onClick: () => setMenuOpen((value) => !value), className: "flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-gray-50", children: [_jsx("div", { className: "flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground", children: (config.currentUserName || "管理员").slice(0, 1) }), _jsxs("div", { className: "text-left", children: [_jsx("div", { className: "text-sm text-gray-700", children: config.currentUserName || "管理员" }), _jsx("div", { className: "text-xs text-gray-400", children: config.currentUserRoleLabel || config.currentPlatformLabel })] }), _jsx(ChevronDown, { className: "h-4 w-4 text-gray-400" })] }), menuOpen && userMenuItems.length > 0 ? (_jsx("div", { className: "absolute right-0 top-[calc(100%+0.5rem)] w-48 rounded-lg border border-gray-100 bg-white py-1 shadow-lg", children: userMenuItems.map((item, index) => {
+                        }) })] }), _jsxs("div", { className: "flex items-center gap-4", children: [config.showCollegeFilter && config.collegeOptions && config.collegeOptions.length > 0 && !pathname.startsWith("/landingpage") && (_jsxs("select", { value: selectedCollege, onChange: (e) => handleCollegeChange(e.target.value), className: "h-8 rounded-md border border-gray-200 bg-white px-2 pr-6 text-sm text-gray-600 outline-none hover:border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary transition-colors cursor-pointer", children: [_jsx("option", { value: "all", children: "\u5168\u6821" }), config.collegeOptions.map((college) => (_jsx("option", { value: college, children: college }, college)))] })), config.enterpriseLoginHref && !pathname.startsWith("/landingpage") && (_jsxs(Link, { href: config.enterpriseLoginHref, className: "flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300", children: [_jsx(Building2, { className: "h-4 w-4" }), "\u4F01\u4E1A\u767B\u5F55"] })), config.showCurrentTime !== false && mounted ? _jsx("div", { className: "text-sm text-gray-400 hidden lg:block", children: currentTime }) : null, config.showUserMenu !== false ? (_jsxs("div", { className: "relative", ref: menuRef, children: [_jsxs("button", { type: "button", onClick: () => setMenuOpen((value) => !value), className: "flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-gray-50", children: [_jsx("div", { className: "flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground", children: (config.currentUserName || "管理员").slice(0, 1) }), _jsxs("div", { className: "text-left", children: [_jsx("div", { className: "text-sm text-gray-700", children: config.currentUserName || "管理员" }), _jsx("div", { className: "text-xs text-gray-400", children: config.currentUserRoleLabel || config.currentPlatformLabel })] }), _jsx(ChevronDown, { className: "h-4 w-4 text-gray-400" })] }), menuOpen && userMenuItems.length > 0 ? (_jsx("div", { className: "absolute right-0 top-[calc(100%+0.5rem)] w-48 rounded-lg border border-gray-100 bg-white py-1 shadow-lg", children: userMenuItems.map((item, index) => {
                                     const Icon = item.icon ? resolvePlatformIcon(item.icon) : null;
                                     const itemClassName = item.tone === "danger"
                                         ? "flex w-full items-center px-3 py-2 text-sm text-red-500 hover:bg-red-50"
@@ -109,35 +131,6 @@ export function PlatformSideNav({ config }) {
                                         : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"), children: child.label }, child.id))) })) : null] }, item.id));
                 }) })] }));
 }
-function SubNavBar({ config }) {
-    const [selectedCollege, setSelectedCollege] = useState("all");
-    useEffect(() => {
-        const readCollege = () => {
-            const params = new URLSearchParams(window.location.search);
-            setSelectedCollege(params.get("college") || "all");
-        };
-        readCollege();
-        window.addEventListener("popstate", readCollege);
-        return () => window.removeEventListener("popstate", readCollege);
-    }, []);
-    const handleCollegeChange = (value) => {
-        const params = new URLSearchParams(window.location.search);
-        if (value === "all") {
-            params.delete("college");
-        }
-        else {
-            params.set("college", value);
-        }
-        const newUrl = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`;
-        window.history.pushState(null, "", newUrl);
-        window.dispatchEvent(new Event("popstate"));
-    };
-    if (!config.showCollegeFilter && !config.enterpriseLoginHref)
-        return null;
-    return (_jsxs("div", { className: "fixed top-14 left-0 right-0 z-40 flex h-10 items-center justify-end gap-4 px-6", children: [config.showCollegeFilter && config.collegeOptions && config.collegeOptions.length > 0 && (_jsxs("select", { value: selectedCollege, onChange: (e) => handleCollegeChange(e.target.value), className: "h-7 rounded-md border border-gray-200 bg-white/80 px-2 pr-7 text-xs text-gray-700 outline-none backdrop-blur-sm focus:border-primary focus:ring-1 focus:ring-primary", children: [_jsx("option", { value: "all", children: "\u5168\u6821" }), config.collegeOptions.map((college) => (_jsx("option", { value: college, children: college }, college)))] })), config.enterpriseLoginHref && (_jsxs(Link, { href: config.enterpriseLoginHref, className: "flex items-center gap-1 rounded-md border border-gray-200 bg-white/80 px-2.5 py-1 text-xs text-gray-700 backdrop-blur-sm transition-colors hover:bg-white", children: [_jsx(Building2, { className: "h-3.5 w-3.5" }), "\u4F01\u4E1A\u767B\u5F55"] }))] }));
-}
 export function PlatformShell({ config, children, }) {
-    const hasSubNav = config.showCollegeFilter || !!config.enterpriseLoginHref;
-    const topOffset = hasSubNav ? "pt-24" : "pt-14";
-    return (_jsxs(_Fragment, { children: [_jsx(PlatformTopNav, { config: config }), hasSubNav && _jsx(SubNavBar, { config: config }), _jsxs("div", { className: cn("flex min-h-screen bg-[#f5f7fa]", topOffset, config.shellClassName), children: [config.hideSideNav ? null : _jsx(PlatformSideNav, { config: config }), _jsx("main", { className: cn("min-w-0 flex-1", config.mainClassName), children: _jsx("div", { className: cn("p-6", config.contentClassName), children: children }) })] })] }));
+    return (_jsxs(_Fragment, { children: [_jsx(PlatformTopNav, { config: config }), _jsxs("div", { className: cn("flex min-h-screen bg-[#f5f7fa]", "pt-14", config.shellClassName), children: [config.hideSideNav ? null : _jsx(PlatformSideNav, { config: config }), _jsx("main", { className: cn("min-w-0 flex-1", config.mainClassName), children: _jsx("div", { className: cn("p-6", config.contentClassName), children: children }) })] })] }));
 }
