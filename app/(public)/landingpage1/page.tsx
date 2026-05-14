@@ -105,7 +105,7 @@ function PartnerCard({ partner, img }: { partner: typeof partners[0]; img: strin
           <div className="absolute bottom-4 left-4 right-4">
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12 rounded-xl border-2 border-white/80 shadow-lg">
-                <AvatarImage src={partner.logo} className="object-cover" />
+                <AvatarImage src={img} className="object-cover" />
                 <AvatarFallback className="rounded-xl bg-white text-slate-800 font-bold text-lg">
                   {partner.name[0]}
                 </AvatarFallback>
@@ -450,7 +450,7 @@ function GradientButton({ children, href, variant = "primary" }: { children: Rea
     )
   }
   return (
-    <Button asChild variant="outline" className="rounded-full px-8 py-6 text-base font-bold border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 transition-all backdrop-blur-sm">
+    <Button asChild variant="outline" className="rounded-full px-8 py-6 text-base font-bold border-2 border-white/30 text-white bg-transparent hover:bg-white/10 hover:border-white/50 transition-all backdrop-blur-sm">
       <Link href={href}>{children}</Link>
     </Button>
   )
@@ -574,7 +574,7 @@ export default function LandingPage() {
                 <CardContent className="p-8">
                   <div className="flex items-start gap-5">
                     <img
-                      src={schoolInfo.logo || IMAGES.students}
+                      src={IMAGES.campus}
                       alt={schoolInfo.name}
                       className="w-20 h-20 rounded-2xl object-cover border-2 border-white/20 shadow-lg"
                     />
@@ -823,7 +823,7 @@ export default function LandingPage() {
             <Button asChild className="rounded-full px-12 py-7 text-lg font-bold bg-white text-blue-700 hover:bg-blue-50 shadow-2xl transition-all hover:shadow-white/20 hover:-translate-y-1">
               <Link href="/contact">联系我们</Link>
             </Button>
-            <Button asChild variant="outline" className="rounded-full px-12 py-7 text-lg font-bold border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 transition-all">
+            <Button asChild variant="outline" className="rounded-full px-12 py-7 text-lg font-bold border-2 border-white/30 text-white bg-transparent hover:bg-white/10 hover:border-white/50 transition-all">
               <Link href="/about">了解更多</Link>
             </Button>
           </div>

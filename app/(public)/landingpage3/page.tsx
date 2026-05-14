@@ -54,7 +54,7 @@ const featuredProjects = projects.filter(p => p.publishStatus === "published").s
 const featuredAchievements = achievements.filter(a => a.status === "published").slice(0, 3)
 const featuredExperts = experts.filter(e => e.status === "active").slice(0, 4)
 const featuredTalent = talentProfiles.sort((a, b) => b.abilityScore - a.abilityScore).slice(0, 4)
-const featuredJobs = jobBrands.filter(j => j.level === "recommended").slice(0, 3)
+const featuredJobs = jobBrands.filter(j => j.status === "published").slice(0, 10)
 const featuredMajors = majorBrands.filter(m => m.level === "recommended").slice(0, 3)
 const featuredTeachers = teacherBrands.filter(t => t.isFeatured && t.status === "published").slice(0, 4)
 const featuredCulture = cultureBrands.filter(c => c.status === "published").slice(0, 3)

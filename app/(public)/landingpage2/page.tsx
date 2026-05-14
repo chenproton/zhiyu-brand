@@ -156,9 +156,6 @@ function Navbar() {
               <Building2 className="h-4 w-4" />
               企业登录
             </Link>
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-gray-500 hover:text-black hover:bg-gray-100/80 transition-all duration-200 rounded-lg">
-              登录
-            </Button>
             <Button size="sm" className="rounded-full bg-black text-white hover:bg-gray-800 hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5 transition-all duration-300 px-5">
               立即合作
             </Button>
@@ -209,15 +206,7 @@ function Hero() {
             深度连接院校与企业资源，构建校企协同育人新生态，为学生就业与企业发展创造无限可能
           </p>
 
-          {/* Buttons */}
-          <div className="flex items-center justify-center gap-4 mb-24 animate-fade-up" style={{ animationDelay: "0.3s" }}>
-            <Button size="lg" className="rounded-full bg-black text-white hover:bg-gray-800 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-0.5 active:translate-y-0 px-8 h-12 text-base transition-all duration-300">
-              立即部署 <ArrowRight className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-            </Button>
-            <Button size="lg" variant="outline" className="rounded-full border-gray-300 text-black hover:bg-gray-50 hover:border-gray-400 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 px-8 h-12 text-base transition-all duration-300 bg-white/60 backdrop-blur-sm">
-              <Github className="mr-2 w-4 h-4" /> GitHub
-            </Button>
-          </div>
+          {/* Buttons removed per request */}
 
           {/* Bento school info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left animate-fade-up" style={{ animationDelay: "0.4s" }}>
@@ -721,7 +710,7 @@ function CTASection() {
           <Button size="lg" className="rounded-full bg-white text-black hover:bg-gray-100 hover:shadow-xl hover:shadow-white/20 hover:-translate-y-0.5 active:translate-y-0 px-8 h-12 text-base font-semibold transition-all duration-300">
             立即合作 <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
-          <Button size="lg" variant="outline" className="rounded-full border-gray-700 text-white hover:bg-gray-900/80 hover:border-gray-600 hover:-translate-y-0.5 active:translate-y-0 px-8 h-12 text-base transition-all duration-300 backdrop-blur-sm">
+          <Button size="lg" variant="outline" className="rounded-full border-gray-700 text-white bg-transparent hover:bg-gray-900/80 hover:border-gray-600 hover:-translate-y-0.5 active:translate-y-0 px-8 h-12 text-base transition-all duration-300 backdrop-blur-sm">
             了解更多
           </Button>
         </div>
