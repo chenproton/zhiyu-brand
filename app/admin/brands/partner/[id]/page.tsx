@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -41,6 +41,14 @@ import {
 } from "lucide-react"
 import { partners, jobs as mockJobs, talentProfiles } from "@/lib/mock-data"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   PARTNER_TYPE_LABELS,
 } from "@/lib/types"
@@ -77,10 +85,20 @@ export default function PartnerDetailPage() {
   const [localJobs, setLocalJobs] = useState<Job[]>([...mockJobs])
   const [activeTab, setActiveTab] = useState("info")
 
-  // Hired students
-  const [hiredStudentIds, setHiredStudentIds] = useState<string[]>(partner?.hiredStudents || [])
+  // Hired students: { studentId: string; jobId: string }[]
+  const [hiredStudentsData, setHiredStudentsData] = useState<{ studentId: string; jobId: string }[]>([])
+
+  // Migrate from old format on mount
+  useEffect(() => {
+    const old = partner?.hiredStudents || []
+    if (old.length > 0 && typeof old[0] === 'string') {
+      const firstJobId = mockJobs.find((j) => j.partnerId === id)?.id || ''
+      setHiredStudentsData((old as string[]).map((sid) => ({ studentId: sid, jobId: firstJobId })))
+    }
+  }, [partner?.hiredStudents, id])
   const [studentPickerOpen, setStudentPickerOpen] = useState(false)
   const [studentSearch, setStudentSearch] = useState("")
+  const [selectedJobForStudent, setSelectedJobForStudent] = useState("")
 
   // Dialogs for job association
   const [associateNonTeachingOpen, setAssociateNonTeachingOpen] = useState(false)
@@ -92,10 +110,25 @@ export default function PartnerDetailPage() {
     [localJobs, id]
   )
 
+  const hiredStudentIds = useMemo(() => hiredStudentsData.map((d) => d.studentId), [hiredStudentsData])
+
   const hiredStudents = useMemo(
     () => talentProfiles.filter((s) => hiredStudentIds.includes(s.id)),
     [hiredStudentIds]
   )
+
+  // Group hired students by job
+  const hiredStudentsByJob = useMemo(() => {
+    const map = new Map<string, { student: typeof talentProfiles[0]; jobId: string }[]>()
+    hiredStudentsData.forEach((d) => {
+      const student = talentProfiles.find((s) => s.id === d.studentId)
+      if (!student) return
+      const list = map.get(d.jobId) || []
+      list.push({ student, jobId: d.jobId })
+      map.set(d.jobId, list)
+    })
+    return map
+  }, [hiredStudentsData])
 
   const searchedStudents = useMemo(() => {
     if (!studentSearch.trim()) return []
@@ -110,13 +143,17 @@ export default function PartnerDetailPage() {
   }, [studentSearch, hiredStudentIds])
 
   const handleAssociateStudent = (studentId: string) => {
-    setHiredStudentIds((prev) => [...prev, studentId])
+    if (!selectedJobForStudent) {
+      alert('请先选择雇佣岗位')
+      return
+    }
+    setHiredStudentsData((prev) => [...prev, { studentId, jobId: selectedJobForStudent }])
     setStudentSearch("")
   }
 
   const handleRemoveStudent = (studentId: string) => {
     if (confirm("确定要移除该学生的关联吗？")) {
-      setHiredStudentIds((prev) => prev.filter((id) => id !== studentId))
+      setHiredStudentsData((prev) => prev.filter((d) => d.studentId !== studentId))
     }
   }
 
@@ -431,7 +468,7 @@ export default function PartnerDetailPage() {
               <div>
                 <CardTitle className="text-base">已招聘学生</CardTitle>
               </div>
-              <Button size="sm" onClick={() => setStudentPickerOpen(true)}>
+              <Button size="sm" onClick={() => { setSelectedJobForStudent(associatedJobs[0]?.id || ''); setStudentPickerOpen(true) }}>
                 <Plus className="h-4 w-4 mr-1" />
                 关联学生
               </Button>
@@ -442,33 +479,46 @@ export default function PartnerDetailPage() {
                   暂无已招聘学生
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {hiredStudents.map((student) => (
-                    <div
-                      key={student.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
-                          {student.studentName[0]}
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">{student.studentName}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {student.studentId} · {student.major} · {student.grade}
-                          </p>
+                <div className="space-y-6">
+                  {Array.from(hiredStudentsByJob.entries()).map(([jobId, list]) => {
+                    const job = associatedJobs.find((j) => j.id === jobId)
+                    return (
+                      <div key={jobId}>
+                        <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                          <Briefcase className="h-4 w-4 text-muted-foreground" />
+                          {job ? job.title : "未分配岗位"}
+                        </h4>
+                        <div className="space-y-2">
+                          {list.map(({ student }) => (
+                            <div
+                              key={student.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                                  {student.studentName[0]}
+                                </div>
+                                <div>
+                                  <p className="font-medium text-sm">{student.studentName}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {student.studentId} · {student.major} · {student.grade}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-500"
+                                onClick={() => handleRemoveStudent(student.id)}
+                              >
+                                移除
+                              </Button>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500"
-                        onClick={() => handleRemoveStudent(student.id)}
-                      >
-                        移除
-                      </Button>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </CardContent>
@@ -481,9 +531,22 @@ export default function PartnerDetailPage() {
         <DialogContent className="max-w-md max-h-[80vh] overflow-hidden p-0">
           <DialogHeader className="px-4 pt-4 pb-2">
             <DialogTitle>关联学生</DialogTitle>
-            <DialogDescription>搜索并选择要关联的学生</DialogDescription>
+            <DialogDescription>选择雇佣岗位后搜索并选择要关联的学生</DialogDescription>
           </DialogHeader>
-          <div className="px-4 pb-2">
+          <div className="px-4 pb-2 space-y-3">
+            <div className="space-y-1">
+              <Label className="text-sm">雇佣岗位</Label>
+              <Select value={selectedJobForStudent} onValueChange={setSelectedJobForStudent}>
+                <SelectTrigger>
+                  <SelectValue placeholder="选择岗位" />
+                </SelectTrigger>
+                <SelectContent>
+                  {associatedJobs.map((job) => (
+                    <SelectItem key={job.id} value={job.id}>{job.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input

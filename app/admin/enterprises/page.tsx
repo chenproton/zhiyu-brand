@@ -26,7 +26,7 @@ import {
   CooperationRatingBadge,
 } from '@/components/shared/status-badge'
 import { Plus, MoreHorizontal, Eye, Pencil, Trash2, Building2, FileText, Download, Tag, Settings, FolderKanban, Award, Upload, Users } from 'lucide-react'
-import { enterprises } from '@/lib/mock-data'
+import { enterprises, projects, achievements } from '@/lib/mock-data'
 
 import {
   ENTERPRISE_TYPE_LABELS,
@@ -161,6 +161,8 @@ export default function EnterprisesListPage() {
               <TableHead>合作状态</TableHead>
               <TableHead>合作评级</TableHead>
               <TableHead>校企合作协议</TableHead>
+              <TableHead>合作项目</TableHead>
+              <TableHead>合作成果</TableHead>
               <TableHead>创建人</TableHead>
               <TableHead>创建时间</TableHead>
               <TableHead>更新时间</TableHead>
@@ -199,6 +201,22 @@ export default function EnterprisesListPage() {
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">{enterprise.agreements?.length || 0}</span>
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/admin/enterprises/${enterprise.id}?tab=projects`}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      {projects.filter((p) => p.partnerIds?.includes(enterprise.id)).length}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/admin/enterprises/${enterprise.id}?tab=achievements`}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      {achievements.filter((a) => a.partnerIds?.includes(enterprise.id)).length}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">{enterprise.createdBy || '-'}</span>

@@ -117,6 +117,14 @@ export default function PermissionsPage() {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareGrant, setShareGrant] = useState<PermissionGrant | null>(null)
+  const [adminContactDialogOpen, setAdminContactDialogOpen] = useState(false)
+  const [adminContact, setAdminContact] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('admin_contact') || ''
+    }
+    return ''
+  })
+  const [adminContactInput, setAdminContactInput] = useState('')
 
   // 弹窗表单状态
   const [activeTab, setActiveTab] = useState('account')
@@ -970,6 +978,36 @@ export default function PermissionsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* 管理员联系方式配置弹窗 */}
+      <Dialog open={adminContactDialogOpen} onOpenChange={setAdminContactDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>管理员联系方式配置</DialogTitle>
+            <DialogDescription>配置后将在分享账号信息时显示</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>管理员手机号/邮箱</Label>
+              <Input
+                value={adminContactInput}
+                onChange={(e) => setAdminContactInput(e.target.value)}
+                placeholder="例如：13800138000 或 admin@example.com"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAdminContactDialogOpen(false)}>取消</Button>
+            <Button onClick={() => {
+              setAdminContact(adminContactInput)
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('admin_contact', adminContactInput)
+              }
+              setAdminContactDialogOpen(false)
+            }}>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 分享弹窗 */}
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
         <DialogContent className="max-w-lg">
@@ -981,7 +1019,8 @@ export default function PermissionsPage() {
           </DialogHeader>
           {shareGrant && (() => {
             const account = accounts.find(a => a.id === shareGrant.accountId)
-            const shareText = `您好！账号已为您准备就绪 🎉\n\n您可以通过以下地址登录平台：\nhttp://47.251.48.187:3001/partner/login\n\n登录账号：${account?.username ?? '—'}\n登录密码：${account?.password ?? '******'}\n\n如有任何问题，欢迎随时联系管理员（手机号 13800138000）。`
+            const contact = adminContact || '手机号 13800138000'
+            const shareText = `您好！账号已为您准备就绪 🎉\n\n您可以通过以下地址登录平台：\nhttp://47.251.48.187:3001/partner/login\n\n登录账号：${account?.username ?? '—'}\n登录密码：${account?.password ?? '******'}\n\n如有任何问题，欢迎随时联系管理员（${contact}）。`
             return (
               <div className="space-y-4">
                 <pre className="whitespace-pre-wrap break-all rounded-md bg-muted p-4 text-sm select-all">

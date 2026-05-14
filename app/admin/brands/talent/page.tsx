@@ -446,7 +446,7 @@ export default function TalentBrandPage() {
 
                                   {profile.lastVerifiedAt && (
                                     <p className="text-[10px] text-muted-foreground mt-2">
-                                      上次验证：{profile.lastVerifiedAt.toLocaleDateString("zh-CN")}
+                                      最新认证时间：{profile.lastVerifiedAt.toLocaleDateString("zh-CN")}
                                     </p>
                                   )}
                                 </CardContent>

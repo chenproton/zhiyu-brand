@@ -26,7 +26,7 @@ import {
 import { ArrowLeft, Search, Eye, Plus, Pencil, Trash2, TrendingUp, Users, AlertCircle } from "lucide-react"
 import { jobBrands, jobs, enterprises } from "@/lib/mock-data"
 import type { JobBrand, Job } from "@/lib/types"
-import { BRAND_STATUS_LABELS, INDUSTRIES, JOB_CATEGORY_LABELS } from "@/lib/types"
+import { BRAND_STATUS_LABELS, INDUSTRIES, JOB_CATEGORY_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
 import {
   JobActionButtons,
   NonTeachingJobDialog,
@@ -369,7 +369,22 @@ export default function JobBrandPage() {
                 </SelectContent>
               </Select>
             </div>
-
+            <div className="space-y-2">
+              <Label>关联二级学院</Label>
+              <Select
+                value={editForm.secondaryCollege || ""}
+                onValueChange={(val) => setEditForm((prev) => ({ ...prev, secondaryCollege: val }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择二级学院" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SECONDARY_COLLEGES.map((college) => (
+                    <SelectItem key={college} value={college}>{college}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label>状态</Label>
               <Select

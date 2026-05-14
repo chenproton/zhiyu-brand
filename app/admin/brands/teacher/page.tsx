@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select"
 import { ArrowLeft, Search, Eye, Plus, Edit, Trash2, Star, ChevronRight, ChevronLeft, X, Award, FileText } from "lucide-react"
 import { teacherBrands, experts } from "@/lib/mock-data"
-import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS, EXPERT_RATING_LABELS } from "@/lib/types"
+import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS, EXPERT_RATING_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
 import type { TeacherBrand, Expert, BrandStatus } from "@/lib/types"
 import { AchievementManager } from "@/app/admin/projects/_components/achievement-manager"
 
@@ -44,6 +44,7 @@ const emptyTeacherForm = {
   introduction: "",
   researchFields: "",
   awards: "",
+  secondaryCollege: "",
   isFeatured: false,
   status: "draft" as BrandStatus,
 }
@@ -54,6 +55,7 @@ const emptyExpertForm = {
   partnerName: "",
   specialties: "",
   experience: "",
+  secondaryCollege: "",
   rating: "gold" as Expert["rating"],
 }
 
@@ -281,6 +283,7 @@ export default function TeacherBrandPage() {
         achievements,
         courses: teacherCourses,
         awards,
+        secondaryCollege: teacherForm.secondaryCollege,
         isFeatured: teacherForm.isFeatured,
         status: teacherForm.status,
         viewCount: 0,
@@ -313,6 +316,7 @@ export default function TeacherBrandPage() {
       partnerName: expert.partnerName || "",
       specialties: expert.specialties.join("，"),
       experience: String(expert.experience),
+      secondaryCollege: expert.secondaryCollege || "",
       rating: expert.rating,
     })
     setExpertDialogOpen(true)
@@ -352,6 +356,7 @@ export default function TeacherBrandPage() {
                 partnerName: expertForm.partnerName,
                 specialties,
                 experience,
+                secondaryCollege: expertForm.secondaryCollege,
                 rating: expertForm.rating,
                 updatedAt: new Date(),
               }
@@ -366,6 +371,7 @@ export default function TeacherBrandPage() {
         partnerName: expertForm.partnerName,
         specialties,
         experience,
+        secondaryCollege: expertForm.secondaryCollege,
         rating: expertForm.rating,
         status: "active",
         updatedAt: new Date(),
@@ -781,6 +787,22 @@ export default function TeacherBrandPage() {
                     </Select>
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="t-secondaryCollege">关联二级学院</Label>
+                  <Select
+                    value={teacherForm.secondaryCollege || ""}
+                    onValueChange={(v) => setTeacherForm({ ...teacherForm, secondaryCollege: v })}
+                  >
+                    <SelectTrigger id="t-secondaryCollege">
+                      <SelectValue placeholder="选择二级学院" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SECONDARY_COLLEGES.map((college) => (
+                        <SelectItem key={college} value={college}>{college}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </TabsContent>
 
               <TabsContent value="achievements">
@@ -901,6 +923,22 @@ export default function TeacherBrandPage() {
                   onChange={(e) => setExpertForm({ ...expertForm, experience: e.target.value })}
                   placeholder="请输入行业经验年数"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="e-secondaryCollege">关联二级学院</Label>
+                <Select
+                  value={expertForm.secondaryCollege || ""}
+                  onValueChange={(v) => setExpertForm({ ...expertForm, secondaryCollege: v })}
+                >
+                  <SelectTrigger id="e-secondaryCollege">
+                    <SelectValue placeholder="选择二级学院" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SECONDARY_COLLEGES.map((college) => (
+                      <SelectItem key={college} value={college}>{college}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           )}
