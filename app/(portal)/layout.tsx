@@ -1,4 +1,4 @@
-import { PlatformShell } from "@/components/platform-shell"
+import { PlatformShell } from "@/platform-navigation-shell"
 import { publicNavigationConfig } from "@/lib/navigation-config"
 import { SiteFooter } from "@/components/public/site-footer"
 

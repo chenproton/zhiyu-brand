@@ -1,4 +1,4 @@
-import { PlatformShell } from "@/components/platform-shell"
+import { PlatformShell } from "@/platform-navigation-shell"
 import { brandNavigationConfig } from "@/lib/navigation-config"
 
 export default function AdminLayout({
