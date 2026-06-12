@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ==================== 配置区 ====================
-$REMOTE_HOST = "47.251.48.187"
+$REMOTE_HOST = "111.170.170.202"
 $REMOTE_USER = "root"
 $REMOTE_BASE = "/var/www"
 $SITE_NAME   = "brand" 

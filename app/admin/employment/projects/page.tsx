@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Calendar, Briefcase, Users, FileText, Plus, Pencil, Trash2 } from 'lucide-react'
+import { Calendar, Briefcase, FileText, Plus, Pencil, Trash2 } from 'lucide-react'
 import { employmentProjects } from '@/lib/mock-data'
 import { EMPLOYMENT_PROJECT_TYPE_LABELS, EMPLOYMENT_PROJECT_STATUS_LABELS } from '@/lib/types'
 
@@ -114,21 +114,6 @@ export default function EmploymentProjectsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">投递总数</p>
-                <p className="text-3xl font-bold">
-                  {employmentProjects.reduce((sum, ep) => sum + ep.applicationCount, 0)}
-                </p>
-              </div>
-              <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Users className="h-5 w-5 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* 筛选 */}
@@ -179,7 +164,7 @@ export default function EmploymentProjectsPage() {
                 <TableHead>面向学生</TableHead>
                 <TableHead>时间范围</TableHead>
                 <TableHead>状态</TableHead>
-                <TableHead>岗位/投递</TableHead>
+                <TableHead>岗位</TableHead>
                 <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
@@ -203,9 +188,6 @@ export default function EmploymentProjectsPage() {
                     <div className="flex items-center gap-2 text-sm">
                       <Briefcase className="h-3.5 w-3.5" />
                       {ep.jobCount}
-                      <span className="text-muted-foreground">/</span>
-                      <Users className="h-3.5 w-3.5" />
-                      {ep.applicationCount}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">

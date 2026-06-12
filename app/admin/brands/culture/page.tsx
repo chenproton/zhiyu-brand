@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -23,13 +23,21 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Search, Eye, Plus, Edit, Trash2, MoreHorizontal } from "lucide-react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ArrowLeft, Search, Eye, Plus, Pencil, Trash2, MoreHorizontal, Upload, X } from "lucide-react"
 import { cultureBrands } from "@/lib/mock-data"
 import { CULTURE_TYPE_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
 import type { CultureBrand, BrandStatus } from "@/lib/types"
@@ -44,6 +52,7 @@ const emptyForm = {
   description: "",
   relatedMajor: "",
   status: "draft" as BrandStatus,
+  coverImage: "",
 }
 
 export default function CultureBrandPage() {
@@ -54,6 +63,19 @@ export default function CultureBrandPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCulture, setEditingCulture] = useState<CultureBrand | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const coverFileRef = useRef<HTMLInputElement>(null)
+
+  const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files[0]) {
+      setForm((prev) => ({ ...prev, coverImage: URL.createObjectURL(files[0]) }))
+    }
+    e.target.value = ""
+  }
+
+  const removeCoverImage = () => {
+    setForm((prev) => ({ ...prev, coverImage: "" }))
+  }
 
   const filteredCultures = cultures.filter((culture) => {
     const matchesSearch = culture.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -90,6 +112,7 @@ export default function CultureBrandPage() {
       description: culture.description,
       relatedMajor: culture.relatedMajor || "",
       status: culture.status,
+      coverImage: culture.coverImage || "",
     })
     setDialogOpen(true)
   }
@@ -103,6 +126,7 @@ export default function CultureBrandPage() {
                 ...c,
                 ...form,
                 relatedMajor: form.relatedMajor || undefined,
+                coverImage: form.coverImage || c.coverImage,
                 updatedAt: new Date(),
               }
             : c
@@ -116,7 +140,7 @@ export default function CultureBrandPage() {
         description: form.description,
         content: "",
         relatedMajor: form.relatedMajor || undefined,
-        coverImage: "/placeholder.svg?height=200&width=300",
+        coverImage: form.coverImage || "/placeholder.svg?height=200&width=300",
         status: form.status,
         viewCount: 0,
         createdAt: new Date(),
@@ -186,81 +210,91 @@ export default function CultureBrandPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCultures.map((culture) => (
-          <Card key={culture.id} className="overflow-hidden">
-            <div className="aspect-video bg-muted relative">
-              <img
-                src={culture.coverImage || "/placeholder.svg?height=200&width=300"}
-                alt={culture.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-2 left-2 flex gap-2">
-                <Badge className={getTypeColor(culture.type)}>
-                  {CULTURE_TYPE_LABELS[culture.type]}
-                </Badge>
-              </div>
-              <Badge
-                className="absolute top-2 right-2"
-                variant={culture.status === "published" ? "default" : "secondary"}
-              >
-                {BRAND_STATUS_LABELS[culture.status]}
-              </Badge>
-            </div>
-            <CardContent className="pt-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-semibold">{culture.name}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                    {culture.description}
-                  </p>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="shrink-0">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => openEditDialog(culture)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      编辑
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toggleStatus(culture)}>
-                      {culture.status === "published" ? "下架" : "发布"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onClick={() => handleDelete(culture.id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      删除
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {culture.relatedMajor && (
-                <div className="mt-3">
-                  <Badge variant="outline" className="text-xs">
-                    {culture.relatedMajor}
-                  </Badge>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Eye className="h-4 w-4" />
-                  <span>{culture.viewCount}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  更新于 {culture.updatedAt.toLocaleDateString("zh-CN")}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>封面</TableHead>
+              <TableHead>名称</TableHead>
+              <TableHead>类型</TableHead>
+              <TableHead>描述</TableHead>
+              <TableHead>关联专业</TableHead>
+              <TableHead>状态</TableHead>
+              <TableHead>浏览量</TableHead>
+              <TableHead>更新时间</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredCultures.length > 0 ? (
+              filteredCultures.map((culture) => (
+                <TableRow key={culture.id}>
+                  <TableCell>
+                    <img
+                      src={culture.coverImage || "/placeholder.svg?height=32&width=48"}
+                      alt={culture.name}
+                      className="h-8 w-12 object-cover rounded"
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium">{culture.name}</TableCell>
+                  <TableCell>
+                    <Badge className={getTypeColor(culture.type)}>
+                      {CULTURE_TYPE_LABELS[culture.type]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate">{culture.description}</TableCell>
+                  <TableCell>{culture.relatedMajor || "-"}</TableCell>
+                  <TableCell>
+                    <Badge variant={culture.status === "published" ? "default" : "secondary"}>
+                      {BRAND_STATUS_LABELS[culture.status]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Eye className="h-4 w-4" />
+                      <span>{culture.viewCount}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {culture.updatedAt.toLocaleDateString("zh-CN")}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEditDialog(culture)}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          编辑
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => toggleStatus(culture)}>
+                          {culture.status === "published" ? "下架" : "发布"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => handleDelete(culture.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          删除
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  暂无符合条件的内容
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </Card>
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -307,6 +341,38 @@ export default function CultureBrandPage() {
                 placeholder="请输入内容描述"
                 rows={3}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>封面图片</Label>
+              <input
+                ref={coverFileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleCoverFileChange}
+              />
+              {form.coverImage ? (
+                <div className="relative w-full h-32 rounded-lg border overflow-hidden">
+                  <img src={form.coverImage} alt="封面预览" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={removeCoverImage}
+                    className="absolute top-2 right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-32 flex flex-col items-center justify-center gap-2 border-dashed"
+                  onClick={() => coverFileRef.current?.click()}
+                >
+                  <Upload className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">点击上传封面图片</span>
+                </Button>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="c-major">关联专业</Label>

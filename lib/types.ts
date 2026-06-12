@@ -44,6 +44,8 @@ export type AchievementType = 'job' | 'scene' | 'course' | 'custom'
 export interface Enterprise {
   id: string
   enterpriseType: EnterpriseType
+  // 是否在前台展示
+  isPublicDisplay: boolean
   name: string
   industry: string
   region: string
@@ -215,6 +217,8 @@ export interface Expert {
   id: string
   name: string
   gender?: ExpertGender
+  // 所属企业类型：合作企业/第三方企业
+  partnerSource?: 'cooperation' | 'third-party'
   partnerId?: string
   partnerName?: string
   title: string
@@ -293,6 +297,23 @@ export interface SchoolInfo {
   teacherCount?: number
   majorCount?: number
   establishedYear?: number
+  // 二级学院列表
+  secondaryColleges?: SecondaryCollege[]
+}
+
+// 二级学院
+export interface SecondaryCollege {
+  id: string
+  name: string
+  code?: string
+  introduction?: string
+  majorCount?: number
+  studentCount?: number
+  teacherCount?: number
+  establishedYear?: number
+  contactPhone?: string
+  contactEmail?: string
+  logo?: string
 }
 
 // 报名记录

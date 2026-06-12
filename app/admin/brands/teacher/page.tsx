@@ -9,6 +9,20 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -26,7 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Search, Eye, Plus, Edit, Trash2, Star, ChevronRight, ChevronLeft, X, Award, FileText } from "lucide-react"
+import { ArrowLeft, Search, Plus, Pencil, Trash2, Star, ChevronRight, Award, FileText, MoreHorizontal } from "lucide-react"
 import { teacherBrands, experts } from "@/lib/mock-data"
 import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS, EXPERT_RATING_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
 import type { TeacherBrand, Expert, BrandStatus } from "@/lib/types"
@@ -426,81 +440,93 @@ export default function TeacherBrandPage() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredTeachers.map((teacher) => (
-              <Card key={teacher.id} className="overflow-hidden">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-14 w-14">
-                      <AvatarImage src={teacher.avatar} />
-                      <AvatarFallback className="text-lg">{teacher.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-base truncate">{teacher.name}</h3>
-                        {teacher.isFeatured && (
-                          <Star className="h-4 w-4 text-muted-foreground shrink-0" />
-                        )}
-                      </div>
-                      <p className="text-muted-foreground text-sm">{teacher.title}</p>
-                      <p className="text-xs text-muted-foreground">{teacher.department}</p>
-                      <Badge variant="secondary" className="mt-1 text-xs">
-                        {TEACHER_TYPE_LABELS[teacher.type]}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
-                    {teacher.introduction}
-                  </p>
-
-                  <div className="mt-3">
-                    <p className="text-sm font-medium mb-1">研究领域</p>
-                    <div className="flex flex-wrap gap-1">
-                      {teacher.researchFields.map((field) => (
-                        <Badge key={field} variant="outline" className="text-xs">
-                          {field}
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>姓名</TableHead>
+                  <TableHead>院系</TableHead>
+                  <TableHead>职称</TableHead>
+                  <TableHead>类型</TableHead>
+                  <TableHead>研究领域</TableHead>
+                  <TableHead>获奖荣誉</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredTeachers.length > 0 ? (
+                  filteredTeachers.map((teacher) => (
+                    <TableRow key={teacher.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{teacher.name}</span>
+                          {teacher.isFeatured && (
+                            <Star className="h-3.5 w-3.5 text-amber-500" />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{teacher.department}</TableCell>
+                      <TableCell>{teacher.title}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">
+                          {TEACHER_TYPE_LABELS[teacher.type]}
                         </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mt-3">
-                    <p className="text-sm font-medium mb-1">获奖荣誉</p>
-                    <div className="flex flex-wrap gap-1">
-                      {teacher.awards.slice(0, 2).map((award) => (
-                        <Badge key={award} variant="secondary" className="text-xs">
-                          {award}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {teacher.researchFields.map((field) => (
+                            <Badge key={field} variant="outline" className="text-xs">
+                              {field}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {teacher.awards.slice(0, 2).map((award) => (
+                            <Badge key={award} variant="secondary" className="text-xs">
+                              {award}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={teacher.status === "published" ? "secondary" : "outline"} className="text-xs">
+                          {BRAND_STATUS_LABELS[teacher.status]}
                         </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                        <span>{teacher.viewCount}</span>
-                      </div>
-                      <Badge variant={teacher.status === "published" ? "secondary" : "outline"} className="text-xs">
-                        {BRAND_STATUS_LABELS[teacher.status]}
-                      </Badge>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => openEditTeacherDialog(teacher)}>
-                        <Edit className="h-3 w-3 mr-1 text-muted-foreground" />
-                        编辑
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteTeacher(teacher.id)}>
-                        <Trash2 className="h-3 w-3 mr-1 text-muted-foreground" />
-                        删除
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openEditTeacherDialog(teacher)}>
+                              <Pencil className="h-4 w-4 mr-2" />
+                              编辑
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteTeacher(teacher.id)}>
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              删除
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      暂无符合条件的教师
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
         </TabsContent>
 
         <TabsContent value="experts" className="space-y-4">
@@ -520,57 +546,74 @@ export default function TeacherBrandPage() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredExperts.map((expert) => (
-              <Card key={expert.id} className="overflow-hidden">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-14 w-14">
-                      <AvatarImage src={expert.avatar} />
-                      <AvatarFallback className="text-lg">{expert.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-base truncate">{expert.name}</h3>
-                        <Badge variant="outline" className="text-xs shrink-0">
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>姓名</TableHead>
+                  <TableHead>职称</TableHead>
+                  <TableHead>所属机构</TableHead>
+                  <TableHead>专业领域</TableHead>
+                  <TableHead>行业经验</TableHead>
+                  <TableHead>专家评级</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredExperts.length > 0 ? (
+                  filteredExperts.map((expert) => (
+                    <TableRow key={expert.id}>
+                      <TableCell>
+                        <span className="font-medium">{expert.name}</span>
+                      </TableCell>
+                      <TableCell>{expert.title}</TableCell>
+                      <TableCell>{expert.partnerName || '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {expert.specialties.map((specialty) => (
+                            <Badge key={specialty} variant="outline" className="text-xs">
+                              {specialty}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>{expert.experience} 年</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs">
                           {EXPERT_RATING_LABELS[expert.rating]}
                         </Badge>
-                      </div>
-                      <p className="text-muted-foreground text-sm">{expert.title}</p>
-                      <p className="text-xs text-muted-foreground">{expert.partnerName}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-3">
-                    <p className="text-sm font-medium mb-1">专业领域</p>
-                    <div className="flex flex-wrap gap-1">
-                      {expert.specialties.map((specialty) => (
-                        <Badge key={specialty} variant="outline" className="text-xs">
-                          {specialty}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t text-center">
-                    <p className="text-base font-semibold">{expert.experience}</p>
-                    <p className="text-xs text-muted-foreground">行业经验(年)</p>
-                  </div>
-
-                  <div className="flex gap-2 mt-4 pt-4 border-t">
-                    <Button variant="outline" size="sm" className="flex-1" onClick={() => openEditExpertDialog(expert)}>
-                      <Edit className="h-3 w-3 mr-1 text-muted-foreground" />
-                      编辑
-                    </Button>
-                    <Button variant="ghost" size="sm" className="flex-1" onClick={() => handleDeleteExpert(expert.id)}>
-                      <Trash2 className="h-3 w-3 mr-1 text-muted-foreground" />
-                      删除
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openEditExpertDialog(expert)}>
+                              <Pencil className="h-4 w-4 mr-2" />
+                              编辑
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteExpert(expert.id)}>
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              删除
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      暂无符合条件的专家
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
         </TabsContent>
       </Tabs>
 

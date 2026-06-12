@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -101,8 +102,9 @@ export default function MajorBrandPage() {
         {/* Major Cards */}
         <div className="space-y-8">
           {filteredMajors.map((major) => (
-            <Card key={major.id} className="overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-3">
+            <Link key={major.id} href={`/brands/major/${major.id}`}>
+              <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
+                <div className="grid grid-cols-1 lg:grid-cols-3">
                 {/* Cover Image */}
                 <div className="aspect-[4/3] lg:aspect-auto bg-muted relative">
                   <img
@@ -124,7 +126,9 @@ export default function MajorBrandPage() {
                       <h2 className="text-base font-semibold text-foreground">{major.name}</h2>
                       <p className="text-muted-foreground">{major.department}</p>
                     </div>
-                    <Button variant="outline">了解更多</Button>
+                    <Button variant="outline" asChild>
+                      <Link href={`/brands/major/${major.id}`}>了解更多</Link>
+                    </Button>
                   </div>
 
                   <p className="text-muted-foreground mb-6">{major.introduction}</p>
@@ -221,7 +225,8 @@ export default function MajorBrandPage() {
                 </div>
               </div>
             </Card>
-          ))}
+          </Link>
+        ))}
         </div>
 
         {filteredMajors.length === 0 && (

@@ -1025,7 +1025,7 @@ export default function PermissionsPage() {
           {shareGrant && (() => {
             const account = accounts.find(a => a.id === shareGrant.accountId)
             const contact = adminContact || '手机号 13800138000'
-            const shareText = `您好！账号已为您准备就绪 🎉\n\n您可以通过以下地址登录平台：\nhttp://47.251.48.187:3001/partner/login\n\n登录账号：${account?.username ?? '—'}\n登录密码：${account?.password ?? '******'}\n\n如有任何问题，欢迎随时联系管理员（${contact}）。`
+            const shareText = `您好！账号已为您准备就绪 🎉\n\n您可以通过以下地址登录平台：\nhttp://111.170.170.202:3001/partner/login\n\n登录账号：${account?.username ?? '—'}\n登录密码：${account?.password ?? '******'}\n\n如有任何问题，欢迎随时联系管理员（${contact}）。`
             return (
               <div className="space-y-4">
                 <pre className="whitespace-pre-wrap break-all rounded-md bg-muted p-4 text-sm select-all">

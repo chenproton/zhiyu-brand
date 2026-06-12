@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import Link from "next/link"
 import { Search, Filter, FileText, Award, BookOpen, Lightbulb, FileCheck, GraduationCap, Calendar, Building2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -126,37 +127,39 @@ export default function AchievementsPage() {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAchievements.map((achievement) => (
-              <Card key={achievement.id} className="h-full hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <Badge 
-                      variant="outline" 
-                      className={`gap-1 ${typeColors[achievement.type]}`}
-                    >
-                      {typeIcons[achievement.type]}
-                      {ACHIEVEMENT_TYPE_LABELS[achievement.type]}
-                    </Badge>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      {achievement.publishDate.toLocaleDateString('zh-CN')}
+              <Link key={achievement.id} href={`/achievements/${achievement.id}`}>
+                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <Badge
+                        variant="outline"
+                        className={`gap-1 ${typeColors[achievement.type]}`}
+                      >
+                        {typeIcons[achievement.type]}
+                        {ACHIEVEMENT_TYPE_LABELS[achievement.type]}
+                      </Badge>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        {achievement.publishDate.toLocaleDateString('zh-CN')}
+                      </div>
                     </div>
-                  </div>
-                  <CardTitle className="text-lg line-clamp-2">{achievement.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {achievement.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-                      {achievement.description}
-                    </p>
-                  )}
-                  {achievement.partnerName && (
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Building2 className="h-3 w-3" />
-                      <span className="line-clamp-1">{achievement.partnerName}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                    <CardTitle className="text-lg line-clamp-2">{achievement.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {achievement.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+                        {achievement.description}
+                      </p>
+                    )}
+                    {achievement.partnerName && (
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Building2 className="h-3 w-3" />
+                        <span className="line-clamp-1">{achievement.partnerName}</span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         )}

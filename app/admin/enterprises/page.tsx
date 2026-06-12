@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import { FilterBar } from '@/components/shared/filter-bar'
 import {
   CooperationStatusBadge,
@@ -51,6 +52,7 @@ export default function EnterprisesListPage() {
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [importStep, setImportStep] = useState<'upload' | 'preview'>('upload')
   const [importedData, setImportedData] = useState<{ enterprises: any[]; experts: any[] } | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const filteredEnterprises = useMemo(() => {
@@ -71,7 +73,7 @@ export default function EnterprisesListPage() {
 
       return true
     })
-  }, [search, filters])
+  }, [search, filters, refreshKey])
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
@@ -85,6 +87,12 @@ export default function EnterprisesListPage() {
       rating: 'all',
       industry: 'all',
     })
+  }
+
+  const handleTogglePublicDisplay = (enterprise: typeof enterprises[0]) => {
+    enterprise.isPublicDisplay = !enterprise.isPublicDisplay
+    enterprise.updatedAt = new Date()
+    setRefreshKey((prev) => prev + 1)
   }
 
   const filterConfigs = [
@@ -160,6 +168,7 @@ export default function EnterprisesListPage() {
               <TableHead>地区</TableHead>
               <TableHead>合作状态</TableHead>
               <TableHead>合作评级</TableHead>
+              <TableHead>前台展示</TableHead>
               <TableHead>校企合作协议</TableHead>
               <TableHead>合作项目</TableHead>
               <TableHead>合作成果</TableHead>
@@ -198,6 +207,17 @@ export default function EnterprisesListPage() {
                   </TableCell>
                   <TableCell>
                     <CooperationRatingBadge rating={enterprise.rating} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={enterprise.isPublicDisplay}
+                        onCheckedChange={() => handleTogglePublicDisplay(enterprise)}
+                      />
+                      <span className={`text-sm ${enterprise.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
+                        {enterprise.isPublicDisplay ? '展示' : '隐藏'}
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Link
@@ -275,7 +295,7 @@ export default function EnterprisesListPage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                   暂无符合条件的企业
                 </TableCell>
               </TableRow>

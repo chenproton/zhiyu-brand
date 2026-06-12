@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select'
 import { ArrowLeft, Save, Upload, X, Image } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import { enterprises } from '@/lib/mock-data'
 import {
   ENTERPRISE_TYPE_LABELS,
@@ -42,6 +43,7 @@ export default function EditEnterprisePage() {
   const [formData, setFormData] = useState({
     name: '',
     enterpriseType: 'platform' as EnterpriseType,
+    isPublicDisplay: true,
     industry: '',
     status: 'negotiating' as CooperationStatus,
     rating: 'general' as CooperationRating,
@@ -69,6 +71,7 @@ export default function EditEnterprisePage() {
     setFormData({
       name: enterprise.name,
       enterpriseType: enterprise.enterpriseType,
+      isPublicDisplay: enterprise.isPublicDisplay ?? true,
       industry: enterprise.industry,
       status: enterprise.status,
       rating: enterprise.rating,
@@ -97,6 +100,7 @@ export default function EditEnterprisePage() {
     if (enterprise) {
       enterprise.name = formData.name
       enterprise.enterpriseType = formData.enterpriseType
+      enterprise.isPublicDisplay = formData.isPublicDisplay
       enterprise.industry = formData.industry
       enterprise.status = formData.status
       enterprise.rating = formData.rating
@@ -265,6 +269,18 @@ export default function EditEnterprisePage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>前台展示</Label>
+                  <div className="flex items-center gap-2 h-10">
+                    <Switch
+                      checked={formData.isPublicDisplay}
+                      onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isPublicDisplay: checked }))}
+                    />
+                    <span className={`text-sm ${formData.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
+                      {formData.isPublicDisplay ? '展示' : '隐藏'}
+                    </span>
+                  </div>
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>企业简介</Label>

@@ -45,6 +45,80 @@ export const schoolInfo: SchoolInfo = {
   teacherCount: 800,
   majorCount: 45,
   establishedYear: 1998,
+  secondaryColleges: [
+    {
+      id: 'college-001',
+      name: '智能制造学院',
+      code: 'ZNZZ',
+      introduction: '面向智能制造产业，培养机电一体化、工业机器人、数控技术等领域高素质技术技能人才。',
+      majorCount: 8,
+      studentCount: 2100,
+      teacherCount: 120,
+      establishedYear: 2002,
+      contactPhone: '0512-12345601',
+      contactEmail: 'znzz@hdvtc.edu.cn',
+    },
+    {
+      id: 'college-002',
+      name: '信息技术学院',
+      code: 'XXJS',
+      introduction: '聚焦信息技术与数字经济，开设计算机应用、软件技术、大数据技术、人工智能等专业。',
+      majorCount: 10,
+      studentCount: 2800,
+      teacherCount: 150,
+      establishedYear: 2001,
+      contactPhone: '0512-12345602',
+      contactEmail: 'xxjs@hdvtc.edu.cn',
+    },
+    {
+      id: 'college-003',
+      name: '经济管理学院',
+      code: 'JJGL',
+      introduction: '服务区域经济与现代服务业，培养电子商务、物流管理、财务会计、市场营销等专业人才。',
+      majorCount: 9,
+      studentCount: 2400,
+      teacherCount: 130,
+      establishedYear: 2003,
+      contactPhone: '0512-12345603',
+      contactEmail: 'jjgl@hdvtc.edu.cn',
+    },
+    {
+      id: 'college-004',
+      name: '艺术设计学院',
+      code: 'YS SJ',
+      introduction: '融合艺术设计与数字创意，开设广告设计、UI/UX设计、数字媒体技术等专业方向。',
+      majorCount: 6,
+      studentCount: 1500,
+      teacherCount: 90,
+      establishedYear: 2005,
+      contactPhone: '0512-12345604',
+      contactEmail: 'ys@hdvtc.edu.cn',
+    },
+    {
+      id: 'college-005',
+      name: '新能源工程学院',
+      code: 'XNYGC',
+      introduction: '响应国家双碳战略，培养光伏、储能、风电、新能源汽车等领域技术技能人才。',
+      majorCount: 7,
+      studentCount: 1900,
+      teacherCount: 110,
+      establishedYear: 2010,
+      contactPhone: '0512-12345605',
+      contactEmail: 'xnygc@hdvtc.edu.cn',
+    },
+    {
+      id: 'college-006',
+      name: '生物医药学院',
+      code: 'SWYY',
+      introduction: '面向生物医药与大健康产业，开设生物制药技术、药品生产技术等专业。',
+      majorCount: 5,
+      studentCount: 1300,
+      teacherCount: 85,
+      establishedYear: 2012,
+      contactPhone: '0512-12345606',
+      contactEmail: 'swyy@hdvtc.edu.cn',
+    },
+  ],
 }
 
 // 企业档案数据
@@ -52,6 +126,7 @@ export const enterprises: Enterprise[] = [
 {
   id: "e001",
   enterpriseType: "platform",
+  isPublicDisplay: true,
   name: "苏州智联科技有限公司",
   industry: "信息技术",
   region: "江苏省苏州市",
@@ -163,6 +238,7 @@ export const enterprises: Enterprise[] = [
 {
   id: "e002",
   enterpriseType: "platform",
+  isPublicDisplay: true,
   name: "江苏新能源集团",
   industry: "新能源",
   region: "江苏省南京市",
@@ -245,6 +321,7 @@ export const enterprises: Enterprise[] = [
 {
   id: "e003",
   enterpriseType: "school-based",
+  isPublicDisplay: true,
   name: "华东职院智能制造产业学院",
   industry: "智能制造",
   region: "江苏省苏州市",
@@ -356,6 +433,7 @@ export const enterprises: Enterprise[] = [
 {
   id: "e004",
   enterpriseType: "platform",
+  isPublicDisplay: true,
   name: "上海云智科技股份有限公司",
   industry: "信息技术",
   region: "上海市",
@@ -451,6 +529,7 @@ export const enterprises: Enterprise[] = [
 {
   id: "e005",
   enterpriseType: "school-based",
+  isPublicDisplay: true,
   name: "华东职院数字文创工作室",
   industry: "文化创意",
   region: "江苏省苏州市",
@@ -2759,6 +2838,7 @@ export const experts: Expert[] = [
   partnerName: "苏州智联科技有限公司",
   title: "技术总监",
   expertType: "技术顾问",
+  partnerSource: 'cooperation',
   specialties: [
     "机器学习",
     "计算机视觉",
@@ -2785,6 +2865,7 @@ export const experts: Expert[] = [
   partnerName: "江苏新能源集团",
   title: "人力资源总监",
   expertType: "企业导师",
+  partnerSource: 'cooperation',
   specialties: [
     "人才管理",
     "企业培训",
@@ -2811,6 +2892,7 @@ export const experts: Expert[] = [
   partnerName: "华东职院智能制造产业学院",
   title: "总工程师",
   expertType: "技术顾问",
+  partnerSource: 'cooperation',
   specialties: [
     "工业机器人",
     "自动化控制",
@@ -2837,6 +2919,7 @@ export const experts: Expert[] = [
   partnerName: "上海云智科技股份有限公司",
   title: "架构师",
   expertType: "技术顾问",
+  partnerSource: 'cooperation',
   specialties: [
     "云计算",
     "微服务",
@@ -2863,6 +2946,7 @@ export const experts: Expert[] = [
   partnerName: "华东职院数字文创工作室",
   title: "创意总监",
   expertType: "教学专家",
+  partnerSource: 'cooperation',
   specialties: [
     "品牌设计",
     "IP运营",
@@ -2889,6 +2973,7 @@ export const experts: Expert[] = [
   partnerName: "苏州智联科技有限公司",
   title: "首席科学家",
   expertType: "评审专家",
+  partnerSource: 'cooperation',
   specialties: [
     "自然语言处理",
     "知识图谱",
@@ -2915,6 +3000,7 @@ export const experts: Expert[] = [
   partnerName: "江苏新能源集团",
   title: "研发总监",
   expertType: "企业导师",
+  partnerSource: 'cooperation',
   specialties: [
     "光伏技术",
     "储能系统",
@@ -2941,6 +3027,7 @@ export const experts: Expert[] = [
   partnerName: "华东职院智能制造产业学院",
   title: "生产总监",
   expertType: "企业导师",
+  partnerSource: 'cooperation',
   specialties: [
     "精益生产",
     "质量管理",
@@ -2967,6 +3054,7 @@ export const experts: Expert[] = [
   partnerName: "上海云智科技股份有限公司",
   title: "产品经理",
   expertType: "教学专家",
+  partnerSource: 'cooperation',
   specialties: [
     "产品设计",
     "用户体验",
@@ -2993,6 +3081,7 @@ export const experts: Expert[] = [
   partnerName: "华东职院数字文创工作室",
   title: "艺术总监",
   expertType: "创业导师",
+  partnerSource: 'cooperation',
   specialties: [
     "视觉设计",
     "动画制作",
@@ -3019,6 +3108,7 @@ export const experts: Expert[] = [
   partnerName: "苏州智联科技有限公司",
   title: "算法工程师",
   expertType: "技术顾问",
+  partnerSource: 'cooperation',
   specialties: [
     "计算机视觉",
     "图像处理",
@@ -3045,6 +3135,7 @@ export const experts: Expert[] = [
   partnerName: "江苏新能源集团",
   title: "项目经理",
   expertType: "测评专员",
+  partnerSource: 'cooperation',
   specialties: [
     "项目管理",
     "风电技术",
@@ -3071,6 +3162,7 @@ export const experts: Expert[] = [
   partnerName: "华东职院智能制造产业学院",
   title: "技术总监",
   expertType: "评审专家",
+  partnerSource: 'cooperation',
   specialties: [
     "数控技术",
     "CAD/CAM",
@@ -3097,6 +3189,7 @@ export const experts: Expert[] = [
   partnerName: "上海云智科技股份有限公司",
   title: "安全专家",
   expertType: "技术顾问",
+  partnerSource: 'cooperation',
   specialties: [
     "网络安全",
     "云安全",
@@ -3123,6 +3216,7 @@ export const experts: Expert[] = [
   partnerName: "华东职院数字文创工作室",
   title: "运营总监",
   expertType: "教学专家",
+  partnerSource: 'cooperation',
   specialties: [
     "新媒体运营",
     "内容策划",
@@ -3147,6 +3241,7 @@ export const experts: Expert[] = [
   gender: "male",
   title: "高级讲师",
   expertType: "独立专家",
+  partnerSource: 'cooperation',
   specialties: [
     "跨境电商",
     "数字营销",
@@ -3171,6 +3266,7 @@ export const experts: Expert[] = [
   gender: "female",
   title: "资深设计师",
   expertType: "独立专家",
+  partnerSource: 'cooperation',
   specialties: [
     "UI/UX设计",
     "品牌视觉",
@@ -3195,6 +3291,7 @@ export const experts: Expert[] = [
   gender: "male",
   title: "独立咨询师",
   expertType: "独立专家",
+  partnerSource: 'cooperation',
   specialties: [
     "战略规划",
     "组织变革",
@@ -3783,7 +3880,16 @@ export const achievements: Achievement[] = [
   partnerName: "华东职院数字文创工作室",
   projectId: "proj011",
   projectName: "新能源技术实训基地建设",
-  description: "由华东职院数字文创工作室与学校联合开发的综合成果，体现了产教融合的深入合作。",
+  description: "由华东职院数字文创工作室与学校联合开发的综合成果，体现了产教融合的深入合作。该项目围绕新能源技术实训基地建设，整合了光伏、储能与风电技术资源，建设了具备真实生产场景的实训工位，开发了模块化课程资源与实训指导手册，形成了可推广的产教融合建设方案。成果包括实训基地设计方案、课程资源包、技能考核标准及校企合作协议，为区域新能源产业技术技能人才培养提供了有力支撑。",
+  images: [
+    "/placeholder.svg?height=400&width=600",
+    "/placeholder.svg?height=400&width=600"
+  ],
+  attachments: [
+    "新能源技术实训基地建设方案.pdf",
+    "课程资源包目录.xlsx",
+    "校企合作协议.pdf"
+  ],
   publishDate: new Date('2024-03-22'),
   status: "published",
   viewCount: 1856,

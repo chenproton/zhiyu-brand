@@ -4,6 +4,20 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
@@ -23,7 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Search, Eye, Plus, Pencil, Trash2, TrendingUp, Users, AlertCircle } from "lucide-react"
+import { ArrowLeft, Search, MoreHorizontal, Pencil, Trash2, AlertCircle } from "lucide-react"
 import { jobBrands, jobs, enterprises } from "@/lib/mock-data"
 import type { JobBrand, Job } from "@/lib/types"
 import { BRAND_STATUS_LABELS, INDUSTRIES, JOB_CATEGORY_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
@@ -194,83 +208,84 @@ export default function JobBrandPage() {
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredJobs.map((job) => (
-              <Card key={job.id} className="overflow-hidden">
-                <div className="aspect-[16/9] bg-muted relative overflow-hidden">
-                  <img
-                    src={job.coverImage || "/placeholder.svg?height=180&width=320"}
-                    alt={job.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-2 left-2 flex gap-1">
-                    <Badge variant="outline" className="text-[10px]">
-                      {JOB_CATEGORY_LABELS[job.jobCategory || "non-teaching"]}
-                    </Badge>
-                    <Badge variant={job.status === "published" ? "secondary" : "outline"} className="text-[10px]">
-                      {BRAND_STATUS_LABELS[job.status]}
-                    </Badge>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <h3 className="font-semibold text-sm text-white">{job.name}</h3>
-                    <p className="text-white/80 text-[10px]">{job.industry}</p>
-                  </div>
-                </div>
-                <CardContent className="pt-3 pb-3">
-                  <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                    {job.description}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-2 py-2 border-y mb-3">
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 font-medium text-foreground text-sm">
-                        <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                        {job.averageSalary}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>岗位名称</TableHead>
+                <TableHead>所属行业</TableHead>
+                <TableHead>岗位分类</TableHead>
+                <TableHead>关联二级学院</TableHead>
+                <TableHead>薪资范围</TableHead>
+                <TableHead>需求量</TableHead>
+                <TableHead>适用专业</TableHead>
+                <TableHead>状态</TableHead>
+                <TableHead className="w-[80px]">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredJobs.length > 0 ? (
+                filteredJobs.map((job) => (
+                  <TableRow key={job.id}>
+                    <TableCell className="font-medium">{job.name}</TableCell>
+                    <TableCell>{job.industry}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {JOB_CATEGORY_LABELS[job.jobCategory || "non-teaching"]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{job.secondaryCollege || "-"}</TableCell>
+                    <TableCell>{job.averageSalary || "-"}</TableCell>
+                    <TableCell>{job.demandCount ?? 0}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1 max-w-[200px]">
+                        {job.suitableMajors.slice(0, 2).map((major) => (
+                          <Badge key={major} variant="outline" className="text-[10px]">
+                            {major}
+                          </Badge>
+                        ))}
+                        {job.suitableMajors.length > 2 && (
+                          <Badge variant="outline" className="text-[10px]">
+                            +{job.suitableMajors.length - 2}
+                          </Badge>
+                        )}
+                        {job.suitableMajors.length === 0 && "-"}
                       </div>
-                      <p className="text-[10px] text-muted-foreground">薪资范围</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 font-medium text-foreground text-sm">
-                        <Eye className="h-3 w-3 text-muted-foreground" />
-                        {job.viewCount}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground">浏览量</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t pt-4 mt-4">
-                    <div className="flex flex-wrap gap-1 max-w-[70%]">
-                      {job.suitableMajors.slice(0, 2).map((major) => (
-                        <Badge key={major} variant="outline" className="text-[10px]">
-                          {major}
-                        </Badge>
-                      ))}
-                      {job.suitableMajors.length > 2 && (
-                        <Badge variant="outline" className="text-[10px]">
-                          +{job.suitableMajors.length - 2}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(job)}>
-                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(job.id)}>
-                        <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {filteredJobs.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">暂无符合条件的岗位品牌</p>
-            </div>
-          )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={job.status === "published" ? "secondary" : "outline"}>
+                        {BRAND_STATUS_LABELS[job.status]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openEdit(job)}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            编辑
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(job.id)}>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            删除
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                    暂无符合条件的岗位品牌
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 

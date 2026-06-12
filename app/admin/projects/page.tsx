@@ -20,10 +20,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
+import { Switch } from '@/components/ui/switch'
 import { FilterBar } from '@/components/shared/filter-bar'
 import { ProjectPhaseBadge, ProjectPublishStatusBadge } from '@/components/shared/status-badge'
 import { Plus, MoreHorizontal, Eye, Pencil, Trash2, FolderKanban, Send, EyeOff, Tag } from 'lucide-react'
-import { projects } from '@/lib/mock-data'
+import { projects, enterprises } from '@/lib/mock-data'
 import { PROJECT_PHASE_LABELS, PROJECT_PUBLISH_STATUS_LABELS } from '@/lib/types'
 import type { ProjectPhase, ProjectPublishStatus } from '@/lib/types'
 import CooperationTypeManager from '@/components/admin/cooperation-type-manager'
@@ -46,6 +47,7 @@ export default function ProjectsListPage() {
     publishStatus: 'all',
   })
   const [cooperationTypeDialogOpen, setCooperationTypeDialogOpen] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const filteredProjects = useMemo(() => {
     return projects.filter((project) => {
@@ -61,7 +63,7 @@ export default function ProjectsListPage() {
       if (filters.publishStatus !== 'all' && project.publishStatus !== filters.publishStatus) return false
       return true
     })
-  }, [search, filters])
+  }, [search, filters, refreshKey])
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
@@ -74,6 +76,14 @@ export default function ProjectsListPage() {
       type: 'all',
       publishStatus: 'all',
     })
+  }
+
+  const handleTogglePublicDisplay = (project: typeof projects[0]) => {
+    const enterprise = enterprises.find((e) => e.id === project.partnerId)
+    if (!enterprise) return
+    enterprise.isPublicDisplay = !enterprise.isPublicDisplay
+    enterprise.updatedAt = new Date()
+    setRefreshKey((prev) => prev + 1)
   }
 
   const getMilestoneProgress = (milestones: typeof projects[0]['milestones']) => {
@@ -145,6 +155,7 @@ export default function ProjectsListPage() {
             <TableRow>
               <TableHead>项目名称</TableHead>
               <TableHead>合作主体</TableHead>
+              <TableHead>前台展示</TableHead>
               <TableHead>合作类型</TableHead>
               <TableHead>起止时间</TableHead>
               <TableHead>里程碑进度</TableHead>
@@ -160,6 +171,7 @@ export default function ProjectsListPage() {
             {filteredProjects.length > 0 ? (
               filteredProjects.map((project) => {
                 const progress = getMilestoneProgress(project.milestones)
+                const enterprise = enterprises.find((e) => e.id === project.partnerId)
                 return (
                   <TableRow key={project.id}>
                     <TableCell>
@@ -180,6 +192,17 @@ export default function ProjectsListPage() {
                       >
                         {project.partnerName}
                       </Link>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={enterprise?.isPublicDisplay ?? true}
+                          onCheckedChange={() => handleTogglePublicDisplay(project)}
+                        />
+                        <span className={`text-sm ${(enterprise?.isPublicDisplay ?? true) ? 'text-green-600' : 'text-gray-400'}`}>
+                          {(enterprise?.isPublicDisplay ?? true) ? '展示' : '隐藏'}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>{project.type}</TableCell>
                     <TableCell className="text-sm">
@@ -266,7 +289,7 @@ export default function ProjectsListPage() {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                   暂无符合条件的合作项目
                 </TableCell>
               </TableRow>

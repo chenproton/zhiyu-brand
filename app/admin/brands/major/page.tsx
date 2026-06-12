@@ -3,10 +3,24 @@
 import { useMemo, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -22,7 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Eye, Pencil, Search, Settings, TrendingUp, Users } from "lucide-react"
+import { ArrowLeft, Eye, Pencil, Search, Settings, MoreHorizontal, Trash2 } from "lucide-react"
 import { majorBrands } from "@/lib/mock-data"
 import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
 import type { MajorBrand } from "@/lib/types"
@@ -79,40 +93,88 @@ export default function MajorBrandPage() {
         </Button>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {filteredMajors.map((major) => (
-          <Card key={major.id} className="text-sm">
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <CardTitle className="truncate text-base">{major.name}</CardTitle>
-                  <CardDescription className="mt-0.5">{major.department}</CardDescription>
-                </div>
-                <div className="flex shrink-0 gap-1">
-                  <Badge variant="outline" className="text-xs">{BRAND_LEVEL_LABELS[major.level]}</Badge>
-                  <Badge variant={major.status === "published" ? "secondary" : "outline"} className="text-xs">{BRAND_STATUS_LABELS[major.status]}</Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2 pt-0">
-              <p className="line-clamp-1 text-muted-foreground">{major.introduction}</p>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />{major.studentCount} 在校生</div>
-                <div className="flex items-center gap-1"><TrendingUp className="h-3.5 w-3.5" /><span className="font-medium text-foreground">{major.employmentRate}%</span>就业率</div>
-                <div className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" />{major.viewCount} 浏览</div>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {major.coreCourses.slice(0, 3).map((course) => <Badge key={typeof course === 'string' ? course : course.name} variant="outline" className="text-xs font-normal">{typeof course === 'string' ? course : course.name}</Badge>)}
-              </div>
-              <div className="flex gap-2 border-t pt-4">
-                <Link href={`/admin/brands/major/${major.id}`} className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full h-8 text-xs"><Pencil className="mr-1 h-3.5 w-3.5" />编辑</Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>专业名称</TableHead>
+              <TableHead>所属院系</TableHead>
+              <TableHead>品牌等级</TableHead>
+              <TableHead>状态</TableHead>
+              <TableHead>在校生</TableHead>
+              <TableHead>就业率</TableHead>
+              <TableHead>浏览量</TableHead>
+              <TableHead>核心课程</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredMajors.length > 0 ? (
+              filteredMajors.map((major) => (
+                <TableRow key={major.id}>
+                  <TableCell>
+                    <span className="font-medium">{major.name}</span>
+                  </TableCell>
+                  <TableCell>{major.department}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{BRAND_LEVEL_LABELS[major.level]}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={major.status === "published" ? "secondary" : "outline"}>
+                      {BRAND_STATUS_LABELS[major.status]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{major.studentCount}</TableCell>
+                  <TableCell>{major.employmentRate}%</TableCell>
+                  <TableCell>{major.viewCount}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {major.coreCourses.slice(0, 3).map((course) => (
+                        <Badge key={typeof course === 'string' ? course : course.name} variant="outline" className="text-xs font-normal">
+                          {typeof course === 'string' ? course : course.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/admin/brands/major/${major.id}/preview`}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            预览
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/admin/brands/major/${major.id}`}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            编辑
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600" onClick={() => deleteMajor(major.id)}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          删除
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  暂无符合条件的专业品牌
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </Card>
 
       <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
         <DialogContent className="max-w-lg">

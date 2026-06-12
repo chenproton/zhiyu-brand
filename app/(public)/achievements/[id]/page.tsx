@@ -1,10 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
-  ArrowLeft,
   Award,
   Building2,
   FolderKanban,
@@ -30,7 +28,7 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function AchievementDetailPage({ params }: PageProps) {
+export default async function PublicAchievementDetailPage({ params }: PageProps) {
   const { id } = await params
   const achievement = getAchievementById(id)
 
@@ -39,33 +37,22 @@ export default async function AchievementDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div>
-      <div className="mb-6">
-        <Link href="/admin/achievements">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            返回列表
-          </Button>
-        </Link>
-      </div>
-
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center">
-            <Award className="w-8 h-8 text-purple-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{achievement.name}</h1>
-            <p className="text-muted-foreground">{ACHIEVEMENT_TYPE_LABELS[achievement.type]}</p>
-            <div className="flex items-center gap-2 mt-2">
-              <Badge variant="outline" className={STATUS_VARIANTS[achievement.status]}>
-                {STATUS_LABELS[achievement.status]}
-              </Badge>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                <Eye className="h-3 w-3 mr-1" />
-                {achievement.viewCount} 次浏览
-              </Badge>
-            </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-start gap-4 mb-8">
+        <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center">
+          <Award className="w-8 h-8 text-purple-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{achievement.name}</h1>
+          <p className="text-muted-foreground">{ACHIEVEMENT_TYPE_LABELS[achievement.type]}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant="outline" className={STATUS_VARIANTS[achievement.status]}>
+              {STATUS_LABELS[achievement.status]}
+            </Badge>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              <Eye className="h-3 w-3 mr-1" />
+              {achievement.viewCount} 次浏览
+            </Badge>
           </div>
         </div>
       </div>
@@ -113,7 +100,7 @@ export default async function AchievementDetailPage({ params }: PageProps) {
                   <div>
                     <p className="text-sm text-muted-foreground">关联主体</p>
                     <Link
-                      href={`/admin/enterprises/${achievement.partnerId}`}
+                      href={`/partners/${achievement.partnerId}`}
                       className="font-medium hover:underline text-sm"
                     >
                       {achievement.partnerName}
@@ -129,12 +116,7 @@ export default async function AchievementDetailPage({ params }: PageProps) {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">关联项目</p>
-                    <Link
-                      href={`/admin/projects/${achievement.projectId}`}
-                      className="font-medium hover:underline text-sm"
-                    >
-                      {achievement.projectName}
-                    </Link>
+                    <span className="font-medium text-sm">{achievement.projectName}</span>
                   </div>
                 </div>
               )}

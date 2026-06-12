@@ -555,7 +555,8 @@ export default function HomePage() {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredMajorBrands.filter(m => m.level === "recommended").slice(0, 6).map((major) => (
-                <Card key={major.id} className="border-0 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
+                <Link key={major.id} href={`/brands/major/${major.id}`}>
+                  <Card className="border-0 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div className="min-w-0">
@@ -573,7 +574,8 @@ export default function HomePage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              </Link>
+            ))}
             </div>
           </div>
 

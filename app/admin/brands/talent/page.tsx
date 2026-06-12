@@ -25,9 +25,23 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
 
-import { ArrowLeft, Search, Eye, Plus, Trash2, Settings, X, Check, ChevronDown, Award, Upload } from "lucide-react"
+import { ArrowLeft, Search, Eye, Plus, Trash2, Settings, X, Check, ChevronDown, Award, Upload, MoreHorizontal, Pencil } from "lucide-react"
 import {
   talentProfiles as initialTalentProfiles,
   employmentCases as initialEmploymentCases,
@@ -367,92 +381,100 @@ export default function TalentBrandPage() {
                             没有找到符合条件的人才画像
                           </div>
                         ) : (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch">
-                            {profiles.map((profile) => (
-                              <Card key={profile.id} className="overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
-                                <CardContent className="p-4 flex flex-col flex-1">
-                                  <div className="flex items-center gap-3">
-                                    <div className="relative shrink-0">
-                                      <Avatar className="h-12 w-12">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>排名</TableHead>
+                                <TableHead>姓名</TableHead>
+                                <TableHead>学号</TableHead>
+                                <TableHead>专业</TableHead>
+                                <TableHead>年级</TableHead>
+                                <TableHead>院系</TableHead>
+                                <TableHead>能力评级</TableHead>
+                                <TableHead>能力标签</TableHead>
+                                <TableHead>目标岗位</TableHead>
+                                <TableHead>认证等级</TableHead>
+                                <TableHead className="w-[80px]">操作</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {profiles.map((profile) => (
+                                <TableRow key={profile.id}>
+                                  <TableCell>
+                                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                                      {profile.rank}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <Avatar className="h-8 w-8">
                                         <AvatarImage src={profile.avatar} />
-                                        <AvatarFallback className="text-base">{profile.studentName[0]}</AvatarFallback>
+                                        <AvatarFallback className="text-xs">{profile.studentName[0]}</AvatarFallback>
                                       </Avatar>
-                                      <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center">
-                                        {profile.rank}
-                                      </div>
+                                      <span className="font-medium text-sm">{profile.studentName}</span>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-1.5">
-                                        <p className="font-medium text-sm truncate">{profile.studentName}</p>
-                                        <span
-                                          className={
-                                            profile.certificationLevel === "高级"
-                                              ? "inline-flex items-center justify-center h-4 w-4 rounded-full bg-yellow-100 text-yellow-600"
-                                              : profile.certificationLevel === "中级"
-                                              ? "inline-flex items-center justify-center h-4 w-4 rounded-full bg-blue-100 text-blue-600"
-                                              : "inline-flex items-center justify-center h-4 w-4 rounded-full bg-gray-100 text-gray-500"
-                                          }
-                                          title={profile.certificationLevel}
-                                        >
-                                          <Award className="h-3 w-3" />
-                                        </span>
-                                      </div>
-                                      <p className="text-xs text-muted-foreground">{maskStudentId(profile.studentId)}</p>
-                                      <p className="text-xs text-muted-foreground">{profile.major} · {profile.grade}</p>
-                                      <p className="text-xs text-muted-foreground">{profile.department}</p>
-                                    </div>
-                                    <div className="text-center shrink-0">
-                                      <p className="text-lg font-bold text-foreground leading-none">{profile.abilityScore}</p>
-                                      <p className="text-[10px] text-muted-foreground mt-0.5">能力评级</p>
-                                    </div>
-                                  </div>
-
-                                  {profile.targetPositions && profile.targetPositions.length > 0 && (
-                                    <div className="flex items-center gap-1 mt-2">
-                                      <span className="text-[10px] text-muted-foreground shrink-0">目标岗位：</span>
-                                      <div className="flex flex-wrap gap-1">
-                                        {profile.targetPositions.slice(0, 2).map((pos) => (
-                                          <Badge key={pos} variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-                                            {pos}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  <div className="flex items-center gap-1 mt-2">
-                                    <span className="text-[10px] text-muted-foreground shrink-0">能力点：</span>
+                                  </TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">
+                                    {maskStudentId(profile.studentId)}
+                                  </TableCell>
+                                  <TableCell className="text-sm">{profile.major}</TableCell>
+                                  <TableCell className="text-sm">{profile.grade}</TableCell>
+                                  <TableCell className="text-sm">{profile.department}</TableCell>
+                                  <TableCell>
+                                    <span className="text-sm font-medium">{profile.abilityScore}</span>
+                                  </TableCell>
+                                  <TableCell>
                                     <div className="flex flex-wrap gap-1">
                                       {profile.abilityTags.slice(0, 3).map((tag) => (
-                                        <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                                        <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
                                           {tag}
                                         </Badge>
                                       ))}
                                       {profile.abilityTags.length > 3 && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
                                           +{profile.abilityTags.length - 3}
                                         </Badge>
                                       )}
                                     </div>
-                                  </div>
-
-                                  {profile.remark ? (
-                                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2 italic">
-                                      "{profile.remark}"
-                                    </p>
-                                  ) : (
-                                    <div className="mt-2 h-8" />
-                                  )}
-
-                                  {profile.lastVerifiedAt && (
-                                    <p className="text-[10px] text-muted-foreground mt-2">
-                                      最新认证时间：{profile.lastVerifiedAt.toLocaleDateString("zh-CN")}
-                                    </p>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex flex-wrap gap-1">
+                                      {profile.targetPositions?.slice(0, 2).map((pos) => (
+                                        <Badge key={pos} variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+                                          {pos}
+                                        </Badge>
+                                      ))}
+                                      {(profile.targetPositions?.length || 0) > 2 && (
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+                                          +{(profile.targetPositions?.length || 0) - 2}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-1.5">
+                                      <span
+                                        className={
+                                          profile.certificationLevel === "高级"
+                                            ? "inline-flex items-center justify-center h-5 w-5 rounded-full bg-yellow-100 text-yellow-600"
+                                            : profile.certificationLevel === "中级"
+                                            ? "inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-100 text-blue-600"
+                                            : "inline-flex items-center justify-center h-5 w-5 rounded-full bg-gray-100 text-gray-500"
+                                        }
+                                        title={profile.certificationLevel}
+                                      >
+                                        <Award className="h-3 w-3" />
+                                      </span>
+                                      <span className="text-sm">{profile.certificationLevel}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <span className="text-sm text-muted-foreground">-</span>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
                         )}
                       </TabsContent>
                     )
@@ -488,69 +510,79 @@ export default function TalentBrandPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {filteredCases.map((case_) => (
-                  <Card key={case_.id} className="overflow-hidden">
-                    <div className="aspect-[16/9] bg-muted relative overflow-hidden">
-                      <img
-                        src={case_.coverImage || case_.photo || "/placeholder.svg?height=180&width=320"}
-                        alt={case_.studentName}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute bottom-2 left-2 right-2 text-white">
-                        <h3 className="font-semibold text-sm">{case_.studentName}</h3>
-                        <p className="text-xs text-white/80">{case_.major} | {case_.graduationYear}届</p>
-                      </div>
-                      <Badge
-                        className="absolute top-2 right-2"
-                        variant={case_.status === "published" ? "default" : "secondary"}
-                      >
-                        {BRAND_STATUS_LABELS[case_.status]}
-                      </Badge>
-                    </div>
-                    <CardContent className="p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Avatar className="h-7 w-7">
-                          <AvatarImage src={case_.companyLogo} />
-                          <AvatarFallback className="text-[10px]">{case_.company[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <p className="font-medium text-sm truncate">{case_.company}</p>
-                          <p className="text-xs text-muted-foreground truncate">{case_.position}</p>
-                        </div>
-                      </div>
-                      {case_.salary && (
-                        <div className="text-sm text-foreground font-medium mb-2">
-                          {case_.salary}
-                        </div>
-                      )}
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                        {case_.story}
-                      </p>
-                      <div className="flex items-center justify-between pt-2 border-t">
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Eye className="h-3 w-3 text-muted-foreground" />
-                          <span>{case_.viewCount}</span>
-                        </div>
-                        <div className="flex gap-1">
-                          <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => openCaseEdit(case_)}>
-                            编辑
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => handleDeleteCase(case_.id)}>
-                            删除
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                {filteredCases.length === 0 && (
-                  <div className="col-span-full text-center py-12 text-muted-foreground">
-                    没有找到符合条件的就业案例
-                  </div>
-                )}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>学生姓名</TableHead>
+                    <TableHead>专业</TableHead>
+                    <TableHead>毕业年份</TableHead>
+                    <TableHead>企业</TableHead>
+                    <TableHead>岗位</TableHead>
+                    <TableHead>薪资</TableHead>
+                    <TableHead>状态</TableHead>
+                    <TableHead>浏览量</TableHead>
+                    <TableHead className="w-[80px]">操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCases.length > 0 ? (
+                    filteredCases.map((case_) => (
+                      <TableRow key={case_.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={case_.companyLogo} />
+                              <AvatarFallback className="text-xs">{case_.studentName[0]}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium text-sm">{case_.studentName}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm">{case_.major}</TableCell>
+                        <TableCell className="text-sm">{case_.graduationYear}届</TableCell>
+                        <TableCell className="text-sm">{case_.company}</TableCell>
+                        <TableCell className="text-sm">{case_.position}</TableCell>
+                        <TableCell className="text-sm font-medium">{case_.salary || "-"}</TableCell>
+                        <TableCell>
+                          <Badge variant={case_.status === "published" ? "default" : "secondary"}>
+                            {BRAND_STATUS_LABELS[case_.status]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Eye className="h-4 w-4" />
+                            <span>{case_.viewCount}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openCaseEdit(case_)}>
+                                <Pencil className="h-4 w-4 mr-2" />
+                                编辑
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteCase(case_.id)}>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                删除
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                        没有找到符合条件的就业案例
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>

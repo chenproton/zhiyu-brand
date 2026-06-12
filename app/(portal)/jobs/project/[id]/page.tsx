@@ -12,7 +12,6 @@ import {
   ArrowLeft, 
   MapPin, 
   Briefcase,
-  Users,
   Calendar,
   Building2,
   Search,
@@ -100,7 +99,7 @@ export default function EmploymentProjectDetailPage({ params }: { params: Promis
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 {project.startDate.toLocaleDateString('zh-CN')} ~ {project.endDate.toLocaleDateString('zh-CN')}
@@ -108,10 +107,6 @@ export default function EmploymentProjectDetailPage({ params }: { params: Promis
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Briefcase className="h-4 w-4" />
                 {project.jobCount} 个岗位
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Users className="h-4 w-4" />
-                {project.applicationCount} 人投递
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Building2 className="h-4 w-4" />

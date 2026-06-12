@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   CooperationStatusBadge,
@@ -27,6 +28,7 @@ import {
 import { AddAgreementButton, AgreementDetailButton } from './enterprise-action-bar'
 import { getEnterpriseById, getProjectsByPartnerId, getAchievementsByPartnerId, achievements } from '@/lib/mock-data'
 import { ENTERPRISE_TYPE_LABELS, COOPERATION_TYPES, COOPERATION_RATING_LABELS } from '@/lib/types'
+import type { Enterprise } from '@/lib/types'
 import { NewProjectButton } from './enterprise-detail-actions'
 import { EnterpriseAchievementActions } from './enterprise-achievement-actions'
 import { AchievementViewButton } from './achievement-view-button'
@@ -35,6 +37,32 @@ import { partners } from '@/lib/mock-data'
 interface PageProps {
   params: Promise<{ id: string }>
   searchParams: Promise<{ tab?: string }>
+}
+
+function PublicDisplaySwitch({ enterprise }: { enterprise: Enterprise }) {
+  return (
+    <form
+      action={async () => {
+        'use server'
+        enterprise.isPublicDisplay = !enterprise.isPublicDisplay
+        enterprise.updatedAt = new Date()
+      }}
+      className="flex items-center gap-2"
+    >
+      <Switch
+        name="isPublicDisplay"
+        defaultChecked={enterprise.isPublicDisplay}
+        onCheckedChange={async () => {
+          'use server'
+          enterprise.isPublicDisplay = !enterprise.isPublicDisplay
+          enterprise.updatedAt = new Date()
+        }}
+      />
+      <span className={`text-sm ${enterprise.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
+        {enterprise.isPublicDisplay ? '展示' : '隐藏'}
+      </span>
+    </form>
+  )
 }
 
 export default async function EnterpriseDetailPage({ params, searchParams }: PageProps) {
@@ -374,7 +402,10 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base">企业合作协议</CardTitle>
+                <CardTitle className="text-base flex items-center gap-3">
+                  企业合作协议
+                  <PublicDisplaySwitch enterprise={enterprise} />
+                </CardTitle>
                 <CardDescription>与该企业的所有合作协议</CardDescription>
               </div>
               <AddAgreementButton />
@@ -413,7 +444,10 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base">合作项目</CardTitle>
+                <CardTitle className="text-base flex items-center gap-3">
+                  合作项目
+                  <PublicDisplaySwitch enterprise={enterprise} />
+                </CardTitle>
                 <CardDescription>与该企业开展的所有合作项目</CardDescription>
               </div>
               <NewProjectButton defaultPartnerIds={[enterprise.id.replace('e', 'p')]} />
@@ -458,7 +492,10 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base">合作成果</CardTitle>
+                <CardTitle className="text-base flex items-center gap-3">
+                  合作成果
+                  <PublicDisplaySwitch enterprise={enterprise} />
+                </CardTitle>
                 <CardDescription>与该企业合作产生的成果</CardDescription>
               </div>
               <EnterpriseAchievementActions />

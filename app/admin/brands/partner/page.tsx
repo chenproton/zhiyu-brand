@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -24,12 +23,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Search, Plus, Pencil, Trash2, Building2, MapPin, Users, Briefcase, Upload, X } from "lucide-react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { ArrowLeft, Search, Plus, Pencil, Trash2, Upload, X, MoreHorizontal, Eye } from "lucide-react"
 import { jobs, partners } from "@/lib/mock-data"
 import { JobActionButtons, NonTeachingJobDialog, TeachingJobDialog } from "@/components/admin/job-brand-tools"
 import {
   INDUSTRIES,
   SECONDARY_COLLEGES,
+  PARTNER_TYPE_LABELS,
+  COOPERATION_STATUS_LABELS,
 } from "@/lib/types"
 import type { Job, Partner, PartnerType } from "@/lib/types"
 
@@ -86,6 +101,7 @@ export default function PartnerBrandPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null)
   const [selectedPartnerId, setSelectedPartnerId] = useState("")
+  const [partnerSearchTerm, setPartnerSearchTerm] = useState("")
   const [localJobs, setLocalJobs] = useState<Job[]>([...jobs])
   const [jobPartner, setJobPartner] = useState<Partner | null>(null)
   const [nonTeachingJobOpen, setNonTeachingJobOpen] = useState(false)
@@ -315,158 +331,149 @@ export default function PartnerBrandPage() {
           </Button>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            引用已有企业
+            从合作企业库引用
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredPartners.map((partner) => (
-          <Card key={partner.id} className="overflow-hidden hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Avatar className="h-12 w-12 rounded-lg shrink-0">
-                  <AvatarImage src={partner.logo} className="object-cover" />
-                  <AvatarFallback className="rounded-lg">
-                    <Building2 className="h-6 w-6 text-muted-foreground" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3 className="text-base font-semibold text-foreground truncate">{partner.name}</h3>
-                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                        {partner.id.startsWith('custom-') ? (
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                            独立雇主品牌
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                            合作企业
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{partner.description}</p>
-
-              <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <span>{partner.region}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Briefcase className="h-3 w-3 text-muted-foreground" />
-                  <span>{partner.industry}</span>
-                </div>
-                {partner.employeeCount && (
-                  <div className="flex items-center gap-1">
-                    <Users className="h-3 w-3 text-muted-foreground" />
-                    <span>{partner.employeeCount}人</span>
-                  </div>
-                )}
-              </div>
-
-              {!partner.id.startsWith('custom-') && partner.cooperationTypes.length > 0 && (
-                <div className="flex items-center gap-1 mt-3">
-                  <span className="text-[10px] text-muted-foreground shrink-0">合作方式：</span>
-                  <div className="flex flex-wrap gap-1">
-                    {partner.cooperationTypes.slice(0, 3).map((type) => (
-                      <Badge key={type} variant="secondary" className="text-[10px] px-1.5 py-0">
-                        {type}
-                      </Badge>
-                    ))}
-                    {partner.cooperationTypes.length > 3 && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                        +{partner.cooperationTypes.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {(() => {
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>主体名称</TableHead>
+              <TableHead>类型</TableHead>
+              <TableHead>行业</TableHead>
+              <TableHead>地区</TableHead>
+              <TableHead>合作方式</TableHead>
+              <TableHead>关联岗位</TableHead>
+              <TableHead>状态</TableHead>
+              <TableHead className="w-[50px]">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredPartners.length > 0 ? (
+              filteredPartners.map((partner) => {
                 const partnerJobs = localJobs.filter((job) => job.partnerId === partner.id)
-                return partnerJobs.length > 0 ? (
-                  <div className="flex items-center gap-1 mt-3">
-                    <span className="text-[10px] text-muted-foreground shrink-0">关联岗位：</span>
-                    <div className="flex flex-wrap gap-1">
-                      {partnerJobs.slice(0, 3).map((job) => (
-                        <Badge key={job.id} variant="outline" className="text-[10px] px-1.5 py-0">
-                          {job.title}
-                        </Badge>
-                      ))}
-                      {partnerJobs.length > 3 && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                          +{partnerJobs.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ) : null
-              })()}
-
-              <div className="flex items-center justify-between pt-4 mt-4 border-t">
-                <div className="flex gap-1.5">
-                  <Link href={`/admin/brands/partner/${partner.id}`}>
-                    <Button variant="outline" size="sm" className="h-7 text-xs px-2">
-                      查看详情
-                    </Button>
-                  </Link>
-                  <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => openEdit(partner)}>
-                    <Pencil className="h-3 w-3 mr-1" />
-                    编辑
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => handleDelete(partner.id)}>
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    删除
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        {filteredPartners.length === 0 && (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            没有找到符合条件的雇主品牌
-          </div>
-        )}
-      </div>
+                return (
+                  <TableRow key={partner.id}>
+                    <TableCell>
+                      <span className="font-medium">{partner.name}</span>
+                    </TableCell>
+                    <TableCell>{PARTNER_TYPE_LABELS[partner.type]}</TableCell>
+                    <TableCell>{partner.industry}</TableCell>
+                    <TableCell>{partner.region}</TableCell>
+                    <TableCell>
+                      {partner.cooperationTypes.length > 0
+                        ? partner.cooperationTypes.join(", ")
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {partnerJobs.length > 0
+                        ? partnerJobs.map((job) => job.title).join(", ")
+                        : "-"}
+                    </TableCell>
+                    <TableCell>{COOPERATION_STATUS_LABELS[partner.status]}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/brands/partner/${partner.id}`}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              查看详情
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openEdit(partner)}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            编辑
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(partner.id)}>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            删除
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  没有找到符合条件的雇主品牌
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </Card>
 
       {/* 引用已有企业 Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>引用已有企业</DialogTitle>
-            <DialogDescription>从合作主体库中选择要展示的品牌</DialogDescription>
+            <DialogTitle>从合作企业库引用</DialogTitle>
+            <DialogDescription>搜索并选择要展示的品牌</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>选择企业</Label>
-              <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择企业" />
-                </SelectTrigger>
-                <SelectContent>
-                  {unreferencedPartners.length === 0 && (
-                    <SelectItem value="__empty__" disabled>
-                      没有可引用的企业
-                    </SelectItem>
-                  )}
-                  {unreferencedPartners.map((partner) => (
-                    <SelectItem key={partner.id} value={partner.id}>
-                      {partner.name} — {partner.industry}
-                    </SelectItem>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="搜索企业名称或行业..."
+                  value={partnerSearchTerm}
+                  onChange={(e) => {
+                    setPartnerSearchTerm(e.target.value)
+                    setSelectedPartnerId("")
+                  }}
+                  className="pl-10"
+                />
+              </div>
+              <div className="border rounded-md max-h-[220px] overflow-y-auto">
+                {unreferencedPartners
+                  .filter((p) =>
+                    !partnerSearchTerm.trim() ||
+                    p.name.toLowerCase().includes(partnerSearchTerm.toLowerCase()) ||
+                    p.industry.toLowerCase().includes(partnerSearchTerm.toLowerCase())
+                  )
+                  .length === 0 && (
+                  <div className="p-3 text-sm text-muted-foreground text-center">
+                    没有可引用的企业
+                  </div>
+                )}
+                {unreferencedPartners
+                  .filter((p) =>
+                    !partnerSearchTerm.trim() ||
+                    p.name.toLowerCase().includes(partnerSearchTerm.toLowerCase()) ||
+                    p.industry.toLowerCase().includes(partnerSearchTerm.toLowerCase())
+                  )
+                  .map((partner) => (
+                    <div
+                      key={partner.id}
+                      className={`flex items-center justify-between p-3 cursor-pointer hover:bg-muted border-b last:border-b-0 ${
+                        selectedPartnerId === partner.id ? "bg-muted" : ""
+                      }`}
+                      onClick={() => setSelectedPartnerId(partner.id)}
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{partner.name}</p>
+                        <p className="text-xs text-muted-foreground">{partner.industry}</p>
+                      </div>
+                      {selectedPartnerId === partner.id && (
+                        <div className="h-4 w-4 rounded-full bg-primary" />
+                      )}
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setSelectedPartnerId(""); setDialogOpen(false) }}>
+            <Button variant="outline" onClick={() => { setSelectedPartnerId(""); setPartnerSearchTerm(""); setDialogOpen(false) }}>
               取消
             </Button>
             <Button onClick={handleAdd} disabled={!selectedPartnerId || unreferencedPartners.length === 0}>

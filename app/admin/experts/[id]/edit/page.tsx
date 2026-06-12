@@ -17,8 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, Save, Plus, X, Search, Upload } from 'lucide-react'
-import { experts } from '@/lib/mock-data'
+import { ArrowLeft, Save, X, Search, Upload } from 'lucide-react'
+import { experts, enterprises } from '@/lib/mock-data'
 import { EXPERT_TYPES, INDUSTRIES, SECONDARY_COLLEGES } from '@/lib/types'
 import type { ExpertGender, ExpertType } from '@/lib/types'
 
@@ -65,6 +65,10 @@ export default function EditExpertPage() {
   const [isContactHidden, setIsContactHidden] = useState(false)
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
 
+  const [partnerSource, setPartnerSource] = useState<'cooperation' | 'third-party' | ''>('')
+  const [partnerId, setPartnerId] = useState('')
+  const [thirdPartyName, setThirdPartyName] = useState('')
+
   const [specialties, setSpecialties] = useState<string[]>([])
   const [newSpecialty, setNewSpecialty] = useState('')
 
@@ -94,6 +98,9 @@ export default function EditExpertPage() {
     setContactPhone(expert.contactPhone || '')
     setIsContactHidden(expert.isContactHidden || false)
     setStatus(expert.status)
+    setPartnerSource(expert.partnerSource || '')
+    setPartnerId(expert.partnerId || '')
+    setThirdPartyName(expert.partnerSource === 'third-party' ? expert.partnerName || '' : '')
     setSpecialties(expert.specialties || [])
     setWorkExperience(expert.workExperience || '')
     setRelatedPositions(expert.relatedPositions || [])
@@ -150,7 +157,39 @@ export default function EditExpertPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    // Simulate API call
+
+    const expert = experts.find((e) => e.id === id)
+    if (expert) {
+      expert.name = name
+      expert.gender = gender
+      expert.title = title
+      expert.expertType = expertType || undefined
+      expert.experience = experience ? parseInt(experience) : 0
+      expert.education = education || undefined
+      expert.contactEmail = contactEmail || undefined
+      expert.contactPhone = contactPhone || undefined
+      expert.isContactHidden = isContactHidden
+      expert.status = status
+      expert.partnerSource = partnerSource || undefined
+      if (partnerSource === 'cooperation') {
+        const selectedEnterprise = enterprises.find((e) => e.id === partnerId)
+        expert.partnerId = partnerId || undefined
+        expert.partnerName = selectedEnterprise?.name
+      } else if (partnerSource === 'third-party') {
+        expert.partnerId = undefined
+        expert.partnerName = thirdPartyName || undefined
+      } else {
+        expert.partnerId = undefined
+        expert.partnerName = undefined
+      }
+      expert.specialties = specialties
+      expert.workExperience = workExperience || undefined
+      expert.relatedPositions = relatedPositions.length > 0 ? relatedPositions : undefined
+      expert.secondaryColleges = secondaryColleges.length > 0 ? secondaryColleges : undefined
+      expert.avatar = avatar || undefined
+      expert.updatedAt = new Date()
+    }
+
     await new Promise((resolve) => setTimeout(resolve, 800))
     setIsSubmitting(false)
     router.push(`/admin/experts/${id}`)
@@ -457,6 +496,62 @@ export default function EditExpertPage() {
                   />
                   <Label htmlFor="isContactHidden">隐藏联系方式</Label>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>所属企业</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>企业来源</Label>
+                  <Select
+                    value={partnerSource}
+                    onValueChange={(v) => {
+                      setPartnerSource(v as 'cooperation' | 'third-party')
+                      if (v !== 'cooperation') setPartnerId('')
+                      if (v !== 'third-party') setThirdPartyName('')
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="请选择" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cooperation">合作企业</SelectItem>
+                      <SelectItem value="third-party">第三方企业</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {partnerSource === 'cooperation' && (
+                  <div className="space-y-2">
+                    <Label>选择企业</Label>
+                    <Select value={partnerId} onValueChange={setPartnerId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="请选择合作企业" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {enterprises.map((enterprise) => (
+                          <SelectItem key={enterprise.id} value={enterprise.id}>
+                            {enterprise.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {partnerSource === 'third-party' && (
+                  <div className="space-y-2">
+                    <Label>第三方企业名称</Label>
+                    <Input
+                      value={thirdPartyName}
+                      onChange={(e) => setThirdPartyName(e.target.value)}
+                      placeholder="请输入第三方企业名称"
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
 

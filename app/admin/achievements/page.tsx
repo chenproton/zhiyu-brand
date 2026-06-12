@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
 import { Plus, Search, Eye, Edit, Trash2, Briefcase, Map, BookOpen, Tag, MoreHorizontal } from "lucide-react"
 import { ImportAchievementsButton } from "./_components/import-achievements-dialog"
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   DropdownMenu,
@@ -16,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { achievements } from "@/lib/mock-data"
+import { achievements, enterprises } from "@/lib/mock-data"
 import { ACHIEVEMENT_TYPE_LABELS } from "@/lib/types"
 import type { Achievement, AchievementType } from "@/lib/types"
 
@@ -47,14 +48,17 @@ export default function AchievementsPage() {
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
-  const filteredAchievements = achievements.filter((achievement) => {
-    const matchesSearch = achievement.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      achievement.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      achievement.partnerName?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = typeFilter === "all" || achievement.type === typeFilter
-    return matchesSearch && matchesType
-  })
+  const filteredAchievements = useMemo(() => {
+    return achievements.filter((achievement) => {
+      const matchesSearch = achievement.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        achievement.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        achievement.partnerName?.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesType = typeFilter === "all" || achievement.type === typeFilter
+      return matchesSearch && matchesType
+    })
+  }, [searchTerm, typeFilter, refreshKey])
 
   const handleDeleteClick = (achievement: Achievement) => {
     setSelectedAchievement(achievement)
@@ -64,6 +68,15 @@ export default function AchievementsPage() {
   const handleDeleteConfirm = () => {
     setDeleteDialogOpen(false)
     setSelectedAchievement(null)
+  }
+
+  const handleTogglePublicDisplay = (achievement: Achievement) => {
+    if (!achievement.partnerId) return
+    const enterprise = enterprises.find((e) => e.id === achievement.partnerId)
+    if (!enterprise) return
+    enterprise.isPublicDisplay = !enterprise.isPublicDisplay
+    enterprise.updatedAt = new Date()
+    setRefreshKey((prev) => prev + 1)
   }
 
   const statsByType = Object.entries(ACHIEVEMENT_TYPE_LABELS).map(([type, label]) => ({
@@ -151,6 +164,7 @@ export default function AchievementsPage() {
                   <TableHead>成果名称</TableHead>
                   <TableHead>类型</TableHead>
                   <TableHead>关联主体</TableHead>
+                  <TableHead>前台展示</TableHead>
                   <TableHead>关联项目</TableHead>
                   <TableHead>发布日期</TableHead>
                   <TableHead>关联人/创建人</TableHead>
@@ -161,7 +175,7 @@ export default function AchievementsPage() {
               <TableBody>
                 {filteredAchievements.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                       暂无成果数据
                     </TableCell>
                   </TableRow>
@@ -192,10 +206,28 @@ export default function AchievementsPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {achievement.projectId ? (
-                          <Link href={`/admin/projects/${achievement.projectId}`} className="text-primary hover:underline text-sm">
-                            查看项目
-                          </Link>
+                        {achievement.partnerId ? (() => {
+                          const enterprise = enterprises.find((e) => e.id === achievement.partnerId)
+                          return enterprise ? (
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={enterprise.isPublicDisplay}
+                                onCheckedChange={() => handleTogglePublicDisplay(achievement)}
+                              />
+                              <span className={`text-sm ${enterprise.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
+                                {enterprise.isPublicDisplay ? '展示' : '隐藏'}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )
+                        })() : (
+                          <span className="text-muted-foreground text-sm">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {achievement.projectName ? (
+                          <span className="text-sm">{achievement.projectName}</span>
                         ) : (
                           <span className="text-muted-foreground text-sm">-</span>
                         )}

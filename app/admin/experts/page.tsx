@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { ExpertRatingBadge } from '@/components/shared/status-badge'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -21,20 +21,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Building2,
-  User,
-  Search,
-  Mail,
-  Phone,
-  EyeOff,
-  Plus,
-  Users,
-  Pencil,
-  Trash2,
-} from 'lucide-react'
-import { experts } from '@/lib/mock-data'
-import { EXPERT_RATING_LABELS, EXPERT_TYPES } from '@/lib/types'
+import { Building2, Search, Mail, Phone, EyeOff, Plus, Users, Pencil, Trash2 } from 'lucide-react'
+import { experts, enterprises } from '@/lib/mock-data'
+import { EXPERT_TYPES } from '@/lib/types'
 import type { Expert } from '@/lib/types'
 
 const GENDER_LABELS: Record<string, string> = {
@@ -45,42 +34,42 @@ const GENDER_LABELS: Record<string, string> = {
 export default function ExpertsListPage() {
   const [search, setSearch] = useState('')
   const [selectedPartner, setSelectedPartner] = useState<string>('all')
-  const [ratingFilter, setRatingFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingExpert, setDeletingExpert] = useState<Expert | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
-  // 左侧导航：按企业分组
+  // 左侧导航：按企业来源分组
   const partnerGroups = useMemo(() => {
-    const groups = new Map<string, { name: string; count: number }>()
-    let independentCount = 0
+    const cooperationGroups = new Map<string, { name: string; count: number }>()
+    let thirdPartyCount = 0
 
     experts.forEach((expert) => {
-      if (expert.partnerId && expert.partnerName) {
-        const existing = groups.get(expert.partnerId)
+      if (expert.partnerSource === 'third-party') {
+        thirdPartyCount += 1
+      } else if (expert.partnerId && expert.partnerName) {
+        const existing = cooperationGroups.get(expert.partnerId)
         if (existing) {
           existing.count += 1
         } else {
-          groups.set(expert.partnerId, { name: expert.partnerName, count: 1 })
+          cooperationGroups.set(expert.partnerId, { name: expert.partnerName, count: 1 })
         }
-      } else {
-        independentCount += 1
       }
     })
 
     return {
-      enterpriseGroups: Array.from(groups.entries()).map(([id, data]) => ({ id, ...data })),
-      independentCount,
+      cooperationGroups: Array.from(cooperationGroups.entries()).map(([id, data]) => ({ id, ...data })),
+      thirdPartyCount,
     }
-  }, [])
+  }, [refreshKey])
 
   // 右侧列表筛选
   const filteredExperts = useMemo(() => {
     return experts.filter((expert) => {
       if (selectedPartner !== 'all') {
-        if (selectedPartner === 'independent') {
-          if (expert.partnerId) return false
+        if (selectedPartner === 'third-party') {
+          if (expert.partnerSource !== 'third-party') return false
         } else if (expert.partnerId !== selectedPartner) {
           return false
         }
@@ -92,20 +81,22 @@ export default function ExpertsListPage() {
           expert.name.toLowerCase().includes(s) ||
           expert.title.toLowerCase().includes(s) ||
           (expert.partnerName && expert.partnerName.toLowerCase().includes(s)) ||
-          (expert.expertType && expert.expertType.toLowerCase().includes(s))
+          (expert.expertType && expert.expertType.toLowerCase().includes(s)) ||
+          (expert.education && expert.education.toLowerCase().includes(s)) ||
+          expert.specialties.some((sp) => sp.toLowerCase().includes(s)) ||
+          expert.relatedPositions?.some((pos) => pos.toLowerCase().includes(s))
         if (!matches) return false
       }
 
-      if (ratingFilter !== 'all' && expert.rating !== ratingFilter) return false
       if (typeFilter !== 'all' && expert.expertType !== typeFilter) return false
 
       return true
     })
-  }, [search, selectedPartner, ratingFilter, typeFilter])
+  }, [search, selectedPartner, typeFilter, refreshKey])
 
   const totalCount = experts.length
-  const enterpriseCount = experts.filter((e) => !!e.partnerId).length
-  const independentCount = experts.filter((e) => !e.partnerId).length
+  const cooperationCount = experts.filter((e) => e.partnerSource !== 'third-party').length
+  const thirdPartyCount = experts.filter((e) => e.partnerSource === 'third-party').length
 
   const handleDelete = (expert: Expert) => {
     setDeletingExpert(expert)
@@ -116,6 +107,15 @@ export default function ExpertsListPage() {
     // 模拟删除，实际项目中应调用 API
     setDeleteDialogOpen(false)
     setDeletingExpert(null)
+  }
+
+  const handleTogglePublicDisplay = (expert: Expert) => {
+    if (!expert.partnerId) return
+    const enterprise = enterprises.find((e) => e.id === expert.partnerId)
+    if (!enterprise) return
+    enterprise.isPublicDisplay = !enterprise.isPublicDisplay
+    enterprise.updatedAt = new Date()
+    setRefreshKey((prev) => prev + 1)
   }
 
   return (
@@ -146,8 +146,12 @@ export default function ExpertsListPage() {
             </Badge>
           </button>
 
-          {/* 企业分组 */}
-          {partnerGroups.enterpriseGroups.map((group) => (
+          <div className="pt-2 pb-1">
+            <p className="text-xs text-muted-foreground px-3 mb-1">合作企业</p>
+          </div>
+
+          {/* 合作企业分组 */}
+          {partnerGroups.cooperationGroups.map((group) => (
             <button
               key={group.id}
               onClick={() => setSelectedPartner(group.id)}
@@ -170,28 +174,29 @@ export default function ExpertsListPage() {
             </button>
           ))}
 
-          {/* 独立专家 */}
-          {partnerGroups.independentCount > 0 && (
-            <button
-              onClick={() => setSelectedPartner('independent')}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
-                selectedPartner === 'independent'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted text-foreground'
-              }`}
+          <div className="pt-2 pb-1">
+            <p className="text-xs text-muted-foreground px-3 mb-1">第三方企业</p>
+          </div>
+
+          <button
+            onClick={() => setSelectedPartner('third-party')}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
+              selectedPartner === 'third-party'
+                ? 'bg-primary text-primary-foreground'
+                : 'hover:bg-muted text-foreground'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              第三方企业
+            </span>
+            <Badge
+              variant={selectedPartner === 'third-party' ? 'secondary' : 'outline'}
+              className="text-xs"
             >
-              <span className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                独立专家
-              </span>
-              <Badge
-                variant={selectedPartner === 'independent' ? 'secondary' : 'outline'}
-                className="text-xs"
-              >
-                {partnerGroups.independentCount}
-              </Badge>
-            </button>
-          )}
+              {partnerGroups.thirdPartyCount}
+            </Badge>
+          </button>
         </div>
       </div>
 
@@ -209,17 +214,6 @@ export default function ExpertsListPage() {
                 className="pl-9"
               />
             </div>
-            <Select value={ratingFilter} onValueChange={setRatingFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="全部评级" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部评级</SelectItem>
-                {Object.entries(EXPERT_RATING_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="全部类型" />
@@ -243,7 +237,7 @@ export default function ExpertsListPage() {
         {/* 统计 */}
         <div className="text-sm text-muted-foreground mb-3">
           共 {filteredExperts.length} 位专家
-          {selectedPartner === 'all' && `（企业内 ${enterpriseCount} / 独立 ${independentCount}）`}
+          {selectedPartner === 'all' && `（合作企业 ${cooperationCount} / 第三方企业 ${thirdPartyCount}）`}
         </div>
 
         {/* 专家列表 — 横向滚动 + 每行固定高度 */}
@@ -254,17 +248,16 @@ export default function ExpertsListPage() {
                 <tr>
                   <th className="text-left px-4 py-3 font-medium">姓名</th>
                   <th className="text-left px-4 py-3 font-medium">性别</th>
-                  <th className="text-left px-4 py-3 font-medium">职称</th>
+                  <th className="text-left px-4 py-3 font-medium">职务/职称</th>
                   <th className="text-left px-4 py-3 font-medium">专家类型</th>
-                  <th className="text-left px-4 py-3 font-medium">所属单位</th>
-                  <th className="text-left px-4 py-3 font-medium">领域</th>
-                  <th className="text-left px-4 py-3 font-medium">经验</th>
-                  <th className="text-left px-4 py-3 font-medium">评级</th>
+                  <th className="text-left px-4 py-3 font-medium">所属企业</th>
+                  <th className="text-left px-4 py-3 font-medium">前台展示</th>
+                  <th className="text-left px-4 py-3 font-medium">教育背景</th>
+                  <th className="text-left px-4 py-3 font-medium">从业年限</th>
+                  <th className="text-left px-4 py-3 font-medium">行业领域</th>
+                  <th className="text-left px-4 py-3 font-medium">擅长岗位</th>
                   <th className="text-left px-4 py-3 font-medium">联系方式</th>
                   <th className="text-left px-4 py-3 font-medium">状态</th>
-                  <th className="text-left px-4 py-3 font-medium">创建人</th>
-                  <th className="text-left px-4 py-3 font-medium">创建时间</th>
-                  <th className="text-left px-4 py-3 font-medium">更新时间</th>
                   <th className="text-right px-4 py-3 font-medium sticky right-0 bg-muted">操作</th>
                 </tr>
               </thead>
@@ -304,9 +297,35 @@ export default function ExpertsListPage() {
                         <Badge variant="secondary" className="text-xs">独立专家</Badge>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{expert.experience}年</td>
                     <td className="px-4 py-3">
-                      <ExpertRatingBadge rating={expert.rating} />
+                      {expert.partnerId ? (() => {
+                        const enterprise = enterprises.find((e) => e.id === expert.partnerId)
+                        return enterprise ? (
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={enterprise.isPublicDisplay}
+                              onCheckedChange={() => handleTogglePublicDisplay(expert)}
+                            />
+                            <span className={`text-sm ${enterprise.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
+                              {enterprise.isPublicDisplay ? '展示' : '隐藏'}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">-</span>
+                        )
+                      })() : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground max-w-[140px] truncate" title={expert.education || ''}>
+                      {expert.education || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{expert.experience}年</td>
+                    <td className="px-4 py-3 text-muted-foreground max-w-[140px] truncate" title={expert.specialties.join('、')}>
+                      {expert.specialties.join('、') || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground max-w-[140px] truncate" title={expert.relatedPositions?.join('、') || ''}>
+                      {expert.relatedPositions?.join('、') || '-'}
                     </td>
                     <td className="px-4 py-3">
                       {expert.isContactHidden ? (
@@ -332,15 +351,6 @@ export default function ExpertsListPage() {
                       >
                         {expert.status === 'active' ? '启用' : '禁用'}
                       </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {expert.createdBy || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {expert.createdAt.toLocaleDateString('zh-CN')}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {expert.updatedAt.toLocaleDateString('zh-CN')}
                     </td>
                     <td className="px-4 py-3 text-right sticky right-0 bg-background">
                       <div className="flex items-center justify-end gap-1">

@@ -10,7 +10,6 @@ import {
   Search, 
   Calendar,
   Briefcase,
-  Users,
   Building2,
   ArrowRight,
 } from "lucide-react"
@@ -166,10 +165,6 @@ export default function EmploymentProjectsPortalPage() {
                             <span className="flex items-center gap-1">
                               <Briefcase className="h-4 w-4" />
                               {project.jobCount} 个岗位
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Users className="h-4 w-4" />
-                              {project.applicationCount} 人投递
                             </span>
                             <span className="flex items-center gap-1">
                               <Building2 className="h-4 w-4" />
