@@ -1,11 +1,10 @@
 "use client"
 
 import { useState, useRef } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { TableRowActions } from "@/components/admin/table-row-actions"
 import {
   Select,
   SelectContent,
@@ -22,22 +21,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { ArrowLeft, Search, Eye, Plus, Pencil, Trash2, MoreHorizontal, Upload, X } from "lucide-react"
+import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
+import { AdminListPage } from "@/components/admin/list-page"
+import { AdminDataTable } from "@/components/admin/data-table"
+import { Eye, EyeOff, Plus, Pencil, Trash2, Upload, X, FileText } from "lucide-react"
 import { cultureBrands } from "@/lib/mock-data"
 import { CULTURE_TYPE_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
 import type { CultureBrand, BrandStatus } from "@/lib/types"
@@ -53,17 +40,21 @@ const emptyForm = {
   relatedMajor: "",
   status: "draft" as BrandStatus,
   coverImage: "",
+  attachments: [] as string[],
 }
 
 export default function CultureBrandPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [typeFilter, setTypeFilter] = useState("all")
+  const [search, setSearch] = useState("")
+  const [filters, setFilters] = useState<Record<string, string>>({
+    type: "all",
+  })
   const [cultures, setCultures] = useState<CultureBrand[]>([...cultureBrands])
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCulture, setEditingCulture] = useState<CultureBrand | null>(null)
   const [form, setForm] = useState(emptyForm)
   const coverFileRef = useRef<HTMLInputElement>(null)
+  const attachmentFileRef = useRef<HTMLInputElement>(null)
 
   const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -77,9 +68,24 @@ export default function CultureBrandPage() {
     setForm((prev) => ({ ...prev, coverImage: "" }))
   }
 
+  const handleAttachmentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    const names = Array.from(files).map((f) => f.name)
+    setForm((prev) => ({ ...prev, attachments: [...prev.attachments, ...names] }))
+    e.target.value = ""
+  }
+
+  const removeAttachment = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      attachments: prev.attachments.filter((_, i) => i !== index),
+    }))
+  }
+
   const filteredCultures = cultures.filter((culture) => {
-    const matchesSearch = culture.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = typeFilter === "all" || culture.type === typeFilter
+    const matchesSearch = culture.name.toLowerCase().includes(search.toLowerCase())
+    const matchesType = filters.type === "all" || culture.type === filters.type
     return matchesSearch && matchesType
   })
 
@@ -113,6 +119,7 @@ export default function CultureBrandPage() {
       relatedMajor: culture.relatedMajor || "",
       status: culture.status,
       coverImage: culture.coverImage || "",
+      attachments: culture.attachments || [],
     })
     setDialogOpen(true)
   }
@@ -127,6 +134,7 @@ export default function CultureBrandPage() {
                 ...form,
                 relatedMajor: form.relatedMajor || undefined,
                 coverImage: form.coverImage || c.coverImage,
+                attachments: form.attachments.length > 0 ? form.attachments : undefined,
                 updatedAt: new Date(),
               }
             : c
@@ -141,6 +149,7 @@ export default function CultureBrandPage() {
         content: "",
         relatedMajor: form.relatedMajor || undefined,
         coverImage: form.coverImage || "/placeholder.svg?height=200&width=300",
+        attachments: form.attachments.length > 0 ? form.attachments : undefined,
         status: form.status,
         viewCount: 0,
         createdAt: new Date(),
@@ -166,137 +175,141 @@ export default function CultureBrandPage() {
     )
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/brands">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">文化思政品牌管理</h1>
-          <p className="text-muted-foreground">管理思政案例、文化活动等品牌内容</p>
-        </div>
-      </div>
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="搜索内容名称..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="内容类型" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部类型</SelectItem>
-              <SelectItem value="case">典型案例</SelectItem>
-              <SelectItem value="resource">思政资源</SelectItem>
-              <SelectItem value="activity">文化活动</SelectItem>
-              <SelectItem value="award">获奖成果</SelectItem>
-            </SelectContent>
-          </Select>
+  const handleClearFilters = () => {
+    setSearch("")
+    setFilters({ type: "all" })
+  }
+
+  const filterConfigs = [
+    {
+      key: "type",
+      label: "全部类型",
+      options: [
+        { value: "case", label: "典型案例" },
+        { value: "resource", label: "思政资源" },
+        { value: "activity", label: "文化活动" },
+        { value: "award", label: "获奖成果" },
+      ],
+    },
+  ]
+
+  const columns = [
+    {
+      key: "cover",
+      title: "封面",
+      render: (culture: CultureBrand) => (
+        <img
+          src={culture.coverImage || "/placeholder.svg?height=32&width=48"}
+          alt={culture.name}
+          className="h-8 w-12 object-cover rounded"
+        />
+      ),
+    },
+    { key: "name", title: "名称", render: (culture: CultureBrand) => <span className="font-medium">{culture.name}</span> },
+    {
+      key: "type",
+      title: "类型",
+      render: (culture: CultureBrand) => (
+        <Badge className={getTypeColor(culture.type)}>{CULTURE_TYPE_LABELS[culture.type]}</Badge>
+      ),
+    },
+    { key: "description", title: "描述", render: (culture: CultureBrand) => <span className="max-w-xs truncate">{culture.description}</span> },
+    { key: "relatedMajor", title: "面向专业", render: (culture: CultureBrand) => culture.relatedMajor || "-" },
+    {
+      key: "status",
+      title: "状态",
+      render: (culture: CultureBrand) => (
+        <Badge variant={culture.status === "published" ? "default" : "secondary"}>
+          {BRAND_STATUS_LABELS[culture.status]}
+        </Badge>
+      ),
+    },
+    {
+      key: "views",
+      title: "浏览量",
+      render: (culture: CultureBrand) => (
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <Eye className="h-4 w-4" />
+          <span>{culture.viewCount}</span>
         </div>
-        <Button onClick={openAddDialog}>
-          <Plus className="h-4 w-4 mr-2" />
+      ),
+    },
+    {
+      key: "updatedAt",
+      title: "更新时间",
+      render: (culture: CultureBrand) => <span className="text-sm">{culture.updatedAt.toLocaleDateString("zh-CN")}</span>,
+    },
+    {
+      key: "actions",
+      title: "",
+      width: "w-[50px]",
+      align: "right" as const,
+      render: (culture: CultureBrand) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEditDialog(culture)}>
+            <Pencil className="mr-1 h-3 w-3" />
+            编辑
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => toggleStatus(culture)}>
+            {culture.status === "published" ? (
+              <>
+                <EyeOff className="mr-1 h-3 w-3" />
+                下架
+              </>
+            ) : (
+              <>
+                <Eye className="mr-1 h-3 w-3" />
+                发布
+              </>
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+            onClick={() => handleDelete(culture.id)}
+          >
+            <Trash2 className="mr-1 h-3 w-3" />
+            删除
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
+
+  return (
+    <AdminListPage
+      title="文化思政品牌管理"
+      subtitle="管理思政案例、文化活动等品牌内容"
+      count={filteredCultures.length}
+      countLabel="条内容"
+      backHref="/admin/brands"
+      activeFilters={filters}
+      onFilterChange={handleFilterChange}
+      searchPlaceholder="搜索内容名称..."
+      searchValue={search}
+      onSearchChange={setSearch}
+      filters={filterConfigs}
+      filterValues={filters}
+      onClearFilters={handleClearFilters}
+      actions={
+        <Button size="sm" onClick={openAddDialog}>
+          <Plus className="h-4 w-4 mr-1" />
           新增内容
         </Button>
-      </div>
+      }
+    >
+      <AdminDataTable
+        columns={columns}
+        data={filteredCultures}
+        rowKey={(c) => c.id}
+        emptyText="暂无符合条件的内容"
+      />
 
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>封面</TableHead>
-              <TableHead>名称</TableHead>
-              <TableHead>类型</TableHead>
-              <TableHead>描述</TableHead>
-              <TableHead>关联专业</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>浏览量</TableHead>
-              <TableHead>更新时间</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCultures.length > 0 ? (
-              filteredCultures.map((culture) => (
-                <TableRow key={culture.id}>
-                  <TableCell>
-                    <img
-                      src={culture.coverImage || "/placeholder.svg?height=32&width=48"}
-                      alt={culture.name}
-                      className="h-8 w-12 object-cover rounded"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{culture.name}</TableCell>
-                  <TableCell>
-                    <Badge className={getTypeColor(culture.type)}>
-                      {CULTURE_TYPE_LABELS[culture.type]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">{culture.description}</TableCell>
-                  <TableCell>{culture.relatedMajor || "-"}</TableCell>
-                  <TableCell>
-                    <Badge variant={culture.status === "published" ? "default" : "secondary"}>
-                      {BRAND_STATUS_LABELS[culture.status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Eye className="h-4 w-4" />
-                      <span>{culture.viewCount}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {culture.updatedAt.toLocaleDateString("zh-CN")}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEditDialog(culture)}>
-                          <Pencil className="h-4 w-4 mr-2" />
-                          编辑
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toggleStatus(culture)}>
-                          {culture.status === "published" ? "下架" : "发布"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => handleDelete(culture.id)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          删除
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                  暂无符合条件的内容
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
-
-      {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -334,12 +347,11 @@ export default function CultureBrandPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="c-desc">描述</Label>
-              <Textarea
-                id="c-desc"
+              <FakeRichTextEditor
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(value) => setForm({ ...form, description: value })}
                 placeholder="请输入内容描述"
-                rows={3}
+                minHeight="120px"
               />
             </div>
             <div className="space-y-2">
@@ -375,12 +387,55 @@ export default function CultureBrandPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="c-major">关联专业</Label>
+              <Label>附件上传</Label>
+              <input
+                ref={attachmentFileRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={handleAttachmentFileChange}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => attachmentFileRef.current?.click()}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                点击上传附件
+              </Button>
+              {form.attachments.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  {form.attachments.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm truncate">{file}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-red-500"
+                        onClick={() => removeAttachment(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="c-major">面向专业</Label>
               <Input
                 id="c-major"
                 value={form.relatedMajor}
                 onChange={(e) => setForm({ ...form, relatedMajor: e.target.value })}
-                placeholder="请输入关联专业（选填）"
+                placeholder="请输入面向专业（选填）"
               />
             </div>
             <div className="space-y-2">
@@ -409,6 +464,6 @@ export default function CultureBrandPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminListPage>
   )
 }

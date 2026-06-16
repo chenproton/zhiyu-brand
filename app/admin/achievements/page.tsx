@@ -1,64 +1,69 @@
-"use client"
+'use client'
 
-import { useState, useMemo } from "react"
-import Link from "next/link"
-import { Plus, Search, Eye, Edit, Trash2, Briefcase, Map, BookOpen, Tag, MoreHorizontal } from "lucide-react"
-import { ImportAchievementsButton } from "./_components/import-achievements-dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useState, useMemo } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { TableRowActions } from '@/components/admin/table-row-actions'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { achievements, enterprises } from "@/lib/mock-data"
-import { ACHIEVEMENT_TYPE_LABELS } from "@/lib/types"
-import type { Achievement, AchievementType } from "@/lib/types"
-
-const typeIcons: Record<AchievementType, React.ReactNode> = {
-  job: <Briefcase className="h-4 w-4" />,
-  scene: <Map className="h-4 w-4" />,
-  course: <BookOpen className="h-4 w-4" />,
-  custom: <Tag className="h-4 w-4" />,
-}
-
-const typeColors: Record<AchievementType, string> = {
-  job: "bg-blue-100 text-blue-800",
-  scene: "bg-green-100 text-green-800",
-  course: "bg-purple-100 text-purple-800",
-  custom: "bg-orange-100 text-orange-800",
-}
-
-const TABS = [
-  { value: 'all', label: '全部' },
-  { value: 'job', label: '岗位' },
-  { value: 'scene', label: '场景' },
-  { value: 'course', label: '课程' },
-  { value: 'custom', label: '自定义成果' },
-] as const
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Switch } from '@/components/ui/switch'
+import { AdminListPage } from '@/components/admin/list-page'
+import { AdminDataTable } from '@/components/admin/data-table'
+import { Plus, Eye, Edit, Trash2, Award } from 'lucide-react'
+import { achievements } from '@/lib/mock-data'
+import { SECONDARY_COLLEGES } from '@/lib/types'
+import type { Achievement } from '@/lib/types'
 
 export default function AchievementsPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [search, setSearch] = useState('')
+  const [filters, setFilters] = useState<Record<string, string>>({})
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [activeCollegeTab, setActiveCollegeTab] = useState('全部')
 
   const filteredAchievements = useMemo(() => {
     return achievements.filter((achievement) => {
-      const matchesSearch = achievement.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        achievement.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        achievement.partnerName?.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesType = typeFilter === "all" || achievement.type === typeFilter
-      return matchesSearch && matchesType
+      if (search) {
+        const searchLower = search.toLowerCase()
+        const matchesSearch =
+          achievement.name.toLowerCase().includes(searchLower) ||
+          achievement.description?.toLowerCase().includes(searchLower) ||
+          achievement.partnerName?.toLowerCase().includes(searchLower)
+        if (!matchesSearch) return false
+      }
+      if (activeCollegeTab !== '全部') {
+        const colleges = achievement.secondaryColleges || []
+        if (!colleges.includes(activeCollegeTab)) return false
+      }
+      return true
     })
-  }, [searchTerm, typeFilter, refreshKey])
+  }, [search, refreshKey, activeCollegeTab])
+
+  const statusStats = useMemo(() => {
+    return {
+      total: achievements.length,
+      draft: achievements.filter((a) => a.status === 'draft').length,
+      published: achievements.filter((a) => a.status === 'published').length,
+      archived: achievements.filter((a) => a.status === 'archived').length,
+    }
+  }, [achievements, refreshKey])
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleClearFilters = () => {
+    setSearch('')
+    setFilters({})
+    setActiveCollegeTab('全部')
+  }
 
   const handleDeleteClick = (achievement: Achievement) => {
     setSelectedAchievement(achievement)
@@ -71,218 +76,132 @@ export default function AchievementsPage() {
   }
 
   const handleTogglePublicDisplay = (achievement: Achievement) => {
-    if (!achievement.partnerId) return
-    const enterprise = enterprises.find((e) => e.id === achievement.partnerId)
-    if (!enterprise) return
-    enterprise.isPublicDisplay = !enterprise.isPublicDisplay
-    enterprise.updatedAt = new Date()
+    achievement.isPublicDisplay = !(achievement.isPublicDisplay ?? true)
+    achievement.updatedAt = new Date()
     setRefreshKey((prev) => prev + 1)
   }
 
-  const statsByType = Object.entries(ACHIEVEMENT_TYPE_LABELS).map(([type, label]) => ({
-    type,
-    label,
-    count: achievements.filter(a => a.type === type).length,
-    icon: typeIcons[type as AchievementType],
-  }))
+  const stats = [
+    { key: 'total', label: '全部成果', value: statusStats.total, icon: Award, color: 'slate' as const },
+    { key: 'draft', label: '草稿', value: statusStats.draft, icon: Award, color: 'amber' as const },
+    { key: 'published', label: '已发布', value: statusStats.published, icon: Award, color: 'green' as const },
+    { key: 'archived', label: '已归档', value: statusStats.archived, icon: Award, color: 'slate' as const },
+  ]
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">成果管理</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            管理岗位成果、场景成果、课程成果及自定义成果
-          </p>
-        </div>
+  const columns = [
+    {
+      key: 'seq',
+      title: '序号',
+      width: 'w-16',
+      align: 'center' as const,
+      render: (_: Achievement, index: number) => <span className="text-sm text-muted-foreground">{index + 1}</span>,
+    },
+    {
+      key: 'display',
+      title: '前台展示',
+      render: (achievement: Achievement) => (
         <div className="flex items-center gap-2">
-          <ImportAchievementsButton />
-          <Button asChild>
-            <Link href="/admin/achievements/new">
-              <Plus className="mr-2 h-4 w-4" />
-              添加自定义成果
+          <Switch
+            checked={achievement.isPublicDisplay ?? true}
+            onCheckedChange={() => handleTogglePublicDisplay(achievement)}
+          />
+          <span
+            className={`text-sm ${(achievement.isPublicDisplay ?? true) ? 'text-green-600' : 'text-gray-400'}`}
+          >
+            {(achievement.isPublicDisplay ?? true) ? '展示' : '隐藏'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'name',
+      title: '成果名称',
+      render: (achievement: Achievement) => (
+        <div className="flex items-center gap-2">
+          <Award className="h-4 w-4 text-muted-foreground" />
+          <Link href={`/admin/achievements/${achievement.id}`} className="font-medium hover:underline">
+            {achievement.name}
+          </Link>
+        </div>
+      ),
+    },
+    { key: 'partner', title: '关联主体', render: (a: Achievement) => <span className="text-sm">{a.partnerName || '-'}</span> },
+    { key: 'project', title: '关联项目', render: (a: Achievement) => <span className="text-sm">{a.projectName || '-'}</span> },
+    { key: 'views', title: '浏览量', render: (a: Achievement) => <span className="text-sm">{a.viewCount}</span> },
+    { key: 'createdBy', title: '创建人', render: (a: Achievement) => <span className="text-sm">{a.createdBy || '-'}</span> },
+    {
+      key: 'publishDate',
+      title: '发布时间',
+      render: (a: Achievement) => <span className="text-sm">{a.publishDate.toLocaleDateString('zh-CN')}</span>,
+    },
+    {
+      key: 'actions',
+      title: '',
+      width: 'w-[50px]',
+      align: 'right' as const,
+      render: (achievement: Achievement) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/achievements/${achievement.id}`}>
+              <Eye className="mr-1 h-3 w-3" />
+              查看
             </Link>
           </Button>
-        </div>
-      </div>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/achievements/${achievement.id}/edit`}>
+              <Edit className="mr-1 h-3 w-3" />
+              编辑
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+            onClick={() => handleDeleteClick(achievement)}
+          >
+            <Trash2 className="mr-1 h-3 w-3" />
+            删除
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statsByType.map((stat) => (
-          <Card key={stat.type}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <div className={`p-2 rounded-lg ${typeColors[stat.type as AchievementType]}`}>
-                  {stat.icon}
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stat.count}</p>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+  return (
+    <AdminListPage
+      title="成果管理"
+      subtitle="维护校企合作成果及前台展示"
+      count={filteredAchievements.length}
+      countLabel="个成果"
+      stats={stats}
+      activeFilters={filters}
+      onFilterChange={handleFilterChange}
+      searchPlaceholder="搜索成果名称、描述..."
+      searchValue={search}
+      onSearchChange={setSearch}
+      filters={[]}
+      filterValues={filters}
+      onClearFilters={handleClearFilters}
+      tabs={['全部', ...SECONDARY_COLLEGES].map((c) => ({ value: c, label: c }))}
+      activeTab={activeCollegeTab}
+      onTabChange={setActiveCollegeTab}
+      actions={
+        <Button asChild size="sm">
+          <Link href="/admin/achievements/new">
+            <Plus className="h-4 w-4 mr-1" />
+            新增成果
+          </Link>
+        </Button>
+      }
+    >
+      <AdminDataTable
+        columns={columns}
+        data={filteredAchievements}
+        rowKey={(a) => a.id}
+        emptyText="暂无成果数据"
+        emptyIcon={<Award className="h-10 w-10" />}
+      />
 
-      {/* Filters + Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">成果列表</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Tab 筛选 */}
-          <div className="flex gap-1 mb-4">
-            {TABS.map((tab) => (
-              <Button
-                key={tab.value}
-                variant={typeFilter === tab.value ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setTypeFilter(tab.value)}
-              >
-                {tab.label}
-              </Button>
-            ))}
-          </div>
-
-          {/* Search */}
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="搜索成果名称、描述..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          {/* Table */}
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>成果名称</TableHead>
-                  <TableHead>类型</TableHead>
-                  <TableHead>关联主体</TableHead>
-                  <TableHead>前台展示</TableHead>
-                  <TableHead>关联项目</TableHead>
-                  <TableHead>发布日期</TableHead>
-                  <TableHead>关联人/创建人</TableHead>
-                  <TableHead>关联时间</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAchievements.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                      暂无成果数据
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredAchievements.map((achievement) => (
-                    <TableRow key={achievement.id}>
-                      <TableCell>
-                        <div className="font-medium">{achievement.name}</div>
-                        {achievement.description && (
-                          <div className="text-sm text-muted-foreground line-clamp-1">
-                            {achievement.description}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={typeColors[achievement.type]}>
-                          <span className="flex items-center gap-1">
-                            {typeIcons[achievement.type]}
-                            {ACHIEVEMENT_TYPE_LABELS[achievement.type]}
-                          </span>
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {achievement.partnerName ? (
-                          <span className="text-sm">{achievement.partnerName}</span>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {achievement.partnerId ? (() => {
-                          const enterprise = enterprises.find((e) => e.id === achievement.partnerId)
-                          return enterprise ? (
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={enterprise.isPublicDisplay}
-                                onCheckedChange={() => handleTogglePublicDisplay(achievement)}
-                              />
-                              <span className={`text-sm ${enterprise.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
-                                {enterprise.isPublicDisplay ? '展示' : '隐藏'}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">-</span>
-                          )
-                        })() : (
-                          <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {achievement.projectName ? (
-                          <span className="text-sm">{achievement.projectName}</span>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>{achievement.publishDate.toLocaleDateString('zh-CN')}</TableCell>
-                      <TableCell>
-                        <span className="text-sm">{achievement.createdBy || '-'}</span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm">{achievement.createdAt.toLocaleDateString('zh-CN')}</span>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {achievement.type === 'custom' ? (
-                              <DropdownMenuItem asChild>
-                                <Link href={`/admin/achievements/${achievement.id}`}>
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  查看详情
-                                </Link>
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem onClick={() => alert('跳转到对应系统中查看')}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                查看详情
-                              </DropdownMenuItem>
-                            )}
-                            {achievement.type === 'custom' && (
-                              <DropdownMenuItem onClick={() => alert('编辑功能开发中')}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                编辑
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteClick(achievement)}>
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              删除
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -301,6 +220,6 @@ export default function AchievementsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminListPage>
   )
 }

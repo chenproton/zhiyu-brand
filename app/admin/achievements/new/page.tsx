@@ -3,51 +3,54 @@
 import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Plus, X, Upload } from "lucide-react"
+import { ArrowLeft, Save, Upload, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { projects } from "@/lib/mock-data"
-import { ACHIEVEMENT_TYPE_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
-import type { AchievementType } from "@/lib/types"
+import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
+import { SearchableSelect } from "@/components/shared/searchable-select"
+import {
+  partners,
+  projects,
+  achievements,
+} from "@/lib/mock-data"
+import { SECONDARY_COLLEGES } from "@/lib/types"
+import type { Achievement } from "@/lib/types"
+
+const projectOptions = projects.map((project) => ({ value: project.id, label: project.name }))
+const partnerOptions = partners.map((partner) => ({ value: partner.id, label: partner.name }))
 
 export default function NewAchievementPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
-    type: "" as AchievementType | "",
     description: "",
-    projectId: "",
     date: "",
-    authors: [] as string[],
-    newAuthor: "",
+    projectId: "",
+    partnerIds: [] as string[],
+    coverImage: "",
     attachments: [] as string[],
     secondaryColleges: [] as string[],
   })
 
-  const handleAddAuthor = () => {
-    if (formData.newAuthor.trim()) {
-      setFormData({
-        ...formData,
-        authors: [...formData.authors, formData.newAuthor.trim()],
-        newAuthor: "",
-      })
-    }
-  }
-
-  const handleRemoveAuthor = (index: number) => {
-    setFormData({
-      ...formData,
-      authors: formData.authors.filter((_, i) => i !== index),
-    })
-  }
-
+  const coverInputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    setFormData((prev) => ({ ...prev, coverImage: url }))
+    e.target.value = ""
+  }
+
+  const removeCover = () => {
+    setFormData((prev) => ({ ...prev, coverImage: "" }))
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -70,8 +73,35 @@ export default function NewAchievementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    const partnerId = formData.partnerIds[0] || ""
+    const projectId = formData.projectId || undefined
+
+    const newAchievement = {
+      id: `ach${Date.now()}`,
+      name: formData.title,
+      type: "custom" as const,
+      partnerId,
+      partnerName: partners.find((p) => p.id === partnerId)?.name || "",
+      partnerIds: formData.partnerIds.length > 0 ? formData.partnerIds : undefined,
+      projectId,
+      projectName: projectId ? projects.find((p) => p.id === projectId)?.name : undefined,
+      description: formData.description,
+      publishDate: new Date(formData.date),
+      status: "draft" as const,
+      viewCount: 0,
+      isPublicDisplay: true,
+      secondaryColleges: formData.secondaryColleges.length > 0 ? formData.secondaryColleges : undefined,
+      coverImage: formData.coverImage || undefined,
+      attachments: formData.attachments.length > 0 ? formData.attachments : undefined,
+      createdBy: "管理员",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    achievements.push(newAchievement as Achievement)
+    alert("成果已新增（演示）")
     setLoading(false)
     router.push("/admin/achievements")
   }
@@ -85,7 +115,7 @@ export default function NewAchievementPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">添加自定义成果</h1>
+          <h1 className="text-2xl font-semibold text-foreground">新增成果</h1>
           <p className="text-sm text-muted-foreground mt-1">
             录入专利、论文、奖项等各类成果信息
           </p>
@@ -127,56 +157,14 @@ export default function NewAchievementPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="description">成果简介</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="请输入成果简介"
-                    rows={4}
+                  <FakeRichTextEditor
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, description: value })}
+                    placeholder="请输入成果简介"
+                    minHeight="120px"
                   />
                 </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>作者/发明人</CardTitle>
-                <CardDescription>添加成果的作者或发明人</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="输入姓名"
-                    value={formData.newAuthor}
-                    onChange={(e) => setFormData({ ...formData, newAuthor: e.target.value })}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        handleAddAuthor()
-                      }
-                    }}
-                  />
-                  <Button type="button" variant="outline" onClick={handleAddAuthor}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {formData.authors.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {formData.authors.map((author, index) => (
-                      <Badge key={index} variant="secondary" className="gap-1">
-                        {author}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveAuthor(index)}
-                          className="ml-1 hover:text-destructive"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
               </CardContent>
             </Card>
 
@@ -224,26 +212,81 @@ export default function NewAchievementPage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>关联项目</CardTitle>
-                <CardDescription>关联到具体的合作项目</CardDescription>
+                <CardTitle>归属项目</CardTitle>
+                <CardDescription>选择该成果归属的合作项目（可选）</CardDescription>
               </CardHeader>
               <CardContent>
-                <Select
+                <SearchableSelect
+                  options={projectOptions}
                   value={formData.projectId}
-                  onValueChange={(value) => setFormData({ ...formData, projectId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择关联项目（可选）" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">不关联项目</SelectItem>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(value) =>
+                    setFormData((prev) => ({ ...prev, projectId: value as string }))
+                  }
+                  placeholder="选择归属项目（可选）"
+                  searchPlaceholder="搜索项目..."
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>合作企业</CardTitle>
+                <CardDescription>搜索并选择合作企业</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SearchableSelect
+                  options={partnerOptions}
+                  value={formData.partnerIds}
+                  onChange={(value) =>
+                    setFormData((prev) => ({ ...prev, partnerIds: value as string[] }))
+                  }
+                  multiple
+                  placeholder="搜索并选择合作企业"
+                  searchPlaceholder="搜索企业..."
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>成果封面</CardTitle>
+                <CardDescription>上传成果封面图片</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={coverInputRef}
+                  className="hidden"
+                  onChange={handleCoverChange}
+                />
+                {formData.coverImage ? (
+                  <div className="relative w-fit">
+                    <img
+                      src={formData.coverImage}
+                      alt="成果封面"
+                      className="h-40 w-auto rounded-lg border object-cover"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6"
+                      onClick={removeCover}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => coverInputRef.current?.click()}
+                    className="w-full flex items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg hover:bg-muted transition-colors"
+                  >
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">点击上传封面图片</span>
+                  </button>
+                )}
               </CardContent>
             </Card>
 
@@ -282,6 +325,7 @@ export default function NewAchievementPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button type="submit" className="w-full" disabled={loading}>
+                  <Save className="h-4 w-4 mr-2" />
                   {loading ? "保存中..." : "保存成果"}
                 </Button>
                 <Button type="button" variant="outline" className="w-full" asChild>

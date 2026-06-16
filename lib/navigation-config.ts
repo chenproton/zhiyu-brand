@@ -70,7 +70,6 @@ export const brandNavigationConfig: PlatformNavigationConfig = {
       label: "品牌运营管理",
       icon: "share2",
       children: [
-        { id: "brand-overview", label: "品牌概览", href: "/admin/brands", matchers: ["/admin/brands$"] },
         { id: "brand-talent", label: "人才品牌管理", href: "/admin/brands/talent", matchers: ["/admin/brands/talent"] },
         { id: "brand-partner", label: "雇主品牌管理", href: "/admin/brands/partner", matchers: ["/admin/brands/partner"] },
         { id: "brand-job", label: "岗位品牌管理", href: "/admin/brands/job", matchers: ["/admin/brands/job"] },

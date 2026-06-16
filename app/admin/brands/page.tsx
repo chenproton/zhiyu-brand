@@ -113,7 +113,7 @@ export default function BrandsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">品牌运营管理</h1>
+        <h1 className="text-2xl font-semibold text-foreground">产教品牌运营</h1>
         <p className="text-muted-foreground mt-1">
           管理六大类品牌资产的配置、审核与发布
         </p>

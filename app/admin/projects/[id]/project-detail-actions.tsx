@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import {
   Dialog,
   DialogContent,
@@ -22,9 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Pencil, X, Calendar, CheckCircle2, Clock, AlertCircle, Circle, FileText, Award, Upload } from 'lucide-react'
-import { AchievementManager } from '../_components/achievement-manager'
-import type { Milestone, ProjectAgreement, ProjectSupportingResult } from '@/lib/types'
+import { Plus, Pencil, X, Calendar, CheckCircle2, Clock, AlertCircle, Circle, FileText, Upload } from 'lucide-react'
+import type { Milestone, ProjectAgreement } from '@/lib/types'
 import { AGREEMENT_STATUS_LABELS } from '@/lib/types'
 
 // ==================== 里程碑管理 ====================
@@ -331,6 +331,7 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
         status: form.status,
         content: form.content.trim(),
         attachments: form.attachments,
+        isPublicDisplay: false,
         createdAt: new Date(),
       }
       onChange([...agreements, item])
@@ -343,6 +344,14 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
     if (confirm('确定要删除该协议吗？')) {
       onChange(agreements.filter((a) => a.id !== id))
     }
+  }
+
+  const togglePublicDisplay = (id: string) => {
+    onChange(
+      agreements.map((a) =>
+        a.id === id ? { ...a, isPublicDisplay: !a.isPublicDisplay } : a
+      )
+    )
   }
 
   return (
@@ -379,6 +388,11 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
                 {agreement.content && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{agreement.content}</p>}
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <Switch
+                  checked={agreement.isPublicDisplay ?? false}
+                  onCheckedChange={() => togglePublicDisplay(agreement.id)}
+                  className="mr-1"
+                />
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(agreement)}>
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
@@ -419,8 +433,8 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
               </div>
             </div>
             <div className="space-y-2">
-              <Label>协议内容</Label>
-              <Textarea value={form.content} onChange={(e) => setForm((prev) => ({ ...prev, content: e.target.value }))} placeholder="请输入协议内容" rows={3} />
+              <Label>备注</Label>
+              <Textarea value={form.content} onChange={(e) => setForm((prev) => ({ ...prev, content: e.target.value }))} placeholder="请输入备注" rows={3} />
             </div>
             <div className="space-y-2">
               <Label>协议状态</Label>
@@ -437,7 +451,7 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>附件上传</Label>
+              <Label>协议附件上传</Label>
               <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" multiple className="hidden" onChange={handleFileChange} />
               <div className="flex flex-wrap gap-3">
                 {form.attachments.map((file, index) => (
@@ -451,7 +465,7 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
                 ))}
                 <Button type="button" variant="outline" className="h-9 px-3 border-dashed" onClick={() => fileInputRef.current?.click()}>
                   <Upload className="h-4 w-4 mr-1" />
-                  上传附件
+                  上传协议附件
                 </Button>
               </div>
             </div>
@@ -463,40 +477,5 @@ export function ProjectAgreementManager({ projectId, agreements, onChange }: Pro
         </DialogContent>
       </Dialog>
     </>
-  )
-}
-
-// ==================== 成果管理 ====================
-
-interface ProjectAchievementManagerProps {
-  projectId: string
-  items: ProjectSupportingResult[]
-  onChange: (items: ProjectSupportingResult[]) => void
-}
-
-export function ProjectAchievementManager({ projectId, items, onChange }: ProjectAchievementManagerProps) {
-  return (
-    <AchievementManager
-      items={items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        type: item.type,
-        description: item.description,
-        createdAt: item.createdAt,
-      }))}
-      onChange={(newItems) =>
-        onChange(
-          newItems.map((item) => ({
-            id: item.id,
-            name: item.name,
-            type: item.type,
-            description: item.description,
-            createdAt: item.createdAt,
-          }))
-        )
-      }
-      title="成果管理"
-      description="添加自定义成果或引用成果库中的成果"
-    />
   )
 }

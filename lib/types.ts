@@ -25,20 +25,26 @@ export type ProjectPhase = 'initiation' | 'execution' | 'acceptance' | 'closure'
 // 项目发布状态
 export type ProjectPublishStatus = 'draft' | 'published'
 
-// 专家评级
-export type ExpertRating = 'gold' | 'silver' | 'bronze'
-
 // 专家性别
 export type ExpertGender = 'male' | 'female'
 
-// 专家类型
-export type ExpertType = '企业导师' | '测评专员' | '教学专家' | '技术顾问' | '创业导师' | '评审专家' | '独立专家'
+// 专家附件
+export interface ExpertAttachment {
+  name: string
+  url: string
+}
 
 // 活动状态
 export type ActivityStatus = 'draft' | 'published' | 'ended'
 
 // 成果类型
 export type AchievementType = 'job' | 'scene' | 'course' | 'custom'
+
+// 带名称的图片资源
+export interface NamedPhoto {
+  name: string
+  url: string
+}
 
 // 企业档案
 export interface Enterprise {
@@ -74,8 +80,9 @@ export interface Enterprise {
     remark?: string
   }
   secondaryColleges?: string[]
-  intellectualPropertyPhotos?: string[]
-  qualificationPhotos?: string[]
+  coverImage?: string
+  intellectualPropertyPhotos?: NamedPhoto[]
+  qualificationPhotos?: NamedPhoto[]
   coverPhotos?: string[]
   createdBy?: string
   createdAt: Date
@@ -92,6 +99,8 @@ export interface EnterpriseAgreement {
   status: AgreementStatus
   content?: string
   attachments?: string[]
+  isPublicDisplay?: boolean
+  createdBy?: string
   createdAt: Date
 }
 
@@ -114,11 +123,13 @@ export interface Partner {
   establishedYear?: number
   employeeCount?: number
   secondaryColleges?: string[]
+  coverImage?: string
   hiredStudents?: string[]
   businessLicensePhotos?: string[]
-  intellectualPropertyPhotos?: string[]
-  qualificationPhotos?: string[]
+  intellectualPropertyPhotos?: NamedPhoto[]
+  qualificationPhotos?: NamedPhoto[]
   coverPhotos?: string[]
+  createdBy?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -155,6 +166,8 @@ export interface ProjectSupportingResult {
   name: string
   type: string
   description: string
+  isPublicDisplay?: boolean
+  createdBy?: string
   createdAt: Date
 }
 
@@ -168,6 +181,8 @@ export interface ProjectAgreement {
   status: AgreementStatus
   content?: string
   attachments?: string[]
+  isPublicDisplay?: boolean
+  createdBy?: string
   createdAt: Date
 }
 
@@ -200,6 +215,8 @@ export interface Project {
   outputs?: string[]
   rating?: number
   publishStatus: ProjectPublishStatus
+  // 是否在前台展示
+  isPublicDisplay?: boolean
   // 配套成果关联
   supportingResults?: ProjectSupportingResult[]
   // 项目协议管理
@@ -207,6 +224,7 @@ export interface Project {
   // 项目阶段与进展
   phases?: ProjectPhaseItem[]
   secondaryColleges?: string[]
+  coverImage?: string
   createdBy?: string
   createdAt: Date
   updatedAt: Date
@@ -215,25 +233,45 @@ export interface Project {
 // 专家
 export interface Expert {
   id: string
+  // 专家头像
+  avatar?: string
+  // 姓名
   name: string
+  // 性别
   gender?: ExpertGender
-  // 所属企业类型：合作企业/第三方企业
+  // 年龄
+  age?: number
+  // 所在城市
+  city?: string
+  // 所属机构
+  organization?: string
+  // 职称/职位
+  title?: string
+  // 任职岗位
+  position?: string
+  // 从业年限（年）
+  experience?: number
+  // 教育背景
+  education?: string
+  // 行业方向
+  industryDirection?: string
+  // 岗位方向
+  positionDirection?: string
+  // 擅长领域
+  specialties?: string[]
+  // 专家简介
+  introduction?: string
+  // 从业经历
+  workExperience?: string
+  // 资质荣誉（佐证材料）
+  attachments?: ExpertAttachment[]
+  // 前台展示
+  isPublicDisplay?: boolean
+  // 合作企业来源（保留兼容）
   partnerSource?: 'cooperation' | 'third-party'
   partnerId?: string
   partnerName?: string
-  title: string
-  expertType?: ExpertType
-  specialties: string[]
-  experience: number
-  rating: ExpertRating
-  avatar?: string
-  education?: string
-  contactEmail?: string
-  contactPhone?: string
-  isContactHidden?: boolean
   status: 'active' | 'inactive'
-  workExperience?: string
-  relatedPositions?: string[]
   secondaryColleges?: string[]
   createdBy?: string
   createdAt: Date
@@ -265,25 +303,41 @@ export interface Achievement {
   type: AchievementType
   partnerId?: string
   partnerName?: string
+  partnerIds?: string[]
   projectId?: string
   projectName?: string
   description: string
+  citationReason?: string
   images?: string[]
   attachments?: string[]
   publishDate: Date
   status: 'draft' | 'published' | 'archived'
   viewCount: number
+  isPublicDisplay?: boolean
   secondaryColleges?: string[]
+  coverImage?: string
+  ownerPersons?: string[]
+  coBuilders?: string[]
+  relatedScenes?: RelatedReference[]
+  relatedCourses?: RelatedReference[]
+  relatedPositions?: RelatedReference[]
   createdBy?: string
   createdAt: Date
   updatedAt: Date
 }
+
+export interface RelatedReference {
+  id: string
+  name: string
+}
+
 
 // 学校基本信息
 export interface SchoolInfo {
   id: string
   name: string
   shortName: string
+  code?: string
   logo?: string
   type: string
   province: string
@@ -313,6 +367,7 @@ export interface SecondaryCollege {
   establishedYear?: number
   contactPhone?: string
   contactEmail?: string
+  website?: string
   logo?: string
 }
 
@@ -390,11 +445,6 @@ export const PROJECT_PUBLISH_STATUS_LABELS: Record<ProjectPublishStatus, string>
   published: '已发布',
 }
 
-export const EXPERT_RATING_LABELS: Record<ExpertRating, string> = {
-  gold: '金牌专家',
-  silver: '银牌专家',
-  bronze: '铜牌专家',
-}
 
 export const ACTIVITY_STATUS_LABELS: Record<ActivityStatus, string> = {
   draft: '草稿',
@@ -478,6 +528,7 @@ export const COOPERATION_TYPES = [
   '创新创业',
   '技能竞赛',
   '社会服务',
+  '专业共建',
 ]
 
 // 专家领域列表
@@ -504,19 +555,10 @@ export const EXPERT_ROLES = [
   '课程开发',
 ]
 
-// 专家类型列表
-export const EXPERT_TYPES: ExpertType[] = [
-  '企业导师',
-  '测评专员',
-  '教学专家',
-  '技术顾问',
-  '创业导师',
-  '评审专家',
-  '独立专家',
-]
 
 // 二级学院列表
 export const SECONDARY_COLLEGES = [
+  '校本级',
   '智能制造学院',
   '信息技术学院',
   '经济管理学院',
@@ -547,8 +589,8 @@ export const ACTIVITY_TYPES = [
 export type CooperationAccountType = 'enterprise_public' | 'expert_personal'
 
 export const COOPERATION_ACCOUNT_TYPE_LABELS: Record<CooperationAccountType, string> = {
-  enterprise_public: '企业公共账号',
-  expert_personal: '专家个人账号',
+  enterprise_public: '企业账号',
+  expert_personal: '个人账号',
 }
 
 // 合作账号
@@ -701,6 +743,7 @@ export interface JobBrand {
   demandCount: number
   featureTags: string[]
   coverImage?: string
+  cooperationPartners?: string[]
   status: BrandStatus
   viewCount: number
   secondaryCollege?: string
@@ -915,6 +958,9 @@ export interface Job {
   // 能力模型配置
   abilityConfig?: JobAbilityConfig
   secondaryCollege?: string
+  // 所属就业项目
+  employmentProjectId?: string
+  employmentProjectName?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -933,6 +979,9 @@ export interface JobRecommendation {
   matchReasons: string[] // 匹配原因标签
   batchNo: string // 推荐批次号
   status: 'pending' | 'viewed' | 'contacted' | 'hired' | 'rejected'
+  // 所属就业项目
+  employmentProjectId?: string
+  employmentProjectName?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -1066,7 +1115,7 @@ export const EXPERIENCE_LEVELS = [
 ]
 
 // 就业项目类型
-export type EmploymentProjectType = 'spring' | 'autumn' | '定向招聘' | 'other'
+export type EmploymentProjectType = 'spring' | 'autumn' | '定向招聘' | 'order' | 'other' | string
 
 // 就业项目状态
 export type EmploymentProjectStatus = 'preparing' | 'ongoing' | 'ended'
@@ -1078,13 +1127,21 @@ export interface EmploymentProject {
   type: EmploymentProjectType
   partnerIds: string[]
   targetStudentGroups: string[]
+  recruitmentScope?: {
+    secondaryCollege: string
+    major: string
+    grade: string
+    className: string
+  }[]
   startDate: Date
   endDate: Date
   status: EmploymentProjectStatus
   jobCount: number
   applicationCount: number
   description?: string
+  organizer?: string
   secondaryCollege?: string
+  createdBy?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -1093,6 +1150,7 @@ export const EMPLOYMENT_PROJECT_TYPE_LABELS: Record<EmploymentProjectType, strin
   spring: '春季招聘',
   autumn: '秋季招聘',
   '定向招聘': '定向招聘',
+  'order': '订单班招聘',
   'other': '其他',
 }
 

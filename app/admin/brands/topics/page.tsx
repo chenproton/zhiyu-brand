@@ -4,9 +4,16 @@ import { useState, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -15,8 +22,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { AdminPageHeader } from '@/components/admin/page-header'
+import { AdminFilterBar } from '@/components/admin/filter-bar'
 import { LayoutTemplate, Eye, Plus, Edit, Trash2, FileText, Image, Video, Link2 } from 'lucide-react'
+import { FakeRichTextEditor } from '@/components/shared/fake-rich-text-editor'
 import { brandTopics } from '@/lib/mock-data'
 import { BRAND_STATUS_LABELS } from '@/lib/types'
 import type { BrandTopic, BrandStatus } from '@/lib/types'
@@ -42,7 +51,9 @@ const emptyForm = {
 
 export default function BrandTopicsPage() {
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [filters, setFilters] = useState<Record<string, string>>({
+    status: 'all',
+  })
   const [topics, setTopics] = useState<BrandTopic[]>([...brandTopics])
 
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -52,10 +63,32 @@ export default function BrandTopicsPage() {
   const filtered = useMemo(() => {
     return topics.filter((topic) => {
       if (search && !topic.name.toLowerCase().includes(search.toLowerCase())) return false
-      if (statusFilter !== 'all' && topic.status !== statusFilter) return false
+      if (filters.status !== 'all' && topic.status !== filters.status) return false
       return true
     })
-  }, [search, statusFilter, topics])
+  }, [search, filters, topics])
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleClearFilters = () => {
+    setSearch('')
+    setFilters({ status: 'all' })
+  }
+
+  const filterConfigs = [
+    {
+      key: 'status',
+      label: '全部状态',
+      options: [
+        { value: 'draft', label: '草稿' },
+        { value: 'pending', label: '待审核' },
+        { value: 'published', label: '已发布' },
+        { value: 'archived', label: '已归档' },
+      ],
+    },
+  ]
 
   function openAddDialog() {
     setEditingTopic(null)
@@ -81,11 +114,7 @@ export default function BrandTopicsPage() {
       setTopics((prev) =>
         prev.map((t) =>
           t.id === editingTopic.id
-            ? {
-                ...t,
-                ...form,
-                updatedAt: new Date(),
-              }
+            ? { ...t, ...form, updatedAt: new Date() }
             : t
         )
       )
@@ -117,40 +146,33 @@ export default function BrandTopicsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">品牌专题页管理</h1>
-          <p className="text-muted-foreground">创建与运营品牌专题展示页</p>
-        </div>
-        <Button onClick={openAddDialog}>
-          <Plus className="h-4 w-4 mr-2" />
-          新建专题页
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="品牌专题页管理"
+        subtitle="创建与运营品牌专题展示页"
+        count={filtered.length}
+        countLabel="个专题页"
+        actions={
+          <Button size="sm" onClick={openAddDialog}>
+            <Plus className="h-4 w-4 mr-1" />
+            新建专题页
+          </Button>
+        }
+      />
 
-      {/* 筛选 */}
-      <div className="flex flex-wrap gap-4">
-        <Input
-          placeholder="搜索专题名称..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-64"
-        />
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="发布状态" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">全部状态</SelectItem>
-            <SelectItem value="draft">草稿</SelectItem>
-            <SelectItem value="pending">待审核</SelectItem>
-            <SelectItem value="published">已发布</SelectItem>
-            <SelectItem value="archived">已归档</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <AdminFilterBar
+            searchPlaceholder="搜索专题名称..."
+            searchValue={search}
+            onSearchChange={setSearch}
+            filters={filterConfigs}
+            filterValues={filters}
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+          />
+        </CardContent>
+      </Card>
 
-      {/* 专题列表 */}
       <div className="grid gap-4 md:grid-cols-2">
         {filtered.map((topic) => (
           <Card key={topic.id}>
@@ -215,7 +237,6 @@ export default function BrandTopicsPage() {
         ))}
       </div>
 
-      {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -245,11 +266,11 @@ export default function BrandTopicsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="bt-desc">描述</Label>
-              <Input
-                id="bt-desc"
+              <FakeRichTextEditor
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(value) => setForm({ ...form, description: value })}
                 placeholder="请输入专题描述"
+                minHeight="120px"
               />
             </div>
             <div className="space-y-2">

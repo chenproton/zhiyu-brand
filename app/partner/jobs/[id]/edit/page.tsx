@@ -138,7 +138,7 @@ export default function EditPartnerJobPage({ params }: { params: Promise<{ id: s
             )}
           </div>
 
-          {/* 所属行业 + 关联专业 */}
+          {/* 所属行业 + 面向专业 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="industry">所属行业</Label>
@@ -165,7 +165,7 @@ export default function EditPartnerJobPage({ params }: { params: Promise<{ id: s
               )}
             </div>
             <div className="space-y-2">
-              <Label>关联专业</Label>
+              <Label>面向专业</Label>
               <Popover open={majorsOpen} onOpenChange={setMajorsOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -177,7 +177,7 @@ export default function EditPartnerJobPage({ params }: { params: Promise<{ id: s
                   >
                     <div className="flex flex-wrap gap-1">
                       {selectedMajors.length === 0 ? (
-                        <span className="text-muted-foreground">选择关联专业</span>
+                        <span className="text-muted-foreground">选择面向专业</span>
                       ) : (
                         selectedMajors.map((m) => (
                           <Badge key={m} variant="secondary" className="text-xs">

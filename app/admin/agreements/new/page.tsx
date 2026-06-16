@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ArrowLeft, Save } from 'lucide-react'
+import { FakeRichTextEditor } from '@/components/shared/fake-rich-text-editor'
 import { partners } from '@/lib/mock-data'
 import { AGREEMENT_STATUS_LABELS } from '@/lib/types'
 import type { AgreementStatus } from '@/lib/types'
@@ -185,14 +186,13 @@ export default function NewAgreementPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="content">协议概要</Label>
-                  <Textarea
-                    id="content"
+                  <FakeRichTextEditor
                     value={formData.content}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, content: e.target.value }))
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, content: value }))
                     }
                     placeholder="请输入协议主要内容概要"
-                    rows={4}
+                    minHeight="120px"
                   />
                 </div>
               </CardContent>

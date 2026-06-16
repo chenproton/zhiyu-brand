@@ -2,9 +2,7 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
@@ -15,14 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { TableRowActions } from "@/components/admin/table-row-actions"
 import {
   Dialog,
   DialogContent,
@@ -30,7 +21,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Search, Sparkles, Eye, Building2, Briefcase } from "lucide-react"
+import { AdminListPage } from "@/components/admin/list-page"
+import { AdminDataTable } from "@/components/admin/data-table"
+import { Sparkles, Eye, Building2, Briefcase } from "lucide-react"
 import { jobRecommendations, jobs, studentProfiles, enterprises } from "@/lib/mock-data"
 
 const recStatusLabels: Record<string, string> = {
@@ -52,9 +45,11 @@ const recStatusColors: Record<string, string> = {
 const PARTNER_FILTER_KEY = "employment_partner_filter"
 
 export default function RecommendationsPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [jobFilter, setJobFilter] = useState<string>("all")
+  const [search, setSearch] = useState("")
+  const [filters, setFilters] = useState<Record<string, string>>({
+    status: "all",
+    job: "all",
+  })
   const [selectedRec, setSelectedRec] = useState<typeof jobRecommendations[0] | null>(null)
   const [partnerFilter, setPartnerFilter] = useState<string>(() => {
     if (typeof window !== "undefined") {
@@ -73,15 +68,15 @@ export default function RecommendationsPage() {
   const filtered = useMemo(() => {
     return jobRecommendations.filter((rec) => {
       const matchesSearch =
-        rec.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        rec.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        rec.partnerName.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesStatus = statusFilter === "all" || rec.status === statusFilter
-      const matchesJob = jobFilter === "all" || rec.jobId === jobFilter
+        rec.studentName.toLowerCase().includes(search.toLowerCase()) ||
+        rec.jobTitle.toLowerCase().includes(search.toLowerCase()) ||
+        rec.partnerName.toLowerCase().includes(search.toLowerCase())
+      const matchesStatus = filters.status === "all" || rec.status === filters.status
+      const matchesJob = filters.job === "all" || rec.jobId === filters.job
       const matchesPartner = partnerFilter === "all" || rec.partnerId === partnerFilter
       return matchesSearch && matchesStatus && matchesJob && matchesPartner
     })
-  }, [searchTerm, statusFilter, jobFilter, partnerFilter])
+  }, [search, filters, partnerFilter])
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {
@@ -108,17 +103,124 @@ export default function RecommendationsPage() {
     ? studentProfiles.find((s) => s.id === selectedRec.studentId)
     : null
 
-  return (
-    <div className="space-y-6">
-      {/* 页面标题 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">就业推荐</h1>
-          <p className="text-muted-foreground">
-            基于岗位需求与学生画像的智能匹配推荐
-          </p>
-        </div>
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleClearFilters = () => {
+    setSearch("")
+    setFilters({ status: "all", job: "all" })
+  }
+
+  const filterConfigs = [
+    {
+      key: "status",
+      label: "全部状态",
+      options: Object.entries(recStatusLabels).map(([value, label]) => ({ value, label })),
+    },
+    {
+      key: "job",
+      label: "全部岗位",
+      options: partnerJobs.map((job) => ({ value: job.id, label: job.title })),
+    },
+  ]
+
+  const stats = Object.entries(recStatusLabels).map(([status, label]) => ({
+    key: status,
+    label,
+    value: statusCounts[status] || 0,
+    filterKey: "status",
+    filterValue: status,
+  }))
+
+  const columns = [
+    {
+      key: "student",
+      title: "学生信息",
+      render: (rec: typeof jobRecommendations[0]) => (
         <div className="flex items-center gap-3">
+          <Avatar>
+            <AvatarFallback>{rec.studentName[0]}</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-medium">{rec.studentName}</p>
+            <p className="text-xs text-muted-foreground">{rec.studentMajor}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "job",
+      title: "推荐岗位",
+      render: (rec: typeof jobRecommendations[0]) => (
+        <Link href={`/admin/employment/jobs/${rec.jobId}`} className="hover:underline font-medium">
+          {rec.jobTitle}
+        </Link>
+      ),
+    },
+    { key: "partner", title: "企业", render: (rec: typeof jobRecommendations[0]) => <span className="text-sm">{rec.partnerName}</span> },
+    {
+      key: "matchScore",
+      title: "匹配度",
+      render: (rec: typeof jobRecommendations[0]) => (
+        <div className="flex items-center gap-2">
+          <Progress value={rec.matchScore} className="w-16 h-2" />
+          <span className="text-sm font-medium">{rec.matchScore}%</span>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      title: "状态",
+      render: (rec: typeof jobRecommendations[0]) => (
+        <Badge className={recStatusColors[rec.status]}>{recStatusLabels[rec.status]}</Badge>
+      ),
+    },
+    { key: "batch", title: "批次", render: (rec: typeof jobRecommendations[0]) => <span className="text-xs text-muted-foreground">{rec.batchNo}</span> },
+    {
+      key: "actions",
+      title: "",
+      width: "w-[50px]",
+      align: "right" as const,
+      render: (rec: typeof jobRecommendations[0]) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setSelectedRec(rec)}>
+            <Eye className="mr-1 h-3 w-3" />
+            查看
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => alert("标记为已联系功能开发中")}
+            disabled={rec.status !== "pending"}
+          >
+            <Sparkles className="mr-1 h-3 w-3" />
+            标记联系
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
+
+  return (
+    <AdminListPage
+      title="就业推荐"
+      subtitle="基于岗位需求与学生画像的智能匹配推荐"
+      count={filtered.length}
+      countLabel="条推荐"
+      stats={stats}
+      statsColumns={5}
+      activeFilters={filters}
+      onFilterChange={handleFilterChange}
+      searchPlaceholder="搜索学生姓名、岗位或企业..."
+      searchValue={search}
+      onSearchChange={setSearch}
+      filters={filterConfigs}
+      filterValues={filters}
+      onClearFilters={handleClearFilters}
+      actions={
+        <>
           <Select value={partnerFilter} onValueChange={handlePartnerChange}>
             <SelectTrigger className="w-[220px]">
               <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -131,181 +233,21 @@ export default function RecommendationsPage() {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={() => alert('批量生成推荐功能开发中')}>
-            <Sparkles className="h-4 w-4 mr-2" />
+          <Button size="sm" onClick={() => alert("批量生成推荐功能开发中")}>
+            <Sparkles className="h-4 w-4 mr-1" />
             批量生成推荐
           </Button>
-        </div>
-      </div>
+        </>
+      }
+    >
+      <AdminDataTable
+        columns={columns}
+        data={filtered}
+        rowKey={(r) => r.id}
+        emptyText="没有找到符合条件的推荐记录"
+      />
 
-      {/* 统计卡片 */}
-      <div className="grid gap-4 md:grid-cols-5">
-        {Object.entries(recStatusLabels).map(([status, label]) => {
-          const count = statusCounts[status] || 0
-          return (
-            <Card
-              key={status}
-              className={`cursor-pointer transition-all ${
-                statusFilter === status ? "ring-2 ring-primary" : ""
-              }`}
-              onClick={() =>
-                setStatusFilter(statusFilter === status ? "all" : status)
-              }
-            >
-              <CardContent className="pt-4 pb-3 text-center">
-                <p className="text-xl font-bold">{count}</p>
-                <p className="text-xs text-muted-foreground">{label}</p>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      {/* 筛选栏 */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="搜索学生姓名、岗位或企业..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue placeholder="推荐状态" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部状态</SelectItem>
-                {Object.entries(recStatusLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={jobFilter} onValueChange={setJobFilter}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="筛选岗位" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部岗位</SelectItem>
-                {partnerJobs.map((job) => (
-                  <SelectItem key={job.id} value={job.id}>
-                    {job.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 推荐列表 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>推荐列表</CardTitle>
-          <CardDescription>
-            共 {filtered.length} 条推荐记录，按匹配度排序
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>学生信息</TableHead>
-                <TableHead>推荐岗位</TableHead>
-                <TableHead>企业</TableHead>
-                <TableHead>匹配度</TableHead>
-                <TableHead>状态</TableHead>
-                <TableHead>批次</TableHead>
-                <TableHead className="text-right">操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="text-center py-12 text-muted-foreground"
-                  >
-                    没有找到符合条件的推荐记录
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((rec) => (
-                  <TableRow key={rec.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarFallback>{rec.studentName[0]}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{rec.studentName}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {rec.studentMajor}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/admin/employment/jobs/${rec.jobId}`}
-                        className="hover:underline font-medium"
-                      >
-                        {rec.jobTitle}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{rec.partnerName}</span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress
-                          value={rec.matchScore}
-                          className="w-16 h-2"
-                        />
-                        <span className="text-sm font-medium">
-                          {rec.matchScore}%
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={recStatusColors[rec.status]}>
-                        {recStatusLabels[rec.status]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-xs text-muted-foreground">
-                        {rec.batchNo}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedRec(rec)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        查看
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* 推荐详情弹窗 */}
-      <Dialog
-        open={!!selectedRec}
-        onOpenChange={(open) => !open && setSelectedRec(null)}
-      >
+      <Dialog open={!!selectedRec} onOpenChange={(open) => !open && setSelectedRec(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>推荐详情</DialogTitle>
@@ -315,20 +257,14 @@ export default function RecommendationsPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
                 <Avatar className="h-12 w-12">
-                  <AvatarFallback className="text-lg">
-                    {selectedRec.studentName[0]}
-                  </AvatarFallback>
+                  <AvatarFallback className="text-lg">{selectedRec.studentName[0]}</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">{selectedRec.studentName}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedRec.studentMajor}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{selectedRec.studentMajor}</p>
                 </div>
                 <div className="ml-auto text-right">
-                  <p className="text-2xl font-bold text-primary">
-                    {selectedRec.matchScore}%
-                  </p>
+                  <p className="text-2xl font-bold text-primary">{selectedRec.matchScore}%</p>
                   <p className="text-xs text-muted-foreground">匹配度</p>
                 </div>
               </div>
@@ -342,9 +278,7 @@ export default function RecommendationsPage() {
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {selectedRec.partnerName}
-                    </span>
+                    <span className="text-sm text-muted-foreground">{selectedRec.partnerName}</span>
                   </div>
                 </div>
               </div>
@@ -353,9 +287,7 @@ export default function RecommendationsPage() {
                 <h4 className="text-sm font-semibold mb-2">匹配原因</h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedRec.matchReasons.map((reason) => (
-                    <Badge key={reason} variant="secondary">
-                      {reason}
-                    </Badge>
+                    <Badge key={reason} variant="secondary">{reason}</Badge>
                   ))}
                 </div>
               </div>
@@ -367,9 +299,7 @@ export default function RecommendationsPage() {
                 </div>
                 <div className="p-3 bg-muted/50 rounded-lg text-center">
                   <p className="text-xs text-muted-foreground">当前状态</p>
-                  <Badge className={recStatusColors[selectedRec.status]}>
-                    {recStatusLabels[selectedRec.status]}
-                  </Badge>
+                  <Badge className={recStatusColors[selectedRec.status]}>{recStatusLabels[selectedRec.status]}</Badge>
                 </div>
               </div>
 
@@ -399,8 +329,8 @@ export default function RecommendationsPage() {
                 </Button>
                 <Button
                   className="flex-1"
-                  onClick={() => alert('标记为已联系功能开发中')}
-                  disabled={selectedRec.status !== 'pending'}
+                  onClick={() => alert("标记为已联系功能开发中")}
+                  disabled={selectedRec.status !== "pending"}
                 >
                   标记为已联系
                 </Button>
@@ -409,6 +339,6 @@ export default function RecommendationsPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminListPage>
   )
 }

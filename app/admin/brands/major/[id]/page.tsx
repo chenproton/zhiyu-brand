@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
+import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -47,16 +48,19 @@ import {
   Upload,
   X,
   Pencil,
+  Award,
 } from "lucide-react"
-import { getMajorBrandById, majorBrands, partners, jobs as mockJobs } from "@/lib/mock-data"
+import { getMajorBrandById, majorBrands, partners, jobs as mockJobs, achievements } from "@/lib/mock-data"
 import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS, INDUSTRIES, JOB_CATEGORY_LABELS } from "@/lib/types"
 import type { MajorBrand, Job, JobCategory } from "@/lib/types"
+
 import {
   JobActionButtons,
   NonTeachingJobDialog,
   TeachingJobDialog,
 } from "@/components/admin/job-brand-tools"
-import { AchievementManager } from "@/app/admin/projects/_components/achievement-manager"
+import { TableRowActions } from "@/components/admin/table-row-actions"
+import { ItemPublicDisplaySwitch } from "@/app/admin/enterprises/[id]/item-public-display-switch"
 
 const departments = ["智能制造学院", "信息工程学院", "数字商务学院", "现代服务学院", "设计艺术学院"]
 
@@ -142,7 +146,7 @@ function NameDescDialog({
           </div>
           <div className="space-y-2">
             <Label>{descLabel}</Label>
-            <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={descPlaceholder} rows={3} />
+            <FakeRichTextEditor value={desc} onChange={setDesc} placeholder={descPlaceholder} minHeight="120px" />
           </div>
           {urlLabel && (
             <div className="space-y-2">
@@ -211,7 +215,7 @@ function LevelEditDialog({
           </div>
           <div className="space-y-2">
             <Label>详细说明</Label>
-            <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="填写该等级的认定依据、建设目标或佐证说明" rows={3} />
+            <FakeRichTextEditor value={desc} onChange={setDesc} placeholder="填写该等级的认定依据、建设目标或佐证说明" minHeight="120px" />
           </div>
           <div className="space-y-2">
             <Label>附件佐证</Label>
@@ -301,7 +305,7 @@ export default function MajorBrandDetailPage() {
     {
       id: generateId("level"),
       title: initialMajor ? BRAND_LEVEL_LABELS[initialMajor.level] : "",
-      description: "专业品牌等级说明",
+      description: "专业品牌说明",
       attachments: [],
     },
   ])
@@ -339,7 +343,10 @@ export default function MajorBrandDetailPage() {
   })
 
   // Tab 5 states
-  const [achievementItems, setAchievementItems] = useState<any[]>([])
+  const majorAchievements = useMemo(
+    () => achievements.filter((a) => major?.cooperationPartners.includes(a.partnerName || "")),
+    [major]
+  )
 
   // Tab 6 states
   const [courses, setCourses] = useState<CourseItem[]>(
@@ -379,7 +386,7 @@ export default function MajorBrandDetailPage() {
       department: selectedDepartments.join("，"),
       employmentDirections: directionJobs.map((j) => j.title).filter(Boolean),
       cooperationPartners: companies.map((c) => c.name).filter(Boolean),
-      featuredAchievements: achievementItems.map((a: any) => a.name).filter(Boolean),
+      featuredAchievements: majorAchievements.map((a) => a.name).filter(Boolean),
       coreCourses: courses.map((c) => ({ name: c.name, description: c.description || undefined, url: c.url || undefined })).filter((c) => c.name),
       updatedAt: new Date(),
     }
@@ -465,8 +472,6 @@ export default function MajorBrandDetailPage() {
     })
     setCreateCompanyOpen(false)
   }
-
-  // Tab 5 helpers (AchievementManager handles its own state)
 
   // Tab 6 helpers
   const handleSaveCourse = (name: string, description: string, url?: string) => {
@@ -579,10 +584,10 @@ export default function MajorBrandDetailPage() {
       <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList>
           <TabsTrigger value="info">专业基本信息</TabsTrigger>
-          <TabsTrigger value="levels">专业品牌等级 ({levels.length})</TabsTrigger>
+          <TabsTrigger value="levels">专业品牌 ({levels.length})</TabsTrigger>
           <TabsTrigger value="directions">专业就业方向 ({directionJobs.length})</TabsTrigger>
           <TabsTrigger value="companies">专业合作企业 ({companies.length})</TabsTrigger>
-          <TabsTrigger value="achievements">专业特色成果 ({achievementItems.length})</TabsTrigger>
+          <TabsTrigger value="achievements">专业特色成果 ({majorAchievements.length})</TabsTrigger>
           <TabsTrigger value="courses">专业课程体系 ({courses.length})</TabsTrigger>
         </TabsList>
 
@@ -663,11 +668,11 @@ export default function MajorBrandDetailPage() {
                   <CardTitle className="text-base">专业简介</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Textarea
+                  <FakeRichTextEditor
                     value={major.introduction}
-                    onChange={(e) => setMajor({ ...major, introduction: e.target.value })}
-                    rows={6}
+                    onChange={(value) => setMajor({ ...major, introduction: value })}
                     placeholder="请输入专业简介"
+                    minHeight="160px"
                   />
                 </CardContent>
               </Card>
@@ -723,13 +728,13 @@ export default function MajorBrandDetailPage() {
           </div>
         </TabsContent>
 
-        {/* Tab 2: 专业品牌等级 */}
+        {/* Tab 2: 专业品牌 */}
         <TabsContent value="levels">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base">专业品牌等级</CardTitle>
-                <CardDescription>添加等级描述及佐证材料</CardDescription>
+                <CardTitle className="text-base">专业品牌</CardTitle>
+                <CardDescription>添加专业品牌描述及佐证材料</CardDescription>
               </div>
               <Button size="sm" onClick={() => setLevelDialog({ open: true, item: null })}>
                 <Plus className="h-4 w-4 mr-1" />
@@ -803,23 +808,25 @@ export default function MajorBrandDetailPage() {
             </CardHeader>
             <CardContent className="p-0">
               {directionJobs.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>岗位名称</TableHead>
-                      <TableHead>分类</TableHead>
-                      <TableHead>薪资范围</TableHead>
-                      <TableHead>岗位介绍</TableHead>
-                      <TableHead>关联专业</TableHead>
-                      <TableHead>所属行业</TableHead>
-                      <TableHead>状态</TableHead>
-                      <TableHead className="text-right">操作</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {directionJobs.map((job) => (
-                      <TableRow key={job.id}>
-                        <TableCell className="font-medium">{job.title}</TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 text-center">序号</TableHead>
+                        <TableHead>岗位名称</TableHead>
+                        <TableHead>分类</TableHead>
+                        <TableHead>薪资范围</TableHead>
+                        <TableHead>岗位介绍</TableHead>
+                        <TableHead>面向专业</TableHead>
+                        <TableHead>所属行业</TableHead>
+                        <TableHead>状态</TableHead>
+                        <TableHead className="text-right">操作</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {directionJobs.map((job, index) => (
+                        <TableRow key={job.id} className="group">
+                          <TableCell className="text-center">{index + 1}</TableCell>
+                          <TableCell className="font-medium">{job.title}</TableCell>
                         <TableCell>
                           <Badge variant="outline">{JOB_CATEGORY_LABELS[job.jobCategory || "non-teaching"]}</Badge>
                         </TableCell>
@@ -836,10 +843,13 @@ export default function MajorBrandDetailPage() {
                         <TableCell>
                           <Badge variant="secondary">{job.status === "published" ? "已发布" : "草稿"}</Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => handleRemoveJob(job.id)}>
-                            <Trash2 className="mr-1 h-4 w-4" />删除
-                          </Button>
+                        <TableCell className="text-right relative">
+                          <TableRowActions>
+                            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-red-500 hover:text-red-600" onClick={() => handleRemoveJob(job.id)}>
+                              <Trash2 className="mr-1 h-3 w-3" />
+                              删除
+                            </Button>
+                          </TableRowActions>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -918,17 +928,64 @@ export default function MajorBrandDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base">专业特色成果</CardTitle>
-                <CardDescription>添加专业特色成果及说明</CardDescription>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Award className="h-4 w-4" />
+                  合作成果
+                </CardTitle>
+                <CardDescription>与本专业合作企业相关的合作成果</CardDescription>
               </div>
+              <Button asChild size="sm">
+                <Link href="/admin/achievements/new">
+                  <Plus className="h-4 w-4 mr-1" />
+                  新增成果
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
-              <AchievementManager
-                items={achievementItems}
-                onChange={setAchievementItems}
-                title="成果管理"
-                description="添加自定义成果或引用成果库中的成果"
-              />
+              {(() => {
+                const majorAchievements = achievements.filter((a) =>
+                  major.cooperationPartners.includes(a.partnerName || "")
+                )
+                return majorAchievements.length > 0 ? (
+                  <div className="space-y-4">
+                    {majorAchievements.map((achievement) => (
+                      <div
+                        key={achievement.id}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium">{achievement.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {achievement.publishDate.toLocaleDateString("zh-CN")} 发布
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">{achievement.type}</Badge>
+                          <ItemPublicDisplaySwitch
+                            defaultChecked={achievement.isPublicDisplay ?? true}
+                            onChange={undefined}
+                          />
+                          <Link href={`/admin/achievements/${achievement.id}`}>
+                            <Button variant="outline" size="sm">
+                              查看详情
+                            </Button>
+                          </Link>
+                          <Link href={`/admin/achievements/${achievement.id}/edit`}>
+                            <Button variant="outline" size="sm">
+                              <Pencil className="h-3 w-3 mr-1" />
+                              编辑
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    暂无合作成果
+                  </div>
+                )
+              })()}
             </CardContent>
           </Card>
         </TabsContent>

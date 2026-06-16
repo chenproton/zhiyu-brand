@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -31,13 +32,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { ArrowLeft, Search, Plus, Pencil, Trash2, Upload, X, MoreHorizontal, Eye } from "lucide-react"
+import { TableRowActions } from "@/components/admin/table-row-actions"
+import { AdminListPage } from "@/components/admin/list-page"
+import { AdminDataTable } from "@/components/admin/data-table"
+import { ArrowLeft, Search, Plus, Pencil, Trash2, Upload, X, Eye } from "lucide-react"
 import { jobs, partners } from "@/lib/mock-data"
 import { JobActionButtons, NonTeachingJobDialog, TeachingJobDialog } from "@/components/admin/job-brand-tools"
 import {
@@ -46,7 +44,7 @@ import {
   PARTNER_TYPE_LABELS,
   COOPERATION_STATUS_LABELS,
 } from "@/lib/types"
-import type { Job, Partner, PartnerType } from "@/lib/types"
+import type { Job, NamedPhoto, Partner, PartnerType } from "@/lib/types"
 
 const emptyPartner: Omit<Partner, "id" | "createdAt" | "updatedAt"> = {
   type: "enterprise",
@@ -91,10 +89,12 @@ export default function PartnerBrandPage() {
     const stored = getStoredCustomPartners()
     return [...partners.slice(0, 3), ...stored]
   })
-  const [searchTerm, setSearchTerm] = useState("")
-  const [typeFilter, setTypeFilter] = useState("all")
-  const [industryFilter, setIndustryFilter] = useState("all")
-  const [ratingFilter, setRatingFilter] = useState("all")
+  const [search, setSearch] = useState("")
+  const [filters, setFilters] = useState<Record<string, string>>({
+    type: "all",
+    industry: "all",
+    rating: "all",
+  })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -125,8 +125,8 @@ export default function PartnerBrandPage() {
   const qualFileRef = useRef<HTMLInputElement>(null)
   const coverFileRef = useRef<HTMLInputElement>(null)
   const [licensePhotos, setLicensePhotos] = useState<string[]>([])
-  const [ipPhotos, setIpPhotos] = useState<string[]>([])
-  const [qualPhotos, setQualPhotos] = useState<string[]>([])
+  const [ipPhotos, setIpPhotos] = useState<NamedPhoto[]>([])
+  const [qualPhotos, setQualPhotos] = useState<NamedPhoto[]>([])
   const [coverPhotos, setCoverPhotos] = useState<string[]>([])
 
   const handleFileChange = (setter: React.Dispatch<React.SetStateAction<string[]>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,6 +142,27 @@ export default function PartnerBrandPage() {
     setter((prev) => prev.filter((_, i) => i !== index))
   }
 
+  const handleNamedFileChange = (setter: React.Dispatch<React.SetStateAction<NamedPhoto[]>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files) {
+      const newPhotos: NamedPhoto[] = Array.from(files).map((file) => ({ name: '', url: URL.createObjectURL(file) }))
+      setter((prev) => [...prev, ...newPhotos])
+    }
+    e.target.value = ''
+  }
+
+  const updateNamedPhotoName = (
+    setter: React.Dispatch<React.SetStateAction<NamedPhoto[]>>,
+    index: number,
+    name: string
+  ) => {
+    setter((prev) => prev.map((item, i) => (i === index ? { ...item, name } : item)))
+  }
+
+  const removeNamedPhoto = (setter: React.Dispatch<React.SetStateAction<NamedPhoto[]>>, index: number) => {
+    setter((prev) => prev.filter((_, i) => i !== index))
+  }
+
   const resetCreatePhotos = () => {
     setLicensePhotos([])
     setIpPhotos([])
@@ -150,12 +171,104 @@ export default function PartnerBrandPage() {
   }
 
   const filteredPartners = displayedPartners.filter((partner) => {
-    const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = typeFilter === "all" || partner.type === typeFilter
-    const matchesIndustry = industryFilter === "all" || partner.industry === industryFilter
-    const matchesRating = ratingFilter === "all" || partner.rating === ratingFilter
+    const matchesSearch = partner.name.toLowerCase().includes(search.toLowerCase())
+    const matchesType = filters.type === "all" || partner.type === filters.type
+    const matchesIndustry = filters.industry === "all" || partner.industry === filters.industry
+    const matchesRating = filters.rating === "all" || partner.rating === filters.rating
     return matchesSearch && matchesType && matchesIndustry && matchesRating
   })
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleClearFilters = () => {
+    setSearch("")
+    setFilters({ type: "all", industry: "all", rating: "all" })
+  }
+
+  const filterConfigs = [
+    {
+      key: "type",
+      label: "全部类型",
+      options: [
+        { value: "enterprise", label: "企业" },
+        { value: "association", label: "行业协会" },
+        { value: "park", label: "产业园区" },
+        { value: "institution", label: "机构" },
+      ],
+    },
+    {
+      key: "industry",
+      label: "全部行业",
+      options: INDUSTRIES.map((industry) => ({ value: industry, label: industry })),
+    },
+    {
+      key: "rating",
+      label: "全部深度",
+      options: [
+        { value: "strategic", label: "战略合作" },
+        { value: "deep", label: "深度合作" },
+        { value: "general", label: "一般合作" },
+      ],
+    },
+  ]
+
+  const columns = [
+    { key: "name", title: "主体名称", render: (partner: Partner) => <span className="font-medium">{partner.name}</span> },
+    { key: "type", title: "类型", render: (partner: Partner) => PARTNER_TYPE_LABELS[partner.type] },
+    { key: "industry", title: "行业", render: (partner: Partner) => partner.industry },
+    { key: "region", title: "地区", render: (partner: Partner) => partner.region },
+    { key: "cooperationTypes", title: "合作方式", render: (partner: Partner) => partner.cooperationTypes.length > 0 ? partner.cooperationTypes.join(", ") : "-" },
+    {
+      key: "jobs",
+      title: "关联岗位",
+      render: (partner: Partner) => {
+        const partnerJobs = localJobs.filter((job) => job.partnerId === partner.id)
+        return partnerJobs.length > 0 ? partnerJobs.map((job) => job.title).join(", ") : "-"
+      },
+    },
+    { key: "hiredStudents", title: "招聘学生数量", render: (partner: Partner) => partner.hiredStudents?.length ?? 0 },
+    {
+      key: "openJobs",
+      title: "开放岗位数量",
+      render: (partner: Partner) => {
+        const partnerJobs = localJobs.filter((job) => job.partnerId === partner.id)
+        return partnerJobs.length
+      },
+    },
+    { key: "updatedAt", title: "更新时间", render: (partner: Partner) => partner.updatedAt.toLocaleDateString("zh-CN") },
+    { key: "status", title: "状态", render: (partner: Partner) => COOPERATION_STATUS_LABELS[partner.status] },
+    {
+      key: "actions",
+      title: "",
+      width: "w-[50px]",
+      align: "right" as const,
+      render: (partner: Partner) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/brands/partner/${partner.id}`}>
+              <Eye className="mr-1 h-3 w-3" />
+              查看
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEdit(partner)}>
+            <Pencil className="mr-1 h-3 w-3" />
+            编辑
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+            onClick={() => handleDelete(partner.id)}
+          >
+            <Trash2 className="mr-1 h-3 w-3" />
+            删除
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
 
   const openEdit = (partner: Partner) => {
     setEditingPartner(partner)
@@ -263,154 +376,39 @@ export default function PartnerBrandPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/brands">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">雇主品牌管理</h1>
-          <p className="text-muted-foreground">管理合作主体的品牌展示配置</p>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="搜索主体名称..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="主体类型" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部类型</SelectItem>
-              <SelectItem value="enterprise">企业</SelectItem>
-              <SelectItem value="association">行业协会</SelectItem>
-              <SelectItem value="park">产业园区</SelectItem>
-              <SelectItem value="institution">机构</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={industryFilter} onValueChange={setIndustryFilter}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="所属行业" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部行业</SelectItem>
-              {INDUSTRIES.map((industry) => (
-                <SelectItem key={industry} value={industry}>
-                  {industry}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={ratingFilter} onValueChange={setRatingFilter}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="合作深度" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部深度</SelectItem>
-              <SelectItem value="strategic">战略合作</SelectItem>
-              <SelectItem value="deep">深度合作</SelectItem>
-              <SelectItem value="general">一般合作</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-2" />
+    <AdminListPage
+      title="雇主品牌管理"
+      subtitle="管理合作主体的品牌展示配置"
+      count={filteredPartners.length}
+      countLabel="个雇主品牌"
+      backHref="/admin/brands"
+      actions={
+        <>
+          <Button variant="outline" size="sm" onClick={openCreate}>
+            <Plus className="h-4 w-4 mr-1" />
             新增独立雇主企业
           </Button>
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" />
             从合作企业库引用
           </Button>
-        </div>
-      </div>
-
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>主体名称</TableHead>
-              <TableHead>类型</TableHead>
-              <TableHead>行业</TableHead>
-              <TableHead>地区</TableHead>
-              <TableHead>合作方式</TableHead>
-              <TableHead>关联岗位</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead className="w-[50px]">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredPartners.length > 0 ? (
-              filteredPartners.map((partner) => {
-                const partnerJobs = localJobs.filter((job) => job.partnerId === partner.id)
-                return (
-                  <TableRow key={partner.id}>
-                    <TableCell>
-                      <span className="font-medium">{partner.name}</span>
-                    </TableCell>
-                    <TableCell>{PARTNER_TYPE_LABELS[partner.type]}</TableCell>
-                    <TableCell>{partner.industry}</TableCell>
-                    <TableCell>{partner.region}</TableCell>
-                    <TableCell>
-                      {partner.cooperationTypes.length > 0
-                        ? partner.cooperationTypes.join(", ")
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {partnerJobs.length > 0
-                        ? partnerJobs.map((job) => job.title).join(", ")
-                        : "-"}
-                    </TableCell>
-                    <TableCell>{COOPERATION_STATUS_LABELS[partner.status]}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/brands/partner/${partner.id}`}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              查看详情
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openEdit(partner)}>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            编辑
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(partner.id)}>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            删除
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                  没有找到符合条件的雇主品牌
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+        </>
+      }
+      activeFilters={filters}
+      onFilterChange={handleFilterChange}
+      searchPlaceholder="搜索主体名称..."
+      searchValue={search}
+      onSearchChange={setSearch}
+      filters={filterConfigs}
+      filterValues={filters}
+      onClearFilters={handleClearFilters}
+    >
+      <AdminDataTable
+        columns={columns}
+        data={filteredPartners}
+        rowKey={(p) => p.id}
+        emptyText="没有找到符合条件的雇主品牌"
+      />
 
       {/* 引用已有企业 Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -564,11 +562,11 @@ export default function PartnerBrandPage() {
             )}
             <div className="space-y-2">
               <Label>品牌描述</Label>
-              <Textarea
+              <FakeRichTextEditor
                 value={formDescription}
-                onChange={(e) => setFormDescription(e.target.value)}
-                rows={3}
+                onChange={setFormDescription}
                 placeholder="请输入品牌描述..."
+                minHeight="120px"
               />
             </div>
           </div>
@@ -647,11 +645,11 @@ export default function PartnerBrandPage() {
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>品牌描述</Label>
-                  <Textarea
+                  <FakeRichTextEditor
                     value={createForm.description}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, description: e.target.value }))}
-                    rows={3}
+                    onChange={(value) => setCreateForm((prev) => ({ ...prev, description: value }))}
                     placeholder="请输入品牌描述..."
+                    minHeight="120px"
                   />
                 </div>
               </CardContent>
@@ -773,14 +771,22 @@ export default function PartnerBrandPage() {
                 {/* 知识产权 */}
                 <div className="space-y-2">
                   <Label>知识产权照片</Label>
-                  <input ref={ipFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange(setIpPhotos)} />
+                  <input ref={ipFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange(setIpPhotos)} />
                   <div className="flex flex-wrap gap-3">
                     {ipPhotos.map((photo, idx) => (
-                      <div key={idx} className="relative">
-                        <img src={photo} alt={`知识产权 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
-                        <button type="button" onClick={() => removePhoto(setIpPhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
-                          <X className="h-3 w-3" />
-                        </button>
+                      <div key={idx} className="flex flex-col gap-1.5 w-24">
+                        <div className="relative">
+                          <img src={photo.url} alt={photo.name || `知识产权 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
+                          <button type="button" onClick={() => removeNamedPhoto(setIpPhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <Input
+                          value={photo.name}
+                          onChange={(e) => updateNamedPhotoName(setIpPhotos, idx, e.target.value)}
+                          placeholder="名称"
+                          className="h-7 text-[10px]"
+                        />
                       </div>
                     ))}
                     <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-1 border-dashed" onClick={() => ipFileRef.current?.click()}>
@@ -792,14 +798,22 @@ export default function PartnerBrandPage() {
                 {/* 企业资质 */}
                 <div className="space-y-2">
                   <Label>企业资质证明材料</Label>
-                  <input ref={qualFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange(setQualPhotos)} />
+                  <input ref={qualFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange(setQualPhotos)} />
                   <div className="flex flex-wrap gap-3">
                     {qualPhotos.map((photo, idx) => (
-                      <div key={idx} className="relative">
-                        <img src={photo} alt={`资质 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
-                        <button type="button" onClick={() => removePhoto(setQualPhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
-                          <X className="h-3 w-3" />
-                        </button>
+                      <div key={idx} className="flex flex-col gap-1.5 w-24">
+                        <div className="relative">
+                          <img src={photo.url} alt={photo.name || `资质 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
+                          <button type="button" onClick={() => removeNamedPhoto(setQualPhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <Input
+                          value={photo.name}
+                          onChange={(e) => updateNamedPhotoName(setQualPhotos, idx, e.target.value)}
+                          placeholder="名称"
+                          className="h-7 text-[10px]"
+                        />
                       </div>
                     ))}
                     <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-1 border-dashed" onClick={() => qualFileRef.current?.click()}>
@@ -855,6 +869,6 @@ export default function PartnerBrandPage() {
           />
         </>
       )}
-    </div>
+    </AdminListPage>
   )
 }

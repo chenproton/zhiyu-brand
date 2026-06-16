@@ -18,7 +18,7 @@ import {
 } from "@/lib/mock-data"
 import {
   PARTNER_TYPE_LABELS, PROJECT_PHASE_LABELS, ACHIEVEMENT_TYPE_LABELS,
-  EXPERT_RATING_LABELS, TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS,
+  TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS,
   EMPLOYMENT_PROJECT_STATUS_LABELS, EMPLOYMENT_PROJECT_TYPE_LABELS,
   SECONDARY_COLLEGES,
 } from "@/lib/types"
@@ -54,6 +54,15 @@ const featuredProjects = projects.filter(p => p.publishStatus === "published").s
 const featuredAchievements = achievements.filter(a => a.status === "published").slice(0, 3)
 const featuredExperts = experts.filter(e => e.status === "active").slice(0, 4)
 const featuredTalent = talentProfiles.sort((a, b) => b.abilityScore - a.abilityScore).slice(0, 4)
+function getJobLogo(job: typeof jobBrands[0]) {
+  const partnersList = job.cooperationPartners
+  if (partnersList && partnersList.length > 0) {
+    const partner = enterprises.find((e) => e.name === partnersList[0])
+    if (partner?.logo) return partner.logo
+  }
+  return "/placeholder.svg?height=64&width=64"
+}
+
 const featuredJobs = jobBrands.filter(j => j.status === "published").slice(0, 10)
 const featuredMajors = majorBrands.filter(m => m.level === "recommended").slice(0, 3)
 const featuredTeachers = teacherBrands.filter(t => t.isFeatured && t.status === "published").slice(0, 4)
@@ -252,9 +261,9 @@ export default function LandingPage3() {
                     </Avatar>
                     <div>
                       <h3 className="font-bold">{expert.name}</h3>
-                      <p className="text-sm text-muted-foreground mt-0.5">{expert.title}</p>
+                      <p className="text-sm text-muted-foreground mt-0.5">{expert.title || expert.position}</p>
                     </div>
-                    {expert.rating && <Badge variant="outline" className="text-[10px]">{EXPERT_RATING_LABELS[expert.rating]}</Badge>}
+                    {expert.isPublicDisplay && <Badge variant="outline" className="text-[10px]">认证专家</Badge>}
                   </div>
                 </div>
               </Link>
@@ -334,11 +343,14 @@ export default function LandingPage3() {
             <div>
               <h3 className="text-xl font-semibold tracking-tight mb-6 text-muted-foreground uppercase text-xs tracking-widest">岗位品牌</h3>
               <div className="space-y-3">
-                {featuredJobs.map((job, i) => (
+                {featuredJobs.map((job) => (
                   <Link key={job.id} href="/brands/job">
                     <div className="group flex items-center gap-4 rounded-lg border bg-background p-1.5 hover:border-foreground/20 hover:shadow-sm transition-all duration-300 cursor-pointer">
-                      <div className="w-16 h-16 rounded-md overflow-hidden shrink-0">
-                        <img src={getImage(i + 6)} alt={job.name} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-500" />
+                      <div className="w-16 h-16 rounded-md overflow-hidden shrink-0 flex items-center justify-center bg-white border border-slate-100">
+                        <Avatar className="h-12 w-12 rounded-lg">
+                          <AvatarImage src={getJobLogo(job)} alt={job.name} className="object-contain p-1" />
+                          <AvatarFallback className="rounded-lg bg-muted font-bold text-xs">{job.name[0]}</AvatarFallback>
+                        </Avatar>
                       </div>
                       <div className="flex-1 min-w-0 py-1">
                         <h4 className="font-bold text-sm">{job.name}</h4>

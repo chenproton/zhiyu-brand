@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ArrowLeft, Save } from 'lucide-react'
+import { FakeRichTextEditor } from '@/components/shared/fake-rich-text-editor'
 import {
   PARTNER_TYPE_LABELS,
   COOPERATION_STATUS_LABELS,
@@ -164,14 +165,13 @@ export default function NewPartnerPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="description">主体简介</Label>
-                  <Textarea
-                    id="description"
+                  <FakeRichTextEditor
                     value={formData.description}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, description: e.target.value }))
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, description: value }))
                     }
                     placeholder="请输入主体简介"
-                    rows={4}
+                    minHeight="120px"
                   />
                 </div>
               </CardContent>

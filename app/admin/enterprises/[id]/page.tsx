@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   CooperationStatusBadge,
@@ -17,52 +16,22 @@ import {
   Mail,
   Phone,
   MapPin,
-  Calendar,
   Users,
   FileText,
   Star,
   Award,
-  CreditCard,
   Image,
+  Plus,
 } from 'lucide-react'
 import { AddAgreementButton, AgreementDetailButton } from './enterprise-action-bar'
-import { getEnterpriseById, getProjectsByPartnerId, getAchievementsByPartnerId, achievements } from '@/lib/mock-data'
-import { ENTERPRISE_TYPE_LABELS, COOPERATION_TYPES, COOPERATION_RATING_LABELS } from '@/lib/types'
-import type { Enterprise } from '@/lib/types'
+import { getEnterpriseById, getProjectsByPartnerId, getAchievementsByPartnerId } from '@/lib/mock-data'
+import { ENTERPRISE_TYPE_LABELS } from '@/lib/types'
 import { NewProjectButton } from './enterprise-detail-actions'
-import { EnterpriseAchievementActions } from './enterprise-achievement-actions'
-import { AchievementViewButton } from './achievement-view-button'
-import { partners } from '@/lib/mock-data'
+import { ItemPublicDisplaySwitch } from './item-public-display-switch'
 
 interface PageProps {
   params: Promise<{ id: string }>
   searchParams: Promise<{ tab?: string }>
-}
-
-function PublicDisplaySwitch({ enterprise }: { enterprise: Enterprise }) {
-  return (
-    <form
-      action={async () => {
-        'use server'
-        enterprise.isPublicDisplay = !enterprise.isPublicDisplay
-        enterprise.updatedAt = new Date()
-      }}
-      className="flex items-center gap-2"
-    >
-      <Switch
-        name="isPublicDisplay"
-        defaultChecked={enterprise.isPublicDisplay}
-        onCheckedChange={async () => {
-          'use server'
-          enterprise.isPublicDisplay = !enterprise.isPublicDisplay
-          enterprise.updatedAt = new Date()
-        }}
-      />
-      <span className={`text-sm ${enterprise.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
-        {enterprise.isPublicDisplay ? '展示' : '隐藏'}
-      </span>
-    </form>
-  )
 }
 
 export default async function EnterpriseDetailPage({ params, searchParams }: PageProps) {
@@ -91,10 +60,24 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
         </Link>
       </div>
 
+      {enterprise.coverImage && (
+        <div className="mb-6 rounded-2xl overflow-hidden border border-slate-100 h-48 md:h-64">
+          <img
+            src={enterprise.coverImage}
+            alt={`${enterprise.name} 封面图`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-start gap-4">
-          <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-            <Building2 className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-slate-100">
+            {enterprise.logo ? (
+              <img src={enterprise.logo} alt={enterprise.name} className="w-full h-full object-cover" />
+            ) : (
+              <Building2 className="w-8 h-8 text-gray-400" />
+            )}
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{enterprise.name}</h1>
@@ -155,19 +138,6 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Users className="h-5 w-5 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{enterprise.employeeCount?.toLocaleString() || '-'}</p>
-                <p className="text-xs text-muted-foreground">员工规模</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       <Tabs defaultValue={defaultTab} className="space-y-6">
@@ -190,47 +160,6 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                 <div>
                   <h4 className="text-sm font-medium mb-2">企业简介</h4>
                   <p className="text-gray-600 leading-relaxed">{enterprise.description}</p>
-                </div>
-
-                {/* divider + 合作类型 + 合作评级 */}
-                <div className="grid md:grid-cols-2 gap-6 border-t pt-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">合作类型</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {enterprise.cooperationTypes.map((type) => (
-                        <Badge key={type} variant="secondary">
-                          {type}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">合作评级</h4>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">当前评级</span>
-                        <CooperationRatingBadge rating={enterprise.rating} />
-                      </div>
-                      {enterprise.ratingRecord && (
-                        <>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">评定时间</span>
-                            <span className="text-sm">{enterprise.ratingRecord.evaluatedAt.toLocaleDateString('zh-CN')}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">评定人</span>
-                            <span className="text-sm">{enterprise.ratingRecord.evaluator}</span>
-                          </div>
-                          {enterprise.ratingRecord.remark && (
-                            <div>
-                              <span className="text-sm text-muted-foreground">备注</span>
-                              <p className="text-sm mt-1 bg-muted p-2 rounded">{enterprise.ratingRecord.remark}</p>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
                 </div>
 
                 {/* divider + 其他信息 */}
@@ -303,6 +232,42 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
               </CardContent>
             </Card>
 
+            {/* 企业形象 */}
+            {(enterprise.logo || enterprise.coverImage) && (
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Image className="h-4 w-4" />
+                    企业形象
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col md:flex-row gap-6">
+                    {enterprise.logo && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground">企业 Logo</p>
+                        <img
+                          src={enterprise.logo}
+                          alt={`${enterprise.name} Logo`}
+                          className="w-24 h-24 object-cover rounded-xl border"
+                        />
+                      </div>
+                    )}
+                    {enterprise.coverImage && (
+                      <div className="space-y-2 flex-1">
+                        <p className="text-xs text-muted-foreground">企业封面图</p>
+                        <img
+                          src={enterprise.coverImage}
+                          alt={`${enterprise.name} 封面图`}
+                          className="w-full max-w-md h-40 object-cover rounded-xl border"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Photo cards */}
             {enterprise.businessLicensePhotos && enterprise.businessLicensePhotos.length > 0 && (
               <Card className="lg:col-span-2">
@@ -338,12 +303,16 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                 <CardContent>
                   <div className="flex flex-wrap gap-3">
                     {enterprise.intellectualPropertyPhotos.map((photo, index) => (
-                      <img
-                        key={index}
-                        src={photo}
-                        alt={`知识产权 ${index + 1}`}
-                        className="w-48 h-60 object-cover rounded-lg border"
-                      />
+                      <div key={index} className="flex flex-col gap-2 w-48">
+                        <img
+                          src={photo.url}
+                          alt={photo.name || `知识产权 ${index + 1}`}
+                          className="w-48 h-60 object-cover rounded-lg border"
+                        />
+                        {photo.name && (
+                          <span className="text-sm text-slate-700 text-center">{photo.name}</span>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </CardContent>
@@ -361,12 +330,16 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                 <CardContent>
                   <div className="flex flex-wrap gap-3">
                     {enterprise.qualificationPhotos.map((photo, index) => (
-                      <img
-                        key={index}
-                        src={photo}
-                        alt={`资质证明 ${index + 1}`}
-                        className="w-48 h-60 object-cover rounded-lg border"
-                      />
+                      <div key={index} className="flex flex-col gap-2 w-48">
+                        <img
+                          src={photo.url}
+                          alt={photo.name || `资质证明 ${index + 1}`}
+                          className="w-48 h-60 object-cover rounded-lg border"
+                        />
+                        {photo.name && (
+                          <span className="text-sm text-slate-700 text-center">{photo.name}</span>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </CardContent>
@@ -404,7 +377,6 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
               <div>
                 <CardTitle className="text-base flex items-center gap-3">
                   企业合作协议
-                  <PublicDisplaySwitch enterprise={enterprise} />
                 </CardTitle>
                 <CardDescription>与该企业的所有合作协议</CardDescription>
               </div>
@@ -426,6 +398,10 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                       </div>
                       <div className="flex items-center gap-2">
                         <AgreementStatusBadge status={agreement.status} />
+                        <ItemPublicDisplaySwitch
+                          defaultChecked={agreement.isPublicDisplay}
+                          onChange={undefined}
+                        />
                         <AgreementDetailButton agreement={agreement} />
                       </div>
                     </div>
@@ -446,7 +422,6 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
               <div>
                 <CardTitle className="text-base flex items-center gap-3">
                   合作项目
-                  <PublicDisplaySwitch enterprise={enterprise} />
                 </CardTitle>
                 <CardDescription>与该企业开展的所有合作项目</CardDescription>
               </div>
@@ -471,11 +446,17 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                           {project.type} · {project.startDate.toLocaleDateString('zh-CN')} - {project.endDate.toLocaleDateString('zh-CN')}
                         </p>
                       </div>
-                      <Link href={`/admin/projects/${project.id}`}>
-                        <Button variant="outline" size="sm">
-                          查看详情
-                        </Button>
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <ItemPublicDisplaySwitch
+                          defaultChecked={project.isPublicDisplay}
+                          onChange={undefined}
+                        />
+                        <Link href={`/admin/projects/${project.id}`}>
+                          <Button variant="outline" size="sm">
+                            查看详情
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -494,11 +475,15 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
               <div>
                 <CardTitle className="text-base flex items-center gap-3">
                   合作成果
-                  <PublicDisplaySwitch enterprise={enterprise} />
                 </CardTitle>
                 <CardDescription>与该企业合作产生的成果</CardDescription>
               </div>
-              <EnterpriseAchievementActions />
+              <Button asChild size="sm">
+                <Link href="/admin/achievements/new">
+                  <Plus className="h-4 w-4 mr-1" />
+                  新增成果
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
               {achievements.length > 0 ? (
@@ -516,21 +501,21 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary">{achievement.type}</Badge>
-                        {achievement.type === 'custom' ? (
-                          <>
-                            <Link href={`/admin/achievements/${achievement.id}`}>
-                              <Button variant="outline" size="sm">
-                                查看详情
-                              </Button>
-                            </Link>
-                            <Button variant="outline" size="sm" onClick={() => alert("编辑功能开发中")}>
-                                <Pencil className="h-3 w-3 mr-1" />
-                                编辑
-                              </Button>
-                          </>
-                        ) : (
-                          <AchievementViewButton />
-                        )}
+                        <ItemPublicDisplaySwitch
+                          defaultChecked={achievement.isPublicDisplay ?? true}
+                          onChange={undefined}
+                        />
+                        <Link href={`/admin/achievements/${achievement.id}`}>
+                          <Button variant="outline" size="sm">
+                            查看详情
+                          </Button>
+                        </Link>
+                        <Link href={`/admin/achievements/${achievement.id}/edit`}>
+                          <Button variant="outline" size="sm">
+                            <Pencil className="h-3 w-3 mr-1" />
+                            编辑
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   ))}

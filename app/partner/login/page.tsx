@@ -43,8 +43,8 @@ export default function PartnerLoginPage() {
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
             <Building2 className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-xl">企业门户登录</CardTitle>
-          <CardDescription>请输入企业账号密码登录</CardDescription>
+          <CardTitle className="text-xl">企业/专家服务台登录</CardTitle>
+          <CardDescription>请输入企业/专家账号密码</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -17,34 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, Save, X, Search, Upload } from 'lucide-react'
+import { ArrowLeft, Save, X, Upload, FileText, Trash2 } from 'lucide-react'
+import { FakeRichTextEditor } from '@/components/shared/fake-rich-text-editor'
 import { experts, enterprises } from '@/lib/mock-data'
-import { EXPERT_TYPES, INDUSTRIES, SECONDARY_COLLEGES } from '@/lib/types'
-import type { ExpertGender, ExpertType } from '@/lib/types'
-
-// 模拟岗位数据
-const MOCK_POSITIONS = [
-  '前端开发工程师',
-  '后端开发工程师',
-  '算法工程师',
-  '产品经理',
-  'UI设计师',
-  '测试工程师',
-  '运维工程师',
-  '数据分析师',
-  '项目经理',
-  '技术总监',
-  '人力资源经理',
-  '财务经理',
-  '市场营销专员',
-  '生产主管',
-  '质量工程师',
-  '安全工程师',
-  '创意总监',
-  '品牌设计师',
-  '视觉设计师',
-  '动画设计师',
-]
+import { SECONDARY_COLLEGES } from '@/lib/types'
+import type { ExpertGender, ExpertAttachment } from '@/lib/types'
 
 export default function EditExpertPage() {
   const params = useParams()
@@ -56,31 +33,32 @@ export default function EditExpertPage() {
 
   const [name, setName] = useState('')
   const [gender, setGender] = useState<ExpertGender>('male')
+  const [age, setAge] = useState('')
+  const [city, setCity] = useState('')
   const [title, setTitle] = useState('')
-  const [expertType, setExpertType] = useState<ExpertType | ''>('')
+  const [position, setPosition] = useState('')
+  const [organization, setOrganization] = useState('')
   const [experience, setExperience] = useState('')
   const [education, setEducation] = useState('')
-  const [contactEmail, setContactEmail] = useState('')
-  const [contactPhone, setContactPhone] = useState('')
-  const [isContactHidden, setIsContactHidden] = useState(false)
+  const [industryDirection, setIndustryDirection] = useState('')
+  const [positionDirection, setPositionDirection] = useState('')
+  const [introduction, setIntroduction] = useState('')
+  const [workExperience, setWorkExperience] = useState('')
+  const [specialties, setSpecialties] = useState<string[]>([])
+  const [newSpecialty, setNewSpecialty] = useState('')
+
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
+  const [isPublicDisplay, setIsPublicDisplay] = useState(false)
 
   const [partnerSource, setPartnerSource] = useState<'cooperation' | 'third-party' | ''>('')
   const [partnerId, setPartnerId] = useState('')
   const [thirdPartyName, setThirdPartyName] = useState('')
 
-  const [specialties, setSpecialties] = useState<string[]>([])
-  const [newSpecialty, setNewSpecialty] = useState('')
-
-  const [workExperience, setWorkExperience] = useState('')
-
-  const [relatedPositions, setRelatedPositions] = useState<string[]>([])
-  const [positionSearch, setPositionSearch] = useState('')
-  const [positionDropdownOpen, setPositionDropdownOpen] = useState(false)
-
   const [secondaryColleges, setSecondaryColleges] = useState<string[]>([])
   const [avatar, setAvatar] = useState('')
+  const [attachments, setAttachments] = useState<ExpertAttachment[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const attachmentInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const expert = experts.find((e) => e.id === id)
@@ -90,22 +68,26 @@ export default function EditExpertPage() {
     }
     setName(expert.name)
     setGender(expert.gender || 'male')
-    setTitle(expert.title)
-    setExpertType(expert.expertType || '')
-    setExperience(String(expert.experience))
+    setAge(expert.age ? String(expert.age) : '')
+    setCity(expert.city || '')
+    setTitle(expert.title || '')
+    setPosition(expert.position || '')
+    setOrganization(expert.organization || '')
+    setExperience(expert.experience ? String(expert.experience) : '')
     setEducation(expert.education || '')
-    setContactEmail(expert.contactEmail || '')
-    setContactPhone(expert.contactPhone || '')
-    setIsContactHidden(expert.isContactHidden || false)
+    setIndustryDirection(expert.industryDirection || '')
+    setPositionDirection(expert.positionDirection || '')
+    setIntroduction(expert.introduction || '')
+    setWorkExperience(expert.workExperience || '')
+    setSpecialties(expert.specialties || [])
     setStatus(expert.status)
+    setIsPublicDisplay(expert.isPublicDisplay || false)
     setPartnerSource(expert.partnerSource || '')
     setPartnerId(expert.partnerId || '')
     setThirdPartyName(expert.partnerSource === 'third-party' ? expert.partnerName || '' : '')
-    setSpecialties(expert.specialties || [])
-    setWorkExperience(expert.workExperience || '')
-    setRelatedPositions(expert.relatedPositions || [])
     setSecondaryColleges(expert.secondaryColleges || [])
     setAvatar(expert.avatar || '')
+    setAttachments(expert.attachments || [])
   }, [id])
 
   if (notFound) {
@@ -134,24 +116,27 @@ export default function EditExpertPage() {
     setSpecialties(specialties.filter((_, i) => i !== index))
   }
 
-  const togglePosition = (pos: string) => {
-    setRelatedPositions((prev) =>
-      prev.includes(pos) ? prev.filter((p) => p !== pos) : [...prev, pos]
-    )
-  }
-
-  const filteredPositions = MOCK_POSITIONS.filter(
-    (pos) =>
-      pos.toLowerCase().includes(positionSearch.toLowerCase()) &&
-      !relatedPositions.includes(pos)
-  )
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files && files[0]) {
       setAvatar(URL.createObjectURL(files[0]))
     }
     e.target.value = ''
+  }
+
+  const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    const newAttachments = Array.from(files).map((file) => ({
+      name: file.name,
+      url: URL.createObjectURL(file),
+    }))
+    setAttachments((prev) => [...prev, ...newAttachments])
+    e.target.value = ''
+  }
+
+  const handleRemoveAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -162,31 +147,37 @@ export default function EditExpertPage() {
     if (expert) {
       expert.name = name
       expert.gender = gender
-      expert.title = title
-      expert.expertType = expertType || undefined
-      expert.experience = experience ? parseInt(experience) : 0
+      expert.age = age ? parseInt(age) : undefined
+      expert.city = city || undefined
+      expert.title = title || undefined
+      expert.position = position || undefined
+      expert.organization = organization || undefined
+      expert.experience = experience ? parseInt(experience) : undefined
       expert.education = education || undefined
-      expert.contactEmail = contactEmail || undefined
-      expert.contactPhone = contactPhone || undefined
-      expert.isContactHidden = isContactHidden
+      expert.industryDirection = industryDirection || undefined
+      expert.positionDirection = positionDirection || undefined
+      expert.introduction = introduction || undefined
+      expert.workExperience = workExperience || undefined
+      expert.specialties = specialties
       expert.status = status
+      expert.isPublicDisplay = isPublicDisplay
       expert.partnerSource = partnerSource || undefined
       if (partnerSource === 'cooperation') {
         const selectedEnterprise = enterprises.find((e) => e.id === partnerId)
         expert.partnerId = partnerId || undefined
         expert.partnerName = selectedEnterprise?.name
+        expert.organization = selectedEnterprise?.name || expert.organization
       } else if (partnerSource === 'third-party') {
         expert.partnerId = undefined
         expert.partnerName = thirdPartyName || undefined
+        expert.organization = thirdPartyName || expert.organization
       } else {
         expert.partnerId = undefined
         expert.partnerName = undefined
       }
-      expert.specialties = specialties
-      expert.workExperience = workExperience || undefined
-      expert.relatedPositions = relatedPositions.length > 0 ? relatedPositions : undefined
       expert.secondaryColleges = secondaryColleges.length > 0 ? secondaryColleges : undefined
       expert.avatar = avatar || undefined
+      expert.attachments = attachments.length > 0 ? attachments : undefined
       expert.updatedAt = new Date()
     }
 
@@ -205,7 +196,7 @@ export default function EditExpertPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-semibold text-foreground">编辑专家信息</h1>
-          <p className="text-sm text-muted-foreground mt-1">修改专家的基本资料、专业特长及联系方式</p>
+          <p className="text-sm text-muted-foreground mt-1">修改专家档案，完善产业联盟专家信息表字段</p>
         </div>
       </div>
 
@@ -214,7 +205,7 @@ export default function EditExpertPage() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>基本信息</CardTitle>
+                <CardTitle>基础信息</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -244,39 +235,66 @@ export default function EditExpertPage() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="title">职务/职称 *</Label>
+                    <Label htmlFor="age">年龄</Label>
                     <Input
-                      id="title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="如：技术总监"
-                      required
+                      id="age"
+                      type="number"
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      placeholder="如：42"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="expertType">专家类型</Label>
-                    <Select value={expertType} onValueChange={(v) => setExpertType(v as ExpertType)}>
-                      <SelectTrigger id="expertType">
-                        <SelectValue placeholder="请选择" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {EXPERT_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="city">所在城市</Label>
+                    <Input
+                      id="city"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="如：上海"
+                    />
                   </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="experience">从业年限</Label>
+                    <Label htmlFor="title">职称/职位</Label>
+                    <Input
+                      id="title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="如：高级工程师 / 副院长"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="position">任职岗位</Label>
+                    <Input
+                      id="position"
+                      value={position}
+                      onChange={(e) => setPosition(e.target.value)}
+                      placeholder="如：产业咨询与企业服务负责人"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="organization">所属机构</Label>
+                  <Input
+                    id="organization"
+                    value={organization}
+                    onChange={(e) => setOrganization(e.target.value)}
+                    placeholder="如：上海智能制造产业研究院"
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="experience">从业年限（年）</Label>
                     <Input
                       id="experience"
                       type="number"
                       value={experience}
                       onChange={(e) => setExperience(e.target.value)}
-                      placeholder="如：10"
+                      placeholder="如：18"
                     />
                   </div>
                   <div className="space-y-2">
@@ -285,13 +303,41 @@ export default function EditExpertPage() {
                       id="education"
                       value={education}
                       onChange={(e) => setEducation(e.target.value)}
-                      placeholder="如：清华大学计算机科学博士"
+                      placeholder="如：浙江大学 机械工程专业 硕士"
                     />
                   </div>
                 </div>
 
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="industryDirection">行业方向</Label>
+                    <Input
+                      id="industryDirection"
+                      value={industryDirection}
+                      onChange={(e) => setIndustryDirection(e.target.value)}
+                      placeholder="如：智能制造、工业互联网、高端装备"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="positionDirection">岗位方向</Label>
+                    <Input
+                      id="positionDirection"
+                      value={positionDirection}
+                      onChange={(e) => setPositionDirection(e.target.value)}
+                      placeholder="如：企业战略、技术研发、数字化转型"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>专家照片与擅长领域</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="avatar">专家照片</Label>
+                  <Label htmlFor="avatar">专家头像</Label>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -302,7 +348,7 @@ export default function EditExpertPage() {
                   <div className="flex items-center gap-3">
                     {avatar && (
                       <div className="relative">
-                        <img src={avatar} alt="专家照片" className="w-24 h-32 object-cover rounded-lg border" />
+                        <img src={avatar} alt="专家头像" className="w-24 h-32 object-cover rounded-lg border" />
                         <button
                           type="button"
                           onClick={() => setAvatar('')}
@@ -319,122 +365,34 @@ export default function EditExpertPage() {
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <Upload className="h-5 w-5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">上传照片</span>
+                      <span className="text-xs text-muted-foreground">上传头像</span>
                     </Button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>关联二级学院</Label>
-                  <div className="flex flex-wrap gap-2 p-3 border rounded-md">
-                    {SECONDARY_COLLEGES.map((college) => (
-                      <Badge
-                        key={college}
-                        variant={secondaryColleges.includes(college) ? 'default' : 'outline'}
-                        className="cursor-pointer"
-                        onClick={() =>
-                          setSecondaryColleges((prev) =>
-                            prev.includes(college)
-                              ? prev.filter((c) => c !== college)
-                              : [...prev, college]
-                          )
-                        }
-                      >
-                        {college}
-                      </Badge>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
-                </div>
-
-                {/* 所属行业领域 */}
-                <div className="space-y-2">
-                  <Label>所属行业领域</Label>
+                  <Label>擅长领域</Label>
                   <div className="flex gap-2">
-                    <Select
+                    <Input
                       value={newSpecialty}
-                      onValueChange={(val) => {
-                        if (val && !specialties.includes(val)) {
-                          setSpecialties([...specialties, val])
-                          setNewSpecialty('')
+                      onChange={(e) => setNewSpecialty(e.target.value)}
+                      placeholder="输入擅长领域，按回车添加"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddSpecialty()
                         }
                       }}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="选择行业" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {INDUSTRIES.map((industry) => (
-                          <SelectItem key={industry} value={industry}>{industry}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    />
+                    <Button type="button" variant="outline" onClick={handleAddSpecialty}>添加</Button>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {specialties.map((specialty, index) => (
                       <Badge key={index} variant="outline" className="gap-1">
                         {specialty}
-                        <button type="button" onClick={() => handleRemoveSpecialty(index)} className="ml-1 hover:text-destructive">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 擅长岗位领域 */}
-                <div className="space-y-2">
-                  <Label>擅长岗位领域</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="搜索岗位..."
-                      value={positionSearch}
-                      onChange={(e) => {
-                        setPositionSearch(e.target.value)
-                        setPositionDropdownOpen(true)
-                      }}
-                      onFocus={() => setPositionDropdownOpen(true)}
-                      className="pl-9"
-                    />
-                    {positionDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-10"
-                          onClick={() => setPositionDropdownOpen(false)}
-                        />
-                        <div className="absolute z-20 mt-1 w-full bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                          {filteredPositions.length > 0 ? (
-                            filteredPositions.map((pos) => (
-                              <button
-                                key={pos}
-                                type="button"
-                                className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
-                                onClick={() => {
-                                  togglePosition(pos)
-                                  setPositionSearch('')
-                                  setPositionDropdownOpen(false)
-                                }}
-                              >
-                                {pos}
-                              </button>
-                            ))
-                          ) : (
-                            <div className="px-3 py-2 text-sm text-muted-foreground">
-                              {positionSearch ? '无匹配岗位' : '无更多岗位'}
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {relatedPositions.map((pos) => (
-                      <Badge key={pos} variant="secondary" className="gap-1">
-                        {pos}
                         <button
                           type="button"
-                          onClick={() => togglePosition(pos)}
+                          onClick={() => handleRemoveSpecialty(index)}
                           className="ml-1 hover:text-destructive"
                         >
                           <X className="h-3 w-3" />
@@ -443,7 +401,20 @@ export default function EditExpertPage() {
                     ))}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle>专家简介</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FakeRichTextEditor
+                  value={introduction}
+                  onChange={setIntroduction}
+                  placeholder="请输入专家简介..."
+                  minHeight="160px"
+                />
               </CardContent>
             </Card>
 
@@ -452,60 +423,69 @@ export default function EditExpertPage() {
                 <CardTitle>从业经历</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Textarea
-                  rows={5}
+                <FakeRichTextEditor
                   value={workExperience}
-                  onChange={(e) => setWorkExperience(e.target.value)}
+                  onChange={setWorkExperience}
                   placeholder="请输入从业经历描述..."
+                  minHeight="160px"
                 />
               </CardContent>
             </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle>资质荣誉（佐证材料）</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input
+                  ref={attachmentInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleAttachmentChange}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => attachmentInputRef.current?.click()}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  上传佐证材料
+                </Button>
+                <div className="space-y-2">
+                  {attachments.map((attachment, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm truncate">{attachment.name}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-red-500 hover:text-red-600"
+                        onClick={() => handleRemoveAttachment(index)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  {attachments.length === 0 && (
+                    <p className="text-sm text-muted-foreground">暂未上传佐证材料</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>联系方式</CardTitle>
+                <CardTitle>所属机构来源</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="contactEmail">电子邮箱</Label>
-                  <Input
-                    id="contactEmail"
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="example@email.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contactPhone">联系电话</Label>
-                  <Input
-                    id="contactPhone"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    placeholder="13800000000"
-                  />
-                </div>
-                <div className="flex items-center gap-2 pt-2">
-                  <Switch
-                    id="isContactHidden"
-                    checked={isContactHidden}
-                    onCheckedChange={setIsContactHidden}
-                  />
-                  <Label htmlFor="isContactHidden">隐藏联系方式</Label>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>所属企业</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>企业来源</Label>
+                  <Label>来源</Label>
                   <Select
                     value={partnerSource}
                     onValueChange={(v) => {
@@ -518,8 +498,8 @@ export default function EditExpertPage() {
                       <SelectValue placeholder="请选择" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="cooperation">合作企业</SelectItem>
-                      <SelectItem value="third-party">第三方企业</SelectItem>
+                      <SelectItem value="cooperation">合作企业库</SelectItem>
+                      <SelectItem value="third-party">自定义机构名称</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -544,11 +524,11 @@ export default function EditExpertPage() {
 
                 {partnerSource === 'third-party' && (
                   <div className="space-y-2">
-                    <Label>第三方企业名称</Label>
+                    <Label>机构名称</Label>
                     <Input
                       value={thirdPartyName}
                       onChange={(e) => setThirdPartyName(e.target.value)}
-                      placeholder="请输入第三方企业名称"
+                      placeholder="请输入机构名称"
                     />
                   </div>
                 )}
@@ -557,18 +537,56 @@ export default function EditExpertPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>状态</CardTitle>
+                <CardTitle>关联二级学院</CardTitle>
               </CardHeader>
               <CardContent>
-                <Select value={status} onValueChange={(v) => setStatus(v as 'active' | 'inactive')}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">启用</SelectItem>
-                    <SelectItem value="inactive">禁用</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-wrap gap-2">
+                  {SECONDARY_COLLEGES.map((college) => (
+                    <Badge
+                      key={college}
+                      variant={secondaryColleges.includes(college) ? 'default' : 'outline'}
+                      className="cursor-pointer"
+                      onClick={() =>
+                        setSecondaryColleges((prev) =>
+                          prev.includes(college)
+                            ? prev.filter((c) => c !== college)
+                            : [...prev, college]
+                        )
+                      }
+                    >
+                      {college}
+                    </Badge>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">点击标签进行选择，支持多选</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>状态与展示</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>状态</Label>
+                  <Select value={status} onValueChange={(v) => setStatus(v as 'active' | 'inactive')}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">启用</SelectItem>
+                      <SelectItem value="inactive">禁用</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="isPublicDisplay" className="flex-1">前台展示</Label>
+                  <Switch
+                    id="isPublicDisplay"
+                    checked={isPublicDisplay}
+                    onCheckedChange={setIsPublicDisplay}
+                  />
+                </div>
               </CardContent>
             </Card>
 

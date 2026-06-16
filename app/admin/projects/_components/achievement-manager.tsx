@@ -7,6 +7,15 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   Dialog,
   DialogContent,
@@ -46,6 +55,7 @@ interface AchievementItem {
   type: string
   description: string
   createdAt: Date
+  isPublicDisplay?: boolean
   attachments?: string[]
   secondaryColleges?: string[]
 }
@@ -55,6 +65,18 @@ interface AchievementManagerProps {
   onChange: (items: AchievementItem[]) => void
   title?: string
   description?: string
+}
+
+const MOCK_CREATORS = ['张主任', '李教授', '王老师', '陈工程师', '刘经理', '赵博士']
+const MOCK_PARTNERS = ['华为', '腾讯', '阿里云', '西门子', '比亚迪', '科大讯飞']
+
+function getMockMeta(achievementId: string) {
+  const hash = achievementId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  const creator = MOCK_CREATORS[hash % MOCK_CREATORS.length]
+  const partner = MOCK_PARTNERS[hash % MOCK_PARTNERS.length]
+  const createdAt = new Date(2023 + (hash % 3), (hash % 12), 1 + (hash % 28))
+  const updatedAt = new Date(createdAt.getTime() + 1000 * 60 * 60 * 24 * (7 + (hash % 30)))
+  return { creator, partner, createdAt, updatedAt }
 }
 
 export function AchievementManager({
@@ -83,7 +105,6 @@ export function AchievementManager({
     if (typeFilter !== 'all') {
       result = result.filter((a) => a.type === typeFilter)
     }
-    // 模拟来源筛选
     result = result.filter((a) => {
       const hash = a.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
       const sourceMap: Record<number, string> = { 0: 'mine', 1: 'joint', 2: 'public' }
@@ -128,6 +149,7 @@ export function AchievementManager({
       type: customForm.type.trim() || '自定义',
       description: customForm.description.trim(),
       createdAt: new Date(),
+      isPublicDisplay: true,
       attachments: customForm.attachments,
       secondaryColleges: customForm.secondaryColleges.length > 0 ? customForm.secondaryColleges : undefined,
     }
@@ -138,6 +160,14 @@ export function AchievementManager({
 
   const removeItem = (id: string) => {
     onChange(items.filter((r) => r.id !== id))
+  }
+
+  const togglePublicDisplay = (id: string) => {
+    onChange(
+      items.map((item) =>
+        item.id === id ? { ...item, isPublicDisplay: !item.isPublicDisplay } : item
+      )
+    )
   }
 
   const toggleAchievement = (id: string) => {
@@ -164,6 +194,7 @@ export function AchievementManager({
           type: ACHIEVEMENT_TYPE_LABELS[ach.type] || ach.type,
           description: ach.description,
           createdAt: ach.createdAt,
+          isPublicDisplay: true,
         })
       }
     })
@@ -220,6 +251,11 @@ export function AchievementManager({
                       </Button>
                     )
                   )}
+                  <Switch
+                    checked={item.isPublicDisplay ?? true}
+                    onCheckedChange={() => togglePublicDisplay(item.id)}
+                    className="mx-1"
+                  />
                   <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => removeItem(item.id)}>
                     <X className="h-4 w-4" />
                   </Button>
@@ -333,13 +369,12 @@ export function AchievementManager({
 
       {/* 引用成果库弹窗 */}
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-[900px] max-h-[85vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-[1100px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>引用成果库</DialogTitle>
             <DialogDescription>搜索并选择要引用的合作成果（岗位、场景、课程）</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            {/* 一级分类：全部/岗位/场景/课程 */}
             <div className="flex gap-2">
               {TYPE_TABS.map((tab) => (
                 <Button
@@ -353,7 +388,6 @@ export function AchievementManager({
               ))}
             </div>
 
-            {/* 搜索框 */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -364,7 +398,6 @@ export function AchievementManager({
               />
             </div>
 
-            {/* 二级分类：我的/共建/公共 */}
             <div className="flex gap-2 border-t pt-3">
               {SOURCE_TABS.map((tab) => (
                 <Button
@@ -379,31 +412,55 @@ export function AchievementManager({
               ))}
             </div>
 
-            {/* 成果列表 */}
             {filteredAchievements.length > 0 ? (
-              <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
-                {filteredAchievements.map((achievement) => (
-                  <div
-                    key={achievement.id}
-                    className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => toggleAchievement(achievement.id)}
-                  >
-                    <Checkbox
-                      checked={selectedIds.has(achievement.id)}
-                      onCheckedChange={() => toggleAchievement(achievement.id)}
-                      className="mt-0.5 pointer-events-none"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-sm">{achievement.name}</p>
-                        <Badge variant="secondary" className="text-[10px]">
-                          {ACHIEVEMENT_TYPE_LABELS[achievement.type] || achievement.type}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">{achievement.description}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 text-center">序号</TableHead>
+                        <TableHead className="w-[40px]"></TableHead>
+                        <TableHead>名称</TableHead>
+                        <TableHead>岗位/场景/课程名称</TableHead>
+                        <TableHead>创建人</TableHead>
+                        <TableHead>共建人</TableHead>
+                        <TableHead>创建日期</TableHead>
+                        <TableHead>更新日期</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredAchievements.map((achievement, index) => {
+                        const meta = getMockMeta(achievement.id)
+                        return (
+                          <TableRow
+                            key={achievement.id}
+                            className="cursor-pointer hover:bg-muted/50"
+                            onClick={() => toggleAchievement(achievement.id)}
+                          >
+                            <TableCell className="text-center">{index + 1}</TableCell>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedIds.has(achievement.id)}
+                                onCheckedChange={() => toggleAchievement(achievement.id)}
+                              />
+                            </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">{achievement.name}</span>
+                              <Badge variant="secondary" className="text-[10px]">
+                                {ACHIEVEMENT_TYPE_LABELS[achievement.type] || achievement.type}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>{achievement.name}</TableCell>
+                          <TableCell>{meta.creator}</TableCell>
+                          <TableCell>{meta.partner}</TableCell>
+                          <TableCell>{meta.createdAt.toLocaleDateString('zh-CN')}</TableCell>
+                          <TableCell>{meta.updatedAt.toLocaleDateString('zh-CN')}</TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">

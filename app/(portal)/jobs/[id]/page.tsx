@@ -96,7 +96,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex gap-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarImage src={job.partnerLogo} />
+                      <AvatarImage src={partner?.logo || job.partnerLogo} />
                       <AvatarFallback>{job.partnerName[0]}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -350,23 +350,32 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   <CardTitle className="text-base">该企业其他岗位</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {relatedJobs.map((relatedJob) => (
-                    <Link 
-                      key={relatedJob.id} 
-                      href={`/jobs/${relatedJob.id}`}
-                      className="block p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <p className="font-medium text-sm">{relatedJob.title}</p>
-                      <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-                        <span>
-                          {relatedJob.salaryMin && relatedJob.salaryMax 
-                            ? `${relatedJob.salaryMin/1000}-${relatedJob.salaryMax/1000}K` 
-                            : '面议'}
-                        </span>
-                        <span>{JOB_TYPE_LABELS[relatedJob.type]}</span>
-                      </div>
-                    </Link>
-                  ))}
+                  {relatedJobs.map((relatedJob) => {
+                    const relatedPartner = partners.find(p => p.id === relatedJob.partnerId)
+                    return (
+                      <Link
+                        key={relatedJob.id}
+                        href={`/jobs/${relatedJob.id}`}
+                        className="block p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <Avatar className="h-8 w-8 rounded-md">
+                            <AvatarImage src={relatedPartner?.logo || relatedJob.partnerLogo} className="object-contain p-0.5" />
+                            <AvatarFallback className="rounded-md text-xs font-bold">{relatedJob.partnerName[0]}</AvatarFallback>
+                          </Avatar>
+                          <p className="font-medium text-sm flex-1 min-w-0 truncate">{relatedJob.title}</p>
+                        </div>
+                        <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
+                          <span>
+                            {relatedJob.salaryMin && relatedJob.salaryMax
+                              ? `${relatedJob.salaryMin/1000}-${relatedJob.salaryMax/1000}K`
+                              : '面议'}
+                          </span>
+                          <span>{JOB_TYPE_LABELS[relatedJob.type]}</span>
+                        </div>
+                      </Link>
+                    )
+                  })}
                 </CardContent>
               </Card>
             )}

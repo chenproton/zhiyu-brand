@@ -20,10 +20,13 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
+import { AdminPageHeader } from '@/components/admin/page-header'
+import { AdminStatsCards } from '@/components/admin/stats-cards'
+import { TableRowActions } from '@/components/admin/table-row-actions'
 import React from 'react'
 import {
   Plus, Pencil, Trash2, Shield, Building2, User, Eye, MapPin,
-  Briefcase, BookOpen, CheckSquare, X, ChevronDown, ChevronUp, Check, Share2,
+  Briefcase, BookOpen, CheckSquare, X, ChevronDown, ChevronUp, Check, Share2, Search,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { permissionGrants, cooperationAccounts, enterprises, experts } from '@/lib/mock-data'
@@ -114,9 +117,9 @@ export default function PermissionsPage() {
   const [detailGrant, setDetailGrant] = useState<PermissionGrant | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingGrant, setDeletingGrant] = useState<PermissionGrant | null>(null)
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareGrant, setShareGrant] = useState<PermissionGrant | null>(null)
+  const [shareAdminContact, setShareAdminContact] = useState('13800138000')
   const [adminContactDialogOpen, setAdminContactDialogOpen] = useState(false)
   const [adminContact, setAdminContact] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -125,6 +128,9 @@ export default function PermissionsPage() {
     return ''
   })
   const [adminContactInput, setAdminContactInput] = useState('')
+
+  // 列表搜索
+  const [listSearch, setListSearch] = useState('')
 
   // 弹窗表单状态
   const [activeTab, setActiveTab] = useState('account')
@@ -215,8 +221,18 @@ export default function PermissionsPage() {
 
   const handleShare = (grant: PermissionGrant) => {
     setShareGrant(grant)
+    setShareAdminContact(adminContact || '13800138000')
     setShareDialogOpen(true)
   }
+
+  const filteredGrants = useMemo(() => {
+    const s = listSearch.trim().toLowerCase()
+    if (!s) return grants
+    return grants.filter((grant) =>
+      grant.accountName.toLowerCase().includes(s) ||
+      grant.ownerName.toLowerCase().includes(s)
+    )
+  }, [grants, listSearch])
 
   const handleConfirmDelete = () => {
     if (deletingGrant) {
@@ -230,24 +246,12 @@ export default function PermissionsPage() {
     setGrants(grants.map(g => g.id === grant.id ? { ...g, enabled: !g.enabled } : g))
   }
 
-  const handleToggleRowExpand = (grantId: string) => {
-    setExpandedRows(prev => {
-      const next = new Set(prev)
-      if (next.has(grantId)) {
-        next.delete(grantId)
-      } else {
-        next.add(grantId)
-      }
-      return next
-    })
-  }
-
   // 根据 ownerEntityType 获取可选主体列表
   const ownerOptions = useMemo(() => {
     if (ownerEntityType === 'enterprise') {
       return enterprises.map(e => ({ id: e.id, name: e.name, contact: e.contactPerson || '-', phone: e.contactPhone || '-' }))
     }
-    return experts.map(e => ({ id: e.id, name: e.name, contact: e.name, phone: e.contactPhone || '-' }))
+    return experts.map(e => ({ id: e.id, name: e.name, contact: e.name, phone: e.organization || e.partnerName || '-' }))
   }, [ownerEntityType])
 
   const selectedOwner = useMemo(() => {
@@ -419,78 +423,33 @@ export default function PermissionsPage() {
 
   return (
     <div className="space-y-6">
-      {/* 标题 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">合作权限管理</h1>
-          <p className="text-muted-foreground">为企业/专家创建账号并分配资源权限与测评权限</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setAdminContactDialogOpen(true)}>
-            管理员联系方式配置
-          </Button>
-          <Button onClick={handleAdd}>
-            <Plus className="h-4 w-4 mr-2" />
-            新增权限授权
-          </Button>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="合作权限管理"
+        subtitle="为企业/专家创建账号并分配资源权限与测评权限"
+        actions={
+          <>
+            <Button variant="outline" onClick={() => alert('功能与管理后台角色权限配置一致，本处不演示')}>
+              角色权限配置
+            </Button>
+            <Button variant="outline" onClick={() => setAdminContactDialogOpen(true)}>
+              管理员联系方式配置
+            </Button>
+            <Button onClick={handleAdd}>
+              <Plus className="h-4 w-4 mr-2" />
+              新增权限授权
+            </Button>
+          </>
+        }
+      />
 
-      {/* 统计卡片 */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">授权账号总数</p>
-                <p className="text-3xl font-bold">{stats.total}</p>
-              </div>
-              <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Shield className="h-5 w-5 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">企业公共账号</p>
-                <p className="text-3xl font-bold">{stats.enterpriseCount}</p>
-              </div>
-              <div className="h-10 w-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-indigo-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">专家个人账号</p>
-                <p className="text-3xl font-bold">{stats.expertCount}</p>
-              </div>
-              <div className="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <User className="h-5 w-5 text-amber-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">已启用授权</p>
-                <p className="text-3xl font-bold">{stats.activeCount}</p>
-              </div>
-              <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckSquare className="h-5 w-5 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <AdminStatsCards
+        items={[
+          { key: 'total', label: '授权账号总数', value: stats.total, icon: Shield, color: 'blue' },
+          { key: 'enterprise', label: '企业账号', value: stats.enterpriseCount, icon: Building2, color: 'indigo' },
+          { key: 'expert', label: '个人账号', value: stats.expertCount, icon: User, color: 'amber' },
+          { key: 'active', label: '已启用授权', value: stats.activeCount, icon: CheckSquare, color: 'green' },
+        ]}
+      />
 
       {/* 权限授权列表 */}
       <Card>
@@ -499,157 +458,98 @@ export default function PermissionsPage() {
           <CardDescription>管理各账号的功能权限与测评权限</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="搜索账号名称、账号主体..."
+                value={listSearch}
+                onChange={(e) => setListSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[40px]"></TableHead>
-                <TableHead>账号名称</TableHead>
-                <TableHead>账号类型</TableHead>
-                <TableHead>所属主体</TableHead>
-                <TableHead>资源权限</TableHead>
-                <TableHead>测评权限</TableHead>
-                <TableHead>状态</TableHead>
-                <TableHead className="text-right">操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {grants.map((grant) => {
-                const isExpanded = expandedRows.has(grant.id)
-                return (
-                  <React.Fragment key={grant.id}>
-                    <TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => handleToggleRowExpand(grant.id)}>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleToggleRowExpand(grant.id) }}>
-                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </Button>
-                      </TableCell>
-                      <TableCell className="font-medium">{grant.accountName}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={grant.accountType === 'enterprise_public' ? 'border-indigo-200 text-indigo-700' : 'border-amber-200 text-amber-700'}>
-                          {COOPERATION_ACCOUNT_TYPE_LABELS[grant.accountType]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{grant.ownerName}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {grant.resourcePermissions.slice(0, 2).map((rp) => (
-                            <Badge key={rp.id} variant="secondary" className="text-xs flex items-center gap-1">
-                              {resourceIcons[rp.resourceType]}
-                              {RESOURCE_TYPE_LABELS[rp.resourceType]}
-                            </Badge>
-                          ))}
-                          {grant.resourcePermissions.length > 2 && (
-                            <Badge variant="outline" className="text-xs">+{grant.resourcePermissions.length - 2}</Badge>
-                          )}
-                          {grant.resourcePermissions.length === 0 && (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {grant.assessmentPermissions.slice(0, 2).map((at) => (
-                            <Badge key={at} variant="outline" className="text-xs">
-                              {ASSESSMENT_TYPE_LABELS[at]}
-                            </Badge>
-                          ))}
-                          {grant.assessmentPermissions.length > 2 && (
-                            <Badge variant="outline" className="text-xs">+{grant.assessmentPermissions.length - 2}</Badge>
-                          )}
-                          {grant.assessmentPermissions.length === 0 && (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={grant.enabled}
-                            onCheckedChange={() => handleToggleEnabled(grant)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          <span className={`text-sm ${grant.enabled ? 'text-green-600' : 'text-gray-400'}`}>
-                            {grant.enabled ? '已启用' : '已停用'}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleShare(grant) }}>
-                            <Share2 className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleViewDetail(grant) }}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleEdit(grant) }}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={(e) => { e.stopPropagation(); handleDelete(grant) }}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                    {isExpanded && (
-                      <TableRow>
-                        <TableCell colSpan={8} className="bg-muted/30 p-4">
-                          <div className="space-y-3">
-                            <div>
-                              <h4 className="text-sm font-semibold mb-2">功能权限明细（资源类型 + 批次 + 操作）</h4>
-                              <div className="space-y-2">
-                                {grant.resourcePermissions.map((rp) => (
-                                  <div key={rp.id} className="flex items-center gap-3 text-sm bg-background rounded-md p-2 border">
-                                    <Badge variant="secondary" className="flex items-center gap-1">
-                                      {resourceIcons[rp.resourceType]}
-                                      {RESOURCE_TYPE_LABELS[rp.resourceType]}
-                                    </Badge>
-                                    <span className="text-muted-foreground">·</span>
-                                    <span>{rp.batchName || '—'}</span>
-                                    <span className="text-muted-foreground">·</span>
-                                    <div className="flex gap-1">
-                                      {rp.operations.map((op) => (
-                                        <Badge key={op} variant="outline" className="text-xs font-normal">
-                                          {OPERATION_TYPE_LABELS[op]}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-                                ))}
-                                {grant.resourcePermissions.length === 0 && (
-                                  <p className="text-sm text-muted-foreground">暂无功能权限</p>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex gap-6">
-                              <div>
-                                <h4 className="text-sm font-semibold mb-1">测评权限</h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {grant.assessmentPermissions.map((at) => (
-                                    <Badge key={at} variant="outline" className="text-xs">
-                                      {ASSESSMENT_TYPE_LABELS[at]}
-                                    </Badge>
-                                  ))}
-                                  {grant.assessmentPermissions.length === 0 && (
-                                    <span className="text-sm text-muted-foreground">—</span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </React.Fragment>
-                )
-              })}
-              {grants.length === 0 && (
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    暂无权限授权记录，点击右上角「新增权限授权」创建
-                  </TableCell>
+                  <TableHead className="w-12 text-center">序号</TableHead>
+                  <TableHead>前台展示</TableHead>
+                  <TableHead>账号名称</TableHead>
+                  <TableHead>账号类型</TableHead>
+                  <TableHead>所属主体</TableHead>
+                  <TableHead>资源权限</TableHead>
+                  <TableHead className="text-right">操作</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
+              </TableHeader>
+              <TableBody>
+                {filteredGrants.map((grant, index) => (
+                  <TableRow key={grant.id} className="hover:bg-muted/50 group">
+                    <TableCell className="text-center">{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={grant.enabled}
+                          onCheckedChange={() => handleToggleEnabled(grant)}
+                        />
+                        <span className={`text-sm ${grant.enabled ? 'text-green-600' : 'text-gray-400'}`}>
+                          {grant.enabled ? '已启用' : '已停用'}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{grant.accountName}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={grant.accountType === 'enterprise_public' ? 'border-indigo-200 text-indigo-700' : 'border-amber-200 text-amber-700'}>
+                      {COOPERATION_ACCOUNT_TYPE_LABELS[grant.accountType]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{grant.ownerName}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {grant.resourcePermissions.slice(0, 2).map((rp) => (
+                          <Badge key={rp.id} variant="secondary" className="text-xs flex items-center gap-1">
+                            {resourceIcons[rp.resourceType]}
+                            {RESOURCE_TYPE_LABELS[rp.resourceType]}
+                          </Badge>
+                        ))}
+                        {grant.resourcePermissions.length > 2 && (
+                          <Badge variant="outline" className="text-xs">+{grant.resourcePermissions.length - 2}</Badge>
+                        )}
+                        {grant.resourcePermissions.length === 0 && (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right relative">
+                      <TableRowActions>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleShare(grant)}>
+                          <Share2 className="mr-1 h-3 w-3" />
+                          分享
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleViewDetail(grant)}>
+                          <Eye className="mr-1 h-3 w-3" />
+                          查看
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleEdit(grant)}>
+                          <Pencil className="mr-1 h-3 w-3" />
+                          编辑
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-red-500 hover:text-red-600" onClick={() => handleDelete(grant)}>
+                          <Trash2 className="mr-1 h-3 w-3" />
+                          删除
+                        </Button>
+                      </TableRowActions>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredGrants.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      暂无权限授权记录，点击右上角「新增权限授权」创建
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
           </Table>
         </CardContent>
       </Card>
@@ -716,7 +616,7 @@ export default function PermissionsPage() {
                 )}
 
                 <div className="space-y-2">
-                  <Label>账号名称</Label>
+                  <Label>用户名</Label>
                   <Input
                     value={accountName}
                     onChange={(e) => setAccountName(e.target.value)}
@@ -725,11 +625,11 @@ export default function PermissionsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>登录用户名</Label>
+                  <Label>手机号</Label>
                   <Input
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="如：zltech_admin"
+                    placeholder="请输入手机号"
                     disabled={!!editingGrant}
                   />
                 </div>
@@ -902,85 +802,52 @@ export default function PermissionsPage() {
           <DialogHeader>
             <DialogTitle>权限授权详情</DialogTitle>
           </DialogHeader>
-          {detailGrant && (
-            <div className="space-y-6 pr-2 max-h-[60vh] overflow-y-auto">
-              {/* 账号信息 */}
-              <div>
-                <h3 className="text-sm font-semibold mb-2">账号信息</h3>
-                <div className="grid grid-cols-2 gap-2 text-sm bg-muted/50 rounded-lg p-3">
-                  <div><span className="text-muted-foreground">账号名称：</span>{detailGrant.accountName}</div>
-                  <div><span className="text-muted-foreground">账号类型：</span>{COOPERATION_ACCOUNT_TYPE_LABELS[detailGrant.accountType]}</div>
-                  <div><span className="text-muted-foreground">所属主体：</span>{detailGrant.ownerName}</div>
-                  <div><span className="text-muted-foreground">状态：</span>{detailGrant.enabled ? '已启用' : '已停用'}</div>
-                </div>
-              </div>
-
-              {/* 功能权限 */}
-              <div>
-                <h3 className="text-sm font-semibold mb-2">功能权限（资源类型 + 批次 + 操作）</h3>
-                <div className="space-y-2">
-                  {detailGrant.resourcePermissions.map((rp) => (
-                    <div key={rp.id} className="flex items-center gap-3 text-sm bg-background rounded-md p-3 border">
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        {resourceIcons[rp.resourceType]}
-                        {RESOURCE_TYPE_LABELS[rp.resourceType]}
-                      </Badge>
-                      <span className="text-muted-foreground">·</span>
-                      <span className="font-medium">{rp.batchName || '—'}</span>
-                      <span className="text-muted-foreground">·</span>
-                      <div className="flex gap-1 flex-wrap">
-                        {rp.operations.map((op) => (
-                          <Badge key={op} variant="outline" className="text-xs font-normal">
-                            {OPERATION_TYPE_LABELS[op]}
-                          </Badge>
-                        ))}
-                      </div>
+              {detailGrant && (
+                <div className="space-y-6 pr-2 max-h-[60vh] overflow-y-auto">
+                  {/* 账号信息 */}
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">账号信息</h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm bg-muted/50 rounded-lg p-3">
+                      <div><span className="text-muted-foreground">账号名称：</span>{detailGrant.accountName}</div>
+                      <div><span className="text-muted-foreground">账号类型：</span>{COOPERATION_ACCOUNT_TYPE_LABELS[detailGrant.accountType]}</div>
+                      <div><span className="text-muted-foreground">所属主体：</span>{detailGrant.ownerName}</div>
+                      <div><span className="text-muted-foreground">状态：</span>{detailGrant.enabled ? '已启用' : '已停用'}</div>
                     </div>
-                  ))}
-                  {detailGrant.resourcePermissions.length === 0 && (
-                    <p className="text-sm text-muted-foreground">暂无功能权限</p>
-                  )}
-                </div>
-              </div>
+                  </div>
 
-              {/* 测评权限 */}
-              <div>
-                <h3 className="text-sm font-semibold mb-2">测评权限</h3>
-                <div className="flex flex-wrap gap-2">
-                  {detailGrant.assessmentPermissions.map((at) => (
-                    <Badge key={at} variant="secondary" className="text-sm px-3 py-1">
-                      {ASSESSMENT_TYPE_LABELS[at]}
-                    </Badge>
-                  ))}
-                  {detailGrant.assessmentPermissions.length === 0 && (
-                    <span className="text-sm text-muted-foreground">未配置测评权限</span>
-                  )}
+                  {/* 功能权限 */}
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">功能权限（资源类型 + 批次 + 操作）</h3>
+                    <div className="space-y-2">
+                      {detailGrant.resourcePermissions.map((rp) => (
+                        <div key={rp.id} className="flex items-center gap-3 text-sm bg-background rounded-md p-3 border">
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            {resourceIcons[rp.resourceType]}
+                            {RESOURCE_TYPE_LABELS[rp.resourceType]}
+                          </Badge>
+                          <span className="text-muted-foreground">·</span>
+                          <span className="font-medium">{rp.batchName || '—'}</span>
+                          <span className="text-muted-foreground">·</span>
+                          <div className="flex gap-1 flex-wrap">
+                            {rp.operations.map((op) => (
+                              <Badge key={op} variant="outline" className="text-xs font-normal">
+                                {OPERATION_TYPE_LABELS[op]}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      {detailGrant.resourcePermissions.length === 0 && (
+                        <p className="text-sm text-muted-foreground">暂无功能权限</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              {/* 授权平台 */}
-              <div>
-                <h3 className="text-sm font-semibold mb-2">授权平台</h3>
-                <div className="flex flex-wrap gap-2">
-                  {detailGrant.authorizedPlatforms.map((plat) => (
-                    <Badge key={plat} variant="secondary" className="text-sm px-3 py-1 flex items-center gap-1">
-                      {plat === 'job' && <Briefcase className="h-3.5 w-3.5" />}
-                      {plat === 'scene' && <MapPin className="h-3.5 w-3.5" />}
-                      {plat === 'brand' && <Shield className="h-3.5 w-3.5" />}
-                      {PLATFORM_TYPE_LABELS[plat]}
-                    </Badge>
-                  ))}
-                  {detailGrant.authorizedPlatforms.length === 0 && (
-                    <span className="text-sm text-muted-foreground">未配置平台授权</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button onClick={() => setDetailDialogOpen(false)}>关闭</Button>
-          </DialogFooter>
-        </DialogContent>
+              )}
+              <DialogFooter>
+                <Button onClick={() => setDetailDialogOpen(false)}>关闭</Button>
+              </DialogFooter>
+            </DialogContent>
       </Dialog>
 
       {/* 管理员联系方式配置弹窗 */}
@@ -1024,10 +891,17 @@ export default function PermissionsPage() {
           </DialogHeader>
           {shareGrant && (() => {
             const account = accounts.find(a => a.id === shareGrant.accountId)
-            const contact = adminContact || '手机号 13800138000'
-            const shareText = `您好！账号已为您准备就绪 🎉\n\n您可以通过以下地址登录平台：\nhttp://111.170.170.202:3001/partner/login\n\n登录账号：${account?.username ?? '—'}\n登录密码：${account?.password ?? '******'}\n\n如有任何问题，欢迎随时联系管理员（${contact}）。`
+            const shareText = `您好！账号已为您准备就绪 🎉\n\n您可以通过以下地址登录平台：\nhttp://111.170.170.202:3001/partner/login\n\n登录账号：${account?.username ?? '—'}\n登录密码：${account?.password ?? '******'}\n\n如有任何问题，欢迎随时联系管理员（${shareAdminContact}）。`
             return (
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>管理员手机号</Label>
+                  <Input
+                    value={shareAdminContact}
+                    onChange={(e) => setShareAdminContact(e.target.value)}
+                    placeholder="请输入管理员手机号"
+                  />
+                </div>
                 <pre className="whitespace-pre-wrap break-all rounded-md bg-muted p-4 text-sm select-all">
                   {shareText}
                 </pre>

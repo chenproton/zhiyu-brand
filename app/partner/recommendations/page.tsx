@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { TableRowActions } from "@/components/admin/table-row-actions"
 import {
   Dialog,
   DialogContent,
@@ -30,8 +31,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, Sparkles, Eye, Building2, Briefcase } from "lucide-react"
-import { jobRecommendations, jobs, studentProfiles } from "@/lib/mock-data"
+import { jobRecommendations, jobs, studentProfiles, employmentProjects } from "@/lib/mock-data"
 import { usePartner } from "../partner-context"
 
 const recStatusLabels: Record<string, string> = {
@@ -55,7 +57,15 @@ export default function PartnerRecommendationsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [jobFilter, setJobFilter] = useState<string>("all")
+  const [projectFilter, setProjectFilter] = useState<string>("all")
   const [selectedRec, setSelectedRec] = useState<typeof jobRecommendations[0] | null>(null)
+
+  const partnerProjects = useMemo(() => {
+    if (!selectedEnterpriseId) return []
+    return employmentProjects.filter((p) =>
+      p.partnerIds.includes(selectedEnterpriseId)
+    )
+  }, [selectedEnterpriseId])
 
   const filtered = useMemo(() => {
     if (!selectedEnterpriseId) return []
@@ -65,10 +75,12 @@ export default function PartnerRecommendationsPage() {
         rec.jobTitle.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus = statusFilter === "all" || rec.status === statusFilter
       const matchesJob = jobFilter === "all" || rec.jobId === jobFilter
+      const matchesProject =
+        projectFilter === "all" || rec.employmentProjectId === projectFilter
       const matchesPartner = rec.partnerId === selectedEnterpriseId
-      return matchesSearch && matchesStatus && matchesJob && matchesPartner
+      return matchesSearch && matchesStatus && matchesJob && matchesProject && matchesPartner
     })
-  }, [searchTerm, statusFilter, jobFilter, selectedEnterpriseId])
+  }, [searchTerm, statusFilter, jobFilter, projectFilter, selectedEnterpriseId])
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {
@@ -186,11 +198,24 @@ export default function PartnerRecommendationsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
+          <div className="p-4 border-b">
+            <Tabs value={projectFilter} onValueChange={setProjectFilter}>
+              <TabsList className="flex-wrap h-auto">
+                <TabsTrigger value="all">全部</TabsTrigger>
+                {partnerProjects.map((project) => (
+                  <TabsTrigger key={project.id} value={project.id}>
+                    {project.name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>学生信息</TableHead>
                 <TableHead>推荐岗位</TableHead>
+                <TableHead>就业项目</TableHead>
                 <TableHead>匹配度</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>批次</TableHead>
@@ -201,7 +226,7 @@ export default function PartnerRecommendationsPage() {
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="text-center py-12 text-muted-foreground"
                   >
                     没有找到符合条件的推荐记录
@@ -209,7 +234,7 @@ export default function PartnerRecommendationsPage() {
                 </TableRow>
               ) : (
                 filtered.map((rec) => (
-                  <TableRow key={rec.id}>
+                  <TableRow key={rec.id} className="group">
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar>
@@ -232,6 +257,13 @@ export default function PartnerRecommendationsPage() {
                       </Link>
                     </TableCell>
                     <TableCell>
+                      {rec.employmentProjectName ? (
+                        <Badge variant="secondary">{rec.employmentProjectName}</Badge>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2">
                         <Progress
                           value={rec.matchScore}
@@ -252,15 +284,13 @@ export default function PartnerRecommendationsPage() {
                         {rec.batchNo}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedRec(rec)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        查看
-                      </Button>
+                    <TableCell className="text-right relative">
+                      <TableRowActions>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setSelectedRec(rec)}>
+                          <Eye className="mr-1 h-3 w-3" />
+                          查看
+                        </Button>
+                      </TableRowActions>
                     </TableCell>
                   </TableRow>
                 ))

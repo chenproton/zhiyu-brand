@@ -16,7 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, Save, Upload, X, Image } from 'lucide-react'
+import { ArrowLeft, Save, Upload, X } from 'lucide-react'
+import { FakeRichTextEditor } from '@/components/shared/fake-rich-text-editor'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { enterprises } from '@/lib/mock-data'
@@ -27,7 +28,7 @@ import {
   INDUSTRIES,
   SECONDARY_COLLEGES,
 } from '@/lib/types'
-import type { EnterpriseType, CooperationStatus, CooperationRating } from '@/lib/types'
+import type { EnterpriseType, CooperationStatus, CooperationRating, NamedPhoto } from '@/lib/types'
 
 export default function EditEnterprisePage() {
   const params = useParams()
@@ -36,7 +37,8 @@ export default function EditEnterprisePage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const ipFileInputRef = useRef<HTMLInputElement>(null)
   const qualFileInputRef = useRef<HTMLInputElement>(null)
-  const coverFileInputRef = useRef<HTMLInputElement>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const coverImageInputRef = useRef<HTMLInputElement>(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [notFound, setNotFound] = useState(false)
@@ -49,9 +51,11 @@ export default function EditEnterprisePage() {
     rating: 'general' as CooperationRating,
     description: '',
     unifiedSocialCreditCode: '',
+    logo: '',
+    coverImage: '',
     businessLicensePhotos: [] as string[],
-    intellectualPropertyPhotos: [] as string[],
-    qualificationPhotos: [] as string[],
+    intellectualPropertyPhotos: [] as NamedPhoto[],
+    qualificationPhotos: [] as NamedPhoto[],
     coverPhotos: [] as string[],
     contactPerson: '',
     contactPhone: '',
@@ -77,6 +81,8 @@ export default function EditEnterprisePage() {
       rating: enterprise.rating,
       description: enterprise.description,
       unifiedSocialCreditCode: enterprise.unifiedSocialCreditCode || '',
+      logo: enterprise.logo || '',
+      coverImage: enterprise.coverImage || '',
       businessLicensePhotos: enterprise.businessLicensePhotos || [],
       intellectualPropertyPhotos: enterprise.intellectualPropertyPhotos || [],
       qualificationPhotos: enterprise.qualificationPhotos || [],
@@ -106,6 +112,8 @@ export default function EditEnterprisePage() {
       enterprise.rating = formData.rating
       enterprise.description = formData.description
       enterprise.unifiedSocialCreditCode = formData.unifiedSocialCreditCode
+      enterprise.logo = formData.logo || undefined
+      enterprise.coverImage = formData.coverImage || undefined
       enterprise.businessLicensePhotos = formData.businessLicensePhotos
       enterprise.intellectualPropertyPhotos = formData.intellectualPropertyPhotos
       enterprise.qualificationPhotos = formData.qualificationPhotos
@@ -133,10 +141,49 @@ export default function EditEnterprisePage() {
     e.target.value = ''
   }
 
+  const handleSingleImageChange = (field: 'logo' | 'coverImage') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setFormData((prev) => ({ ...prev, [field]: URL.createObjectURL(file) }))
+    }
+    e.target.value = ''
+  }
+
+  const removeSingleImage = (field: 'logo' | 'coverImage') => {
+    setFormData((prev) => ({ ...prev, [field]: '' }))
+  }
+
   const removePhoto = (field: keyof typeof formData, index: number) => {
     setFormData((prev) => ({
       ...prev,
       [field]: (prev[field] as string[]).filter((_, i) => i !== index),
+    }))
+  }
+
+  const handleNamedFileChange = (field: 'intellectualPropertyPhotos' | 'qualificationPhotos') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files) {
+      const newPhotos: NamedPhoto[] = Array.from(files).map((file) => ({ name: '', url: URL.createObjectURL(file) }))
+      setFormData((prev) => ({ ...prev, [field]: [...(prev[field] as NamedPhoto[]), ...newPhotos] }))
+    }
+    e.target.value = ''
+  }
+
+  const updateNamedPhotoName = (
+    field: 'intellectualPropertyPhotos' | 'qualificationPhotos',
+    index: number,
+    name: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: (prev[field] as NamedPhoto[]).map((item, i) => (i === index ? { ...item, name } : item)),
+    }))
+  }
+
+  const removeNamedPhoto = (field: 'intellectualPropertyPhotos' | 'qualificationPhotos', index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: (prev[field] as NamedPhoto[]).filter((_, i) => i !== index),
     }))
   }
 
@@ -284,10 +331,9 @@ export default function EditEnterprisePage() {
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>企业简介</Label>
-                  <Textarea
-                    rows={4}
+                  <FakeRichTextEditor
                     value={formData.description}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                    onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
                     placeholder="请输入企业简介..."
                   />
                 </div>
@@ -296,7 +342,88 @@ export default function EditEnterprisePage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">营业执照照片</CardTitle>
+                <CardTitle className="text-base">企业形象</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label>企业 Logo</Label>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleSingleImageChange('logo')}
+                  />
+                  {formData.logo ? (
+                    <div className="relative inline-block">
+                      <img
+                        src={formData.logo}
+                        alt="企业 Logo"
+                        className="w-24 h-24 object-cover rounded-xl border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeSingleImage('logo')}
+                        className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-24 h-24 flex flex-col items-center justify-center gap-2 border-dashed"
+                      onClick={() => logoInputRef.current?.click()}
+                    >
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">上传 Logo</span>
+                    </Button>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>企业主页封面</Label>
+                  <input
+                    ref={coverImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleSingleImageChange('coverImage')}
+                  />
+                  {formData.coverImage ? (
+                    <div className="relative inline-block">
+                      <img
+                        src={formData.coverImage}
+                        alt="企业主页封面"
+                        className="w-full max-w-md h-40 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeSingleImage('coverImage')}
+                        className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full max-w-md h-40 flex flex-col items-center justify-center gap-2 border-dashed"
+                      onClick={() => coverImageInputRef.current?.click()}
+                    >
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">上传主页封面</span>
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">企业营业执照</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <input
@@ -339,17 +466,25 @@ export default function EditEnterprisePage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">知识产权照片</CardTitle>
+                <CardTitle className="text-base">企业知识产权</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <input ref={ipFileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange('intellectualPropertyPhotos')} />
+                <input ref={ipFileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange('intellectualPropertyPhotos')} />
                 <div className="flex flex-wrap gap-3">
                   {formData.intellectualPropertyPhotos.map((photo, index) => (
-                    <div key={index} className="relative">
-                      <img src={photo} alt={`知识产权 ${index + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
-                      <button type="button" onClick={() => removePhoto('intellectualPropertyPhotos', index)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
-                        <X className="h-3 w-3" />
-                      </button>
+                    <div key={index} className="relative flex flex-col gap-2 w-32">
+                      <div className="relative">
+                        <img src={photo.url} alt={photo.name || `知识产权 ${index + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
+                        <button type="button" onClick={() => removeNamedPhoto('intellectualPropertyPhotos', index)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <Input
+                        value={photo.name}
+                        onChange={(e) => updateNamedPhotoName('intellectualPropertyPhotos', index, e.target.value)}
+                        placeholder="名称"
+                        className="h-8 text-xs"
+                      />
                     </div>
                   ))}
                   <Button type="button" variant="outline" className="w-32 h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => ipFileInputRef.current?.click()}>
@@ -365,14 +500,22 @@ export default function EditEnterprisePage() {
                 <CardTitle className="text-base">企业资质证明材料</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <input ref={qualFileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange('qualificationPhotos')} />
+                <input ref={qualFileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange('qualificationPhotos')} />
                 <div className="flex flex-wrap gap-3">
                   {formData.qualificationPhotos.map((photo, index) => (
-                    <div key={index} className="relative">
-                      <img src={photo} alt={`资质证明 ${index + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
-                      <button type="button" onClick={() => removePhoto('qualificationPhotos', index)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
-                        <X className="h-3 w-3" />
-                      </button>
+                    <div key={index} className="relative flex flex-col gap-2 w-32">
+                      <div className="relative">
+                        <img src={photo.url} alt={photo.name || `资质证明 ${index + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
+                        <button type="button" onClick={() => removeNamedPhoto('qualificationPhotos', index)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <Input
+                        value={photo.name}
+                        onChange={(e) => updateNamedPhotoName('qualificationPhotos', index, e.target.value)}
+                        placeholder="名称"
+                        className="h-8 text-xs"
+                      />
                     </div>
                   ))}
                   <Button type="button" variant="outline" className="w-32 h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => qualFileInputRef.current?.click()}>
@@ -389,11 +532,11 @@ export default function EditEnterprisePage() {
               </CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>联系人</Label>
+                  <Label>企业联系人</Label>
                   <Input
                     value={formData.contactPerson}
                     onChange={(e) => setFormData((prev) => ({ ...prev, contactPerson: e.target.value }))}
-                    placeholder="请输入联系人姓名"
+                    placeholder="请输入企业联系人姓名"
                   />
                 </div>
                 <div className="space-y-2">
@@ -440,7 +583,7 @@ export default function EditEnterprisePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>员工规模</Label>
+                  <Label>企业规模</Label>
                   <Input
                     type="number"
                     value={formData.employeeCount}

@@ -1,26 +1,36 @@
 "use client"
 
-import { useState, use, useMemo } from "react"
+import { use, useMemo, useState } from "react"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { 
-  ArrowLeft, 
-  MapPin, 
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  ArrowLeft,
+  MapPin,
   Briefcase,
   Calendar,
   Building2,
   Search,
+  FileText,
 } from "lucide-react"
 import { getEmploymentProjectById, enterprises, jobs } from "@/lib/mock-data"
-import { 
-  EMPLOYMENT_PROJECT_TYPE_LABELS, 
+import {
+  EMPLOYMENT_PROJECT_TYPE_LABELS,
   EMPLOYMENT_PROJECT_STATUS_LABELS,
   JOB_TYPE_LABELS,
+  JOB_STATUS_LABELS,
 } from "@/lib/types"
 
 const statusColors: Record<string, string> = {
@@ -33,19 +43,12 @@ export default function EmploymentProjectDetailPage({ params }: { params: Promis
   const { id } = use(params)
   const project = getEmploymentProjectById(id)
   const [searchTerm, setSearchTerm] = useState("")
+  const [viewMode, setViewMode] = useState<"job" | "enterprise">("job")
 
   if (!project) {
     notFound()
   }
 
-  // 获取项目关联的企业
-  const projectEnterprises = useMemo(() => {
-    return project.partnerIds
-      .map((pid) => enterprises.find((e) => e.id === pid))
-      .filter(Boolean)
-  }, [project])
-
-  // 获取这些企业发布的岗位
   const projectJobs = useMemo(() => {
     return jobs.filter(
       (job) => project.partnerIds.includes(job.partnerId) && job.status === "published"
@@ -59,17 +62,31 @@ export default function EmploymentProjectDetailPage({ params }: { params: Promis
       (job) =>
         job.title.toLowerCase().includes(term) ||
         job.partnerName.toLowerCase().includes(term) ||
-        job.skills.some((s) => s.toLowerCase().includes(term))
+        job.location.toLowerCase().includes(term)
     )
   }, [projectJobs, searchTerm])
 
+  const enterpriseGroups = useMemo(() => {
+    const map = new Map<string, { enterprise: typeof enterprises[0]; jobs: typeof projectJobs }>()
+    filteredJobs.forEach((job) => {
+      const enterprise = enterprises.find((e) => e.id === job.partnerId)
+      if (!enterprise) return
+      if (!map.has(enterprise.id)) {
+        map.set(enterprise.id, { enterprise, jobs: [] })
+      }
+      map.get(enterprise.id)!.jobs.push(job)
+    })
+    return Array.from(map.values())
+  }, [filteredJobs])
+
+  const recruitmentScope = project.recruitmentScope || []
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
-          <Link 
-            href="/jobs" 
+          <Link
+            href="/jobs"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -79,12 +96,11 @@ export default function EmploymentProjectDetailPage({ params }: { params: Promis
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* 项目信息卡片 */}
         <Card className="mb-8">
           <CardContent className="pt-6">
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
               <div>
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex flex-wrap items-center gap-3 mb-2">
                   <h1 className="text-2xl font-bold">{project.name}</h1>
                   <Badge className={statusColors[project.status]}>
                     {EMPLOYMENT_PROJECT_STATUS_LABELS[project.status]}
@@ -94,139 +110,197 @@ export default function EmploymentProjectDetailPage({ params }: { params: Promis
                   </Badge>
                 </div>
                 <p className="text-muted-foreground">
-                  面向{project.targetStudentGroups.join('、')}学生
+                  {project.description || `就业项目，面向${project.targetStudentGroups.join('、')}学生。`}
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">起止时间：</span>
                 {project.startDate.toLocaleDateString('zh-CN')} ~ {project.endDate.toLocaleDateString('zh-CN')}
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Briefcase className="h-4 w-4" />
-                {project.jobCount} 个岗位
+              <div className="flex items-center gap-2 text-sm">
+                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">岗位数：</span>
+                {project.jobCount}
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Building2 className="h-4 w-4" />
-                {project.partnerIds.length} 家合作企业
+              <div className="flex items-center gap-2 text-sm">
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">参与企业：</span>
+                {project.partnerIds.length} 家
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">发布单位：</span>
+                {project.createdBy || '—'}
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">发布日期：</span>
+                {project.createdAt.toLocaleDateString('zh-CN')}
               </div>
             </div>
+          </CardContent>
+        </Card>
 
-            {project.description && (
-              <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                {project.description}
-              </p>
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-base">招聘范围</CardTitle>
+            <CardDescription>本项目面向以下二级学院、专业、年级及班级招聘</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recruitmentScope.length === 0 ? (
+              <p className="text-sm text-muted-foreground">暂无详细招聘范围数据</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>二级学院</TableHead>
+                      <TableHead>专业</TableHead>
+                      <TableHead>年级</TableHead>
+                      <TableHead>班级</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recruitmentScope.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{item.secondaryCollege}</TableCell>
+                        <TableCell>{item.major}</TableCell>
+                        <TableCell>{item.grade}</TableCell>
+                        <TableCell>{item.className}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 lg:grid-cols-4">
-          {/* 左侧：企业列表 */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">参与企业</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {projectEnterprises.map((enterprise) => (
-                  <div key={enterprise!.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={enterprise!.logo} />
-                      <AvatarFallback>{enterprise!.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{enterprise!.name}</p>
-                      <p className="text-xs text-muted-foreground">{enterprise!.industry}</p>
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle>岗位列表</CardTitle>
+                <CardDescription>本项目发布的招聘岗位</CardDescription>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "job" | "enterprise")}>
+                  <TabsList>
+                    <TabsTrigger value="job">按岗位浏览</TabsTrigger>
+                    <TabsTrigger value="enterprise">按企业浏览</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="搜索岗位名称、企业或地点..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {filteredJobs.length === 0 ? (
+              <div className="text-center text-muted-foreground py-16">
+                该项目暂无招聘岗位
+              </div>
+            ) : viewMode === "job" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredJobs.map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {enterpriseGroups.map(({ enterprise, jobs: groupJobs }) => (
+                  <div key={enterprise.id}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <Avatar className="h-10 w-10 rounded-lg">
+                        <AvatarImage src={enterprise.logo} className="object-cover" />
+                        <AvatarFallback className="rounded-lg bg-emerald-100 text-emerald-700 font-bold text-sm">
+                          {enterprise.name[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h4 className="font-bold text-sm">{enterprise.name}</h4>
+                        <p className="text-xs text-muted-foreground">{enterprise.industry} · {enterprise.region}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {groupJobs.map((job) => (
+                          <JobCard key={job.id} job={job} />
+                        ))}
                     </div>
                   </div>
                 ))}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* 右侧：岗位列表 */}
-          <div className="lg:col-span-3 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">
-                岗位合集
-                <span className="text-base font-normal text-muted-foreground ml-2">
-                  ({filteredJobs.length})
-                </span>
-              </h2>
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="搜索岗位..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
               </div>
-            </div>
-
-            {filteredJobs.length === 0 ? (
-              <Card>
-                <CardContent className="py-16 text-center text-muted-foreground">
-                  该项目暂无招聘岗位
-                </CardContent>
-              </Card>
-            ) : (
-              filteredJobs.map((job) => (
-                <Link key={job.id} href={`/jobs/${job.id}`}>
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="py-5">
-                      <div className="flex items-start justify-between">
-                        <div className="flex gap-4">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={job.partnerLogo} />
-                            <AvatarFallback>{job.partnerName[0]}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-semibold hover:text-primary transition-colors">
-                              {job.title}
-                            </h3>
-                            <p className="text-sm text-muted-foreground mb-2">{job.partnerName}</p>
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <MapPin className="h-3.5 w-3.5" />
-                                {job.location}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Briefcase className="h-3.5 w-3.5" />
-                                {JOB_TYPE_LABELS[job.type]}
-                              </span>
-                              <span>招 {job.headcount} 人</span>
-                            </div>
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {job.skills.slice(0, 4).map((skill) => (
-                                <Badge key={skill} variant="secondary" className="text-xs">
-                                  {skill}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-primary">
-                            {job.salaryMin && job.salaryMax 
-                              ? `${job.salaryMin}-${job.salaryMax}K` 
-                              : '面议'}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {job.education} | {job.experience}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
+  )
+}
+
+function JobCard({ job }: { job: typeof jobs[0] }) {
+  const enterprise = enterprises.find((e) => e.id === job.partnerId)
+  const logoSrc = enterprise?.logo || "/placeholder.svg?height=64&width=64"
+  return (
+    <Link href={`/jobs/${job.id}`}>
+      <Card className="group border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 rounded-3xl overflow-hidden bg-white">
+        <div className="flex h-28">
+          <div className="w-28 flex items-center justify-center shrink-0 border-r border-slate-100 bg-white p-4">
+            <Avatar className="h-16 w-16 rounded-xl">
+              <AvatarImage src={logoSrc} alt={job.title} className="object-contain p-1" />
+              <AvatarFallback className="rounded-xl bg-slate-100 text-slate-800 font-bold text-sm">
+                {enterprise?.name?.[0] || job.partnerName[0]}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+          <CardContent className="flex-1 p-4 flex flex-col justify-center min-w-0">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <h4 className="font-bold text-slate-900 text-sm truncate">{job.title}</h4>
+              <Badge variant="outline" className="text-[10px] font-medium border-amber-200 text-amber-700 bg-amber-50 shrink-0">
+                {JOB_TYPE_LABELS[job.type]}
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-400 line-clamp-1 mb-2">{job.partnerName} · {job.description}</p>
+            <div className="flex flex-wrap gap-1 mb-2">
+              {job.suitableMajors.slice(0, 2).map((major) => (
+                <span key={major} className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium">
+                  {major}
+                </span>
+              ))}
+              {job.skills.slice(0, 2).map((tag) => (
+                <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3">
+                <span className="font-bold text-emerald-600">
+                  {job.salaryMin && job.salaryMax ? `${job.salaryMin}-${job.salaryMax}K` : '面议'}
+                </span>
+                <span className="text-slate-400 flex items-center gap-1">
+                  <MapPin className="h-3 w-3" /> {job.location}
+                </span>
+                <span className="text-slate-400">需求 {job.headcount} 人</span>
+              </div>
+              <Badge variant={job.status === "published" ? "secondary" : "outline"} className="text-[10px]">
+                {JOB_STATUS_LABELS[job.status]}
+              </Badge>
+            </div>
+          </CardContent>
+        </div>
+      </Card>
+    </Link>
   )
 }

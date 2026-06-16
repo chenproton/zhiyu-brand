@@ -3,24 +3,19 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { TableRowActions } from '@/components/admin/table-row-actions'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { FilterBar } from '@/components/shared/filter-bar'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { AdminListPage } from '@/components/admin/list-page'
+import { AdminDataTable } from '@/components/admin/data-table'
 import { AgreementStatusBadge } from '@/components/shared/status-badge'
-import { Plus, MoreHorizontal, Eye, Pencil, Trash2, FileText } from 'lucide-react'
+import { Plus, Eye, Pencil, Trash2, FileText } from 'lucide-react'
 import { agreements } from '@/lib/mock-data'
 import { AGREEMENT_STATUS_LABELS } from '@/lib/types'
 
@@ -40,10 +35,11 @@ export default function AgreementsListPage() {
     status: 'all',
     type: 'all',
   })
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deletingAgreement, setDeletingAgreement] = useState<typeof agreements[0] | null>(null)
 
   const filteredAgreements = useMemo(() => {
     return agreements.filter((agreement) => {
-      // Search filter
       if (search) {
         const searchLower = search.toLowerCase()
         const matchesSearch =
@@ -51,16 +47,21 @@ export default function AgreementsListPage() {
           agreement.partnerName.toLowerCase().includes(searchLower)
         if (!matchesSearch) return false
       }
-
-      // Status filter
       if (filters.status !== 'all' && agreement.status !== filters.status) return false
-
-      // Type filter
       if (filters.type !== 'all' && agreement.type !== filters.type) return false
-
       return true
     })
   }, [search, filters])
+
+  const statusStats = useMemo(() => {
+    return {
+      total: agreements.length,
+      draft: agreements.filter((a) => a.status === 'draft').length,
+      active: agreements.filter((a) => a.status === 'active').length,
+      expired: agreements.filter((a) => a.status === 'expired').length,
+      terminated: agreements.filter((a) => a.status === 'terminated').length,
+    }
+  }, [agreements])
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
@@ -74,14 +75,21 @@ export default function AgreementsListPage() {
     })
   }
 
+  const handleDelete = (agreement: typeof agreements[0]) => {
+    setDeletingAgreement(agreement)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    setDeleteDialogOpen(false)
+    setDeletingAgreement(null)
+  }
+
   const filterConfigs = [
     {
       key: 'status',
       label: '全部状态',
-      options: Object.entries(AGREEMENT_STATUS_LABELS).map(([value, label]) => ({
-        value,
-        label,
-      })),
+      options: Object.entries(AGREEMENT_STATUS_LABELS).map(([value, label]) => ({ value, label })),
     },
     {
       key: 'type',
@@ -90,134 +98,141 @@ export default function AgreementsListPage() {
     },
   ]
 
-  // Check if agreement is expiring soon (within 90 days)
+  const stats = [
+    { key: 'total', label: '全部协议', value: statusStats.total, icon: FileText, color: 'slate' as const },
+    { key: 'active', label: '生效中', value: statusStats.active, icon: FileText, color: 'green' as const, filterKey: 'status', filterValue: 'active' },
+    { key: 'draft', label: '草稿', value: statusStats.draft, icon: FileText, color: 'amber' as const, filterKey: 'status', filterValue: 'draft' },
+    { key: 'expired', label: '已到期', value: statusStats.expired, icon: FileText, color: 'red' as const, filterKey: 'status', filterValue: 'expired' },
+    { key: 'terminated', label: '已终止', value: statusStats.terminated, icon: FileText, color: 'slate' as const, filterKey: 'status', filterValue: 'terminated' },
+  ]
+
   const isExpiringSoon = (endDate: Date) => {
     const now = new Date()
     const daysUntilExpiry = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     return daysUntilExpiry > 0 && daysUntilExpiry <= 90
   }
 
-  return (
-    <div>
-        {/* Header Actions */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <p className="text-muted-foreground">
-              共 {filteredAgreements.length} 份合作协议
-            </p>
-          </div>
-          <Link href="/admin/agreements/new">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              新增协议
-            </Button>
+  const columns = [
+    {
+      key: 'name',
+      title: '协议名称',
+      render: (agreement: typeof agreements[0]) => (
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <Link href={`/admin/agreements/${agreement.id}`} className="font-medium hover:underline">
+            {agreement.name}
           </Link>
         </div>
+      ),
+    },
+    {
+      key: 'partner',
+      title: '合作主体',
+      render: (agreement: typeof agreements[0]) => (
+        <Link href={`/admin/partners/${agreement.partnerId}`} className="hover:underline">
+          {agreement.partnerName}
+        </Link>
+      ),
+    },
+    { key: 'type', title: '协议类型', render: (a: typeof agreements[0]) => a.type },
+    {
+      key: 'startDate',
+      title: '生效日期',
+      render: (a: typeof agreements[0]) => a.startDate.toLocaleDateString('zh-CN'),
+    },
+    {
+      key: 'endDate',
+      title: '到期日期',
+      render: (a: typeof agreements[0]) => (
+        <span className={isExpiringSoon(a.endDate) ? 'text-amber-600 font-medium' : ''}>
+          {a.endDate.toLocaleDateString('zh-CN')}
+          {isExpiringSoon(a.endDate) && ' (即将到期)'}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      title: '状态',
+      render: (a: typeof agreements[0]) => <AgreementStatusBadge status={a.status} />,
+    },
+    {
+      key: 'actions',
+      title: '',
+      width: 'w-[50px]',
+      align: 'right' as const,
+      render: (agreement: typeof agreements[0]) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/agreements/${agreement.id}`}>
+              <Eye className="mr-1 h-3 w-3" />
+              查看
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/agreements/${agreement.id}/edit`}>
+              <Pencil className="mr-1 h-3 w-3" />
+              编辑
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+            onClick={() => handleDelete(agreement)}
+          >
+            <Trash2 className="mr-1 h-3 w-3" />
+            删除
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
 
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <FilterBar
-              searchPlaceholder="搜索协议名称、合作主体..."
-              searchValue={search}
-              onSearchChange={setSearch}
-              filters={filterConfigs}
-              filterValues={filters}
-              onFilterChange={handleFilterChange}
-              onClearFilters={handleClearFilters}
-            />
-          </CardContent>
-        </Card>
+  return (
+    <AdminListPage
+      title="合作协议管理"
+      subtitle="维护校企合作协议及到期提醒"
+      count={filteredAgreements.length}
+      countLabel="份合作协议"
+      stats={stats}
+      activeFilters={filters}
+      onFilterChange={handleFilterChange}
+      searchPlaceholder="搜索协议名称、合作主体..."
+      searchValue={search}
+      onSearchChange={setSearch}
+      filters={filterConfigs}
+      filterValues={filters}
+      onClearFilters={handleClearFilters}
+      actions={
+        <Link href="/admin/agreements/new">
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-1" />
+            新增协议
+          </Button>
+        </Link>
+      }
+    >
+      <AdminDataTable
+        columns={columns}
+        data={filteredAgreements}
+        rowKey={(a) => a.id}
+        emptyText="暂无符合条件的合作协议"
+      />
 
-        {/* Table */}
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>协议名称</TableHead>
-                <TableHead>合作主体</TableHead>
-                <TableHead>协议类型</TableHead>
-                <TableHead>生效日期</TableHead>
-                <TableHead>到期日期</TableHead>
-                <TableHead>状态</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredAgreements.length > 0 ? (
-                filteredAgreements.map((agreement) => (
-                  <TableRow key={agreement.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <Link
-                          href={`/admin/agreements/${agreement.id}`}
-                          className="font-medium hover:underline"
-                        >
-                          {agreement.name}
-                        </Link>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/admin/partners/${agreement.partnerId}`}
-                        className="hover:underline"
-                      >
-                        {agreement.partnerName}
-                      </Link>
-                    </TableCell>
-                    <TableCell>{agreement.type}</TableCell>
-                    <TableCell>
-                      {agreement.startDate.toLocaleDateString('zh-CN')}
-                    </TableCell>
-                    <TableCell>
-                      <span className={isExpiringSoon(agreement.endDate) ? 'text-amber-600 font-medium' : ''}>
-                        {agreement.endDate.toLocaleDateString('zh-CN')}
-                        {isExpiringSoon(agreement.endDate) && ' (即将到期)'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <AgreementStatusBadge status={agreement.status} />
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/agreements/${agreement.id}`}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              查看详情
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/agreements/${agreement.id}/edit`}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              编辑
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600" onClick={() => { if (confirm('确定要删除该协议吗？')) alert('协议已删除（演示）') }}>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            删除
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    暂无符合条件的合作协议
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Card>
-    </div>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>
+              确定要删除协议「{deletingAgreement?.name}」吗？此操作不可撤销。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>取消</Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>确认删除</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </AdminListPage>
   )
 }

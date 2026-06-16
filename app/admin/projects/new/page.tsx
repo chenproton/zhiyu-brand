@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { SearchableSelect } from '@/components/shared/searchable-select'
 import {
   Select,
   SelectContent,
@@ -16,10 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Upload, X } from 'lucide-react'
+import { FakeRichTextEditor } from '@/components/shared/fake-rich-text-editor'
 import { partners, projects } from '@/lib/mock-data'
 import { PROJECT_PHASE_LABELS, SECONDARY_COLLEGES } from '@/lib/types'
-import type { ProjectPhase } from '@/lib/types'
+import type { Project, ProjectPhase } from '@/lib/types'
 
 const PROJECT_TYPES = [
   '人才培养项目',
@@ -29,11 +31,15 @@ const PROJECT_TYPES = [
   '创新创业项目',
   '师资培训项目',
   '课程开发项目',
+  '专业共建项目',
 ]
+
+const partnerOptions = partners.map((p) => ({ value: p.id, label: p.name }))
 
 function NewProjectForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -45,6 +51,7 @@ function NewProjectForm() {
     description: '',
     startDate: '',
     endDate: '',
+    coverImage: '',
   })
 
   useEffect(() => {
@@ -53,6 +60,18 @@ function NewProjectForm() {
       setFormData((prev) => ({ ...prev, partnerIds: preselected }))
     }
   }, [searchParams])
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    setFormData((prev) => ({ ...prev, coverImage: url }))
+    e.target.value = ''
+  }
+
+  const removeCover = () => {
+    setFormData((prev) => ({ ...prev, coverImage: '' }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -71,28 +90,21 @@ function NewProjectForm() {
       description: formData.description,
       startDate: new Date(formData.startDate),
       endDate: new Date(formData.endDate),
+      coverImage: formData.coverImage || undefined,
       milestones: [],
       supportingResults: [],
       projectAgreements: [],
       phases: [],
       publishStatus: 'draft',
+      isPublicDisplay: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
-    projects.push(newProject as any)
+    projects.push(newProject as Project)
 
     alert('项目已新增（演示）')
     setIsSubmitting(false)
     router.push('/admin/projects')
-  }
-
-  const togglePartner = (partnerId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      partnerIds: prev.partnerIds.includes(partnerId)
-        ? prev.partnerIds.filter((id) => id !== partnerId)
-        : [...prev.partnerIds, partnerId],
-    }))
   }
 
   return (
@@ -126,7 +138,7 @@ function NewProjectForm() {
                     />
                   </div>
 
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="type">合作类型 *</Label>
                       <Select
@@ -160,51 +172,25 @@ function NewProjectForm() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="secondaryColleges">关联二级学院</Label>
-                      <div className="flex flex-wrap gap-2 p-3 border rounded-md">
-                        {SECONDARY_COLLEGES.map((college) => (
-                          <Badge
-                            key={college}
-                            variant={formData.secondaryColleges.includes(college) ? 'default' : 'outline'}
-                            className="cursor-pointer"
-                            onClick={() =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                secondaryColleges: prev.secondaryColleges.includes(college)
-                                  ? prev.secondaryColleges.filter((c) => c !== college)
-                                  : [...prev.secondaryColleges, college],
-                              }))
-                            }
-                          >
-                            {college}
-                          </Badge>
-                        ))}
-                      </div>
-                      <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
-                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>合作主体 *</Label>
-                    <div className="flex flex-wrap gap-2 p-3 border rounded-md">
-                      {partners.map((partner) => (
-                        <Badge
-                          key={partner.id}
-                          variant={formData.partnerIds.includes(partner.id) ? 'default' : 'outline'}
-                          className="cursor-pointer"
-                          onClick={() => togglePartner(partner.id)}
-                        >
-                          {partner.name}
-                        </Badge>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
+                    <Label htmlFor="partnerIds">合作主体 *</Label>
+                    <SearchableSelect
+                      options={partnerOptions}
+                      value={formData.partnerIds}
+                      onChange={(value) =>
+                        setFormData((prev) => ({ ...prev, partnerIds: value as string[] }))
+                      }
+                      placeholder="请选择合作主体"
+                      searchPlaceholder="搜索合作主体..."
+                      multiple
+                    />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="startDate">开始日期 *</Label>
+                      <Label htmlFor="startDate">项目开始日期 *</Label>
                       <Input
                         id="startDate"
                         type="date"
@@ -214,7 +200,7 @@ function NewProjectForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="endDate">结束日期 *</Label>
+                      <Label htmlFor="endDate">项目结束日期 *</Label>
                       <Input
                         id="endDate"
                         type="date"
@@ -227,12 +213,11 @@ function NewProjectForm() {
 
                   <div className="space-y-2">
                     <Label htmlFor="description">项目简介</Label>
-                    <Textarea
-                      id="description"
+                    <FakeRichTextEditor
                       value={formData.description}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                      onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
                       placeholder="请输入项目简介"
-                      rows={6}
+                      minHeight="140px"
                     />
                   </div>
                 </CardContent>
@@ -240,6 +225,75 @@ function NewProjectForm() {
             </div>
 
             <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">其他信息</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>关联二级学院</Label>
+                    <div className="flex flex-wrap gap-2 p-3 border rounded-md">
+                      {SECONDARY_COLLEGES.map((college) => (
+                        <Badge
+                          key={college}
+                          variant={formData.secondaryColleges.includes(college) ? 'default' : 'outline'}
+                          className="cursor-pointer"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              secondaryColleges: prev.secondaryColleges.includes(college)
+                                ? prev.secondaryColleges.filter((c) => c !== college)
+                                : [...prev.secondaryColleges, college],
+                            }))
+                          }
+                        >
+                          {college}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>项目封面</Label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={coverInputRef}
+                      className="hidden"
+                      onChange={handleCoverChange}
+                    />
+                    {formData.coverImage ? (
+                      <div className="relative w-fit">
+                        <img
+                          src={formData.coverImage}
+                          alt="项目封面"
+                          className="h-40 w-auto rounded-lg border object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-6 w-6"
+                          onClick={removeCover}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => coverInputRef.current?.click()}
+                        className="w-full flex items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg hover:bg-muted transition-colors"
+                      >
+                        <Upload className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">点击上传封面图片</span>
+                      </button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">操作</CardTitle>

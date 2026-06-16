@@ -20,6 +20,7 @@ import {
   X,
   School,
 } from 'lucide-react'
+import { FakeRichTextEditor } from '@/components/shared/fake-rich-text-editor'
 import { schoolInfo } from '@/lib/mock-data'
 import type { SecondaryCollege } from '@/lib/types'
 
@@ -175,8 +176,8 @@ function SchoolEditForm() {
                 <Input defaultValue={schoolInfo.name} />
               </div>
               <div className="space-y-2">
-                <Label>学校简称</Label>
-                <Input defaultValue={schoolInfo.shortName} />
+                <Label>学校代码</Label>
+                <Input defaultValue={schoolInfo.code} />
               </div>
               <div className="space-y-2">
                 <Label>院校类型</Label>
@@ -188,7 +189,12 @@ function SchoolEditForm() {
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>学校简介</Label>
-                <Textarea rows={8} defaultValue={schoolInfo.introduction} />
+                <FakeRichTextEditor
+                  value={schoolInfo.introduction}
+                  onChange={() => {}}
+                  placeholder="请输入学校简介"
+                  minHeight="180px"
+                />
               </div>
             </CardContent>
           </Card>
@@ -254,6 +260,23 @@ function SchoolEditForm() {
 
 function CollegeEditForm({ collegeId }: { collegeId: string }) {
   const college = schoolInfo.secondaryColleges?.find((c) => c.id === collegeId)
+  const [logo, setLogo] = useState<string>(college?.logo || '')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const url = URL.createObjectURL(file)
+      setLogo(url)
+    }
+  }
+
+  const handleRemoveLogo = () => {
+    setLogo('')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
 
   if (!college) {
     return (
@@ -268,7 +291,7 @@ function CollegeEditForm({ collegeId }: { collegeId: string }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{college.name}</h1>
+          <h1 className="text-2xl font-bold">学院信息管理</h1>
           <p className="text-muted-foreground">维护二级学院基础信息与办学特色</p>
         </div>
         <Button onClick={() => alert('学院信息已保存（演示）')}>保存修改</Button>
@@ -282,11 +305,51 @@ function CollegeEditForm({ collegeId }: { collegeId: string }) {
                 <GraduationCap className="h-4 w-4" />
                 学院标识
               </CardTitle>
-              <CardDescription>上传二级学院标志图片</CardDescription>
+              <CardDescription>上传二级学院标志图片，将展示在学院信息卡片中</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="w-20 h-20 rounded-xl border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/50">
-                <GraduationCap className="h-8 w-8 text-muted-foreground" />
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  {logo ? (
+                    <div className="relative">
+                      <img
+                        src={logo}
+                        alt="学院标识预览"
+                        className="w-20 h-20 rounded-xl object-cover border"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveLogo}
+                        className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 rounded-xl border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/50">
+                      <GraduationCap className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {logo ? '更换图片' : '上传标识'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">支持 JPG、PNG 格式，建议尺寸 200×200</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -297,20 +360,25 @@ function CollegeEditForm({ collegeId }: { collegeId: string }) {
                 <School className="h-4 w-4" />
                 基本信息
               </CardTitle>
-              <CardDescription>学院名称、代码、简介等核心信息</CardDescription>
+              <CardDescription>学院名称、简介等核心信息</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>学院名称</Label>
-                <Input placeholder="请输入学院名称" />
+                <Input defaultValue={college.name} />
               </div>
               <div className="space-y-2">
-                <Label>学院代码</Label>
-                <Input placeholder="请输入学院代码" />
+                <Label>成立年份</Label>
+                <Input type="number" defaultValue={college.establishedYear} />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>学院简介</Label>
-                <Textarea rows={8} placeholder="请输入学院简介" />
+                <FakeRichTextEditor
+                  value={college.introduction || ''}
+                  onChange={() => {}}
+                  placeholder="请输入学院简介"
+                  minHeight="180px"
+                />
               </div>
             </CardContent>
           </Card>
@@ -326,19 +394,15 @@ function CollegeEditForm({ collegeId }: { collegeId: string }) {
             <CardContent className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <Label className="flex items-center gap-1"><Users className="h-3 w-3" />学生人数</Label>
-                <Input type="number" placeholder="0" />
+                <Input type="number" defaultValue={college.studentCount} />
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-1"><BookOpen className="h-3 w-3" />教师人数</Label>
-                <Input type="number" placeholder="0" />
+                <Input type="number" defaultValue={college.teacherCount} />
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-1"><Calendar className="h-3 w-3" />专业数量</Label>
-                <Input type="number" placeholder="0" />
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-1"><Calendar className="h-3 w-3" />成立年份</Label>
-                <Input type="number" placeholder="2000" />
+                <Input type="number" defaultValue={college.majorCount} />
               </div>
             </CardContent>
           </Card>
@@ -351,16 +415,20 @@ function CollegeEditForm({ collegeId }: { collegeId: string }) {
                 <MapPin className="h-4 w-4" />
                 联系信息
               </CardTitle>
-              <CardDescription>学院联系方式</CardDescription>
+              <CardDescription>学院地址与联系方式</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label className="flex items-center gap-1"><Phone className="h-3 w-3" />联系电话</Label>
-                <Input placeholder="请输入联系电话" />
+                <Input defaultValue={college.contactPhone} />
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-1"><Mail className="h-3 w-3" />联系邮箱</Label>
-                <Input placeholder="请输入联系邮箱" />
+                <Input defaultValue={college.contactEmail} />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1"><Globe className="h-3 w-3" />学院官网</Label>
+                <Input defaultValue={college.website} />
               </div>
             </CardContent>
           </Card>

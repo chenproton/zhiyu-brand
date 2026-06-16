@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
+import Link from "next/link"
+import { UserCircle, Star, Search, X, Award, BookOpen, Sparkles } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -12,221 +13,260 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, UserCircle, Award, BookOpen, Star, Building2 } from "lucide-react"
 import { teacherBrands, experts } from "@/lib/mock-data"
-import { TEACHER_TYPE_LABELS, EXPERT_RATING_LABELS } from "@/lib/types"
+import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
+import type { BrandStatus } from "@/lib/types"
+
+const TEACHER_IMAGES = [
+  "/images/landingpage/team.jpg",
+  "/images/landingpage/meeting.jpg",
+  "/images/landingpage/collaborate.jpg",
+  "/images/landingpage/planning.jpg",
+  "/images/landingpage/working.jpg",
+  "/images/landingpage/group.jpg",
+]
+
+function getTeacherImage(index: number) {
+  return TEACHER_IMAGES[index % TEACHER_IMAGES.length]
+}
 
 export default function TeacherBrandPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [typeFilter, setTypeFilter] = useState("all")
-
-  const filteredTeachers = teacherBrands.filter((teacher) => {
-    const matchesSearch =
-      teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      teacher.department.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = typeFilter === "all" || teacher.type === typeFilter
-    return matchesSearch && matchesType && teacher.status === "published"
+  const [search, setSearch] = useState("")
+  const [filters, setFilters] = useState<Record<string, string>>({
+    type: "all",
   })
+  const [activeTab, setActiveTab] = useState<"teachers" | "experts">("teachers")
 
-  const filteredExperts = experts.filter(
-    (expert) =>
-      expert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (expert.partnerName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
-  )
+  const filteredTeachers = useMemo(() => {
+    return teacherBrands.filter((teacher) => {
+      if (search) {
+        const term = search.toLowerCase()
+        const matchesSearch =
+          teacher.name.toLowerCase().includes(term) ||
+          teacher.department.toLowerCase().includes(term) ||
+          teacher.title.toLowerCase().includes(term)
+        if (!matchesSearch) return false
+      }
+      if (filters.type !== "all" && teacher.type !== filters.type) return false
+      return teacher.status === "published"
+    })
+  }, [search, filters])
+
+  const filteredExperts = useMemo(() => {
+    return experts.filter((expert) => {
+      if (search) {
+        const term = search.toLowerCase()
+        const matchesSearch =
+          expert.name.toLowerCase().includes(term) ||
+          (expert.organization?.toLowerCase().includes(term) ?? false) ||
+          (expert.partnerName?.toLowerCase().includes(term) ?? false) ||
+          (expert.title?.toLowerCase().includes(term) ?? false) ||
+          (expert.position?.toLowerCase().includes(term) ?? false)
+        if (!matchesSearch) return false
+      }
+      return true
+    })
+  }, [search])
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleClearFilters = () => {
+    setSearch("")
+    setFilters({ type: "all" })
+  }
+
+  const hasActiveFilters = search || Object.values(filters).some((v) => v !== "all")
+  const activeData = activeTab === "teachers" ? filteredTeachers : filteredExperts
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-b from-background to-muted/30 py-12">
-        <div className="container mx-auto">
-          <div className="max-w-3xl">
-            <Badge variant="secondary" className="mb-4">
-              师资品牌
-            </Badge>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              优质师资团队
-            </h1>
-            <p className="text-muted-foreground">
-              展示学校优秀教师和来自合作企业的行业专家
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50/80 via-white to-blue-50/30">
+      <section className="relative overflow-hidden py-20 lg:py-28">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-violet-600/5" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-violet-500/10 rounded-full blur-[100px]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-5">
+            师资品牌
+          </h1>
+          <p className="text-slate-500 text-lg md:text-xl max-w-2xl mx-auto">
+            展示学校优秀教师和来自合作企业的行业专家
+          </p>
         </div>
       </section>
 
-      <section className="container mx-auto py-8">
-        <Tabs defaultValue="teachers" className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <TabsList>
-              <TabsTrigger value="teachers">校本师资</TabsTrigger>
-              <TabsTrigger value="experts">企业专家</TabsTrigger>
-            </TabsList>
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="搜索..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
-                />
+      <section className="pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card className="border-0 shadow-lg shadow-slate-200/50 rounded-3xl bg-white/80 backdrop-blur-sm mb-10">
+            <CardContent className="p-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={activeTab === "teachers" ? "搜索教师姓名或院系..." : "搜索专家姓名或所属机构..."}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 rounded-xl"
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {activeTab === "teachers" && (
+                    <Select value={filters.type} onValueChange={(v) => handleFilterChange("type", v)}>
+                      <SelectTrigger className="w-[150px] rounded-xl">
+                        <SelectValue placeholder="全部类型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">全部类型</SelectItem>
+                        {Object.entries(TEACHER_TYPE_LABELS).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <div className="flex items-center gap-1 rounded-xl border border-slate-200 p-1 bg-slate-50">
+                    <button
+                      onClick={() => setActiveTab("teachers")}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                        activeTab === "teachers"
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-slate-500 hover:text-slate-700"
+                      }`}
+                    >
+                      校本师资
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("experts")}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                        activeTab === "experts"
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-slate-500 hover:text-slate-700"
+                      }`}
+                    >
+                      企业专家
+                    </button>
+                  </div>
+                  {hasActiveFilters && (
+                    <Button variant="ghost" size="sm" onClick={handleClearFilters} className="rounded-xl">
+                      <X className="h-4 w-4 mr-1" />
+                      清除筛选
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-slate-500 text-sm">
+              共 <span className="font-bold text-slate-900">{activeData.length}</span> 位{activeTab === "teachers" ? "教师" : "专家"}
+            </p>
           </div>
 
-          <TabsContent value="teachers">
-            <div className="flex items-center gap-4 mb-6">
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="教师类型" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">全部类型</SelectItem>
-                  <SelectItem value="teaching-master">教学名师</SelectItem>
-                  <SelectItem value="dual-qualified">双师型教师</SelectItem>
-                  <SelectItem value="backbone">骨干教师</SelectItem>
-                  <SelectItem value="award-winning">获奖教师</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTeachers.map((teacher) => (
-                <Card key={teacher.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col items-center text-center mb-4">
-                      <Avatar className="h-24 w-24 mb-4">
-                        <AvatarImage src={teacher.avatar} />
-                        <AvatarFallback className="text-3xl">{teacher.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-xl">{teacher.name}</h3>
-                        {teacher.isFeatured && (
-                          <Star className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </div>
-                      <p className="text-muted-foreground">{teacher.title}</p>
-                      <p className="text-sm text-muted-foreground">{teacher.department}</p>
-                      <Badge variant="secondary" className="mt-2">
-                        {TEACHER_TYPE_LABELS[teacher.type]}
-                      </Badge>
-                    </div>
-
-                    <p className="text-sm text-muted-foreground text-center line-clamp-2 mb-4">
-                      {teacher.introduction}
-                    </p>
-
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <BookOpen className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">研究领域</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1 justify-center">
-                          {teacher.researchFields.map((field) => (
-                            <Badge key={field} variant="outline" className="text-xs">
-                              {field}
-                            </Badge>
-                          ))}
+          {activeData.length > 0 ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
+              {activeTab === "teachers"
+                ? filteredTeachers.map((teacher, index) => (
+                    <Card key={teacher.id} className="group border-0 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden bg-white h-full">
+                      <div className="h-20 bg-gradient-to-r from-rose-400 via-pink-500 to-purple-500 relative">
+                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
+                          <Avatar className="h-16 w-16 ring-4 ring-white shadow-xl">
+                            <AvatarImage src={teacher.avatar} className="object-cover" />
+                            <AvatarFallback className="text-lg font-bold bg-white text-slate-800">{teacher.name[0]}</AvatarFallback>
+                          </Avatar>
                         </div>
                       </div>
-
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Award className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">荣誉奖项</span>
+                      <CardContent className="pt-10 pb-6 px-5 text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <h4 className="font-bold text-slate-900">{teacher.name}</h4>
+                          {teacher.isFeatured && <Star className="h-4 w-4 text-amber-500 fill-amber-500" />}
                         </div>
-                        <div className="flex flex-wrap gap-1 justify-center">
-                          {teacher.awards.slice(0, 2).map((award) => (
-                            <Badge key={award} variant="outline" className="text-xs">
-                              {award}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {filteredTeachers.length === 0 && (
-              <div className="text-center py-12">
-                <UserCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">暂无符合条件的教师</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="experts">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredExperts.map((expert) => (
-                <Card key={expert.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={expert.avatar} />
-                        <AvatarFallback className="text-2xl">{expert.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{expert.name}</h3>
-                          <Badge
-                            variant={
-                              expert.rating === "gold"
-                                ? "default"
-                                : expert.rating === "silver"
-                                ? "secondary"
-                                : "outline"
-                            }
-                          >
-                            {EXPERT_RATING_LABELS[expert.rating]}
+                        <p className="text-xs text-slate-500">{teacher.title} · {teacher.department}</p>
+                        <div className="flex flex-wrap justify-center gap-1.5 mt-3">
+                          <span className="text-[10px] px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 font-semibold border border-rose-100">
+                            {TEACHER_TYPE_LABELS[teacher.type]}
+                          </span>
+                          <Badge variant={teacher.status === "published" ? "secondary" : "outline"} className="text-[10px]">
+                            {BRAND_STATUS_LABELS[teacher.status as BrandStatus]}
                           </Badge>
                         </div>
-                        <p className="text-muted-foreground text-sm">{expert.title}</p>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                          <Building2 className="h-3 w-3" />
-                          <span>{expert.partnerName}</span>
+                        <div className="mt-4 space-y-2 text-left">
+                          {teacher.researchFields.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {teacher.researchFields.slice(0, 3).map((field) => (
+                                <span key={field} className="text-[10px] px-2 py-0.5 rounded-md bg-purple-50 text-purple-600 font-medium">
+                                  {field}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {teacher.courses.length > 0 && (
+                            <p className="text-xs text-slate-400 truncate flex items-center gap-1">
+                              <BookOpen className="h-3 w-3" /> 主讲：{teacher.courses.slice(0, 2).join("、")}
+                              {teacher.courses.length > 2 && ` 等${teacher.courses.length}门`}
+                            </p>
+                          )}
+                          {teacher.awards.length > 0 && (
+                            <p className="text-xs text-slate-400 truncate flex items-center gap-1">
+                              <Award className="h-3 w-3 text-amber-500" /> {teacher.awards.slice(0, 2).join("、")}
+                              {teacher.awards.length > 2 && ` 等${teacher.awards.length}项`}
+                            </p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                : filteredExperts.map((expert) => (
+                    <Card key={expert.id} className="group border-0 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden bg-white h-full">
+                      <div className="h-20 bg-gradient-to-r from-blue-400 via-indigo-500 to-violet-500 relative">
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm border-0 shadow-sm">
+                            认证专家
+                          </Badge>
+                        </div>
+                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
+                          <Avatar className="h-16 w-16 ring-4 ring-white shadow-xl">
+                            <AvatarImage src={expert.avatar} className="object-cover" />
+                            <AvatarFallback className="text-lg font-bold bg-white text-slate-800">{expert.name[0]}</AvatarFallback>
+                          </Avatar>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="mt-4 space-y-3">
-                      <div>
-                        <p className="text-sm font-medium mb-2">专业领域</p>
-                        <div className="flex flex-wrap gap-1">
-                          {expert.specialties.map((specialty) => (
-                            <Badge key={specialty} variant="outline" className="text-xs">
+                      <CardContent className="pt-10 pb-6 px-5 text-center">
+                        <h4 className="font-bold text-slate-900">{expert.name}</h4>
+                        <p className="text-xs text-slate-500">{expert.title || expert.position}</p>
+                        <p className="text-xs text-slate-400 mt-1 truncate">{expert.organization || expert.partnerName || "独立专家"}</p>
+                        <div className="flex flex-wrap justify-center gap-1 mt-3">
+                          {expert.specialties?.slice(0, 4).map((specialty) => (
+                            <span key={specialty} className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 font-medium">
                               {specialty}
-                            </Badge>
+                            </span>
                           ))}
                         </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-3 border-t">
-                        <div className="text-center">
-                          <p className="font-semibold">{expert.experience}</p>
-                          <p className="text-xs text-muted-foreground">行业经验</p>
+                        <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400">
+                          <p className="flex items-center justify-center gap-1">
+                            <Sparkles className="h-3 w-3 text-violet-500" /> 从业 {expert.experience || "—"} 年 · {expert.education || "—"}
+                          </p>
                         </div>
-                        <div className="text-center">
-                          <p className="font-semibold">{expert.rating}</p>
-                          <p className="text-xs text-muted-foreground">专家评级</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </CardContent>
+                    </Card>
+                  ))}
             </div>
-
-            {filteredExperts.length === 0 && (
-              <div className="text-center py-12">
-                <UserCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">暂无符合条件的专家</p>
+          ) : (
+            <div className="text-center py-24">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-slate-100 mb-5">
+                <UserCircle className="h-10 w-10 text-slate-400" />
               </div>
-            )}
-          </TabsContent>
-        </Tabs>
+              <p className="text-slate-500 text-lg mb-5">
+                暂无符合条件的{activeTab === "teachers" ? "教师" : "专家"}
+              </p>
+              <Button variant="outline" onClick={handleClearFilters} className="rounded-full px-6">
+                清除筛选条件
+              </Button>
+            </div>
+          )}
+        </div>
       </section>
     </div>
   )

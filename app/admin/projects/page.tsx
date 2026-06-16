@@ -3,30 +3,17 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { TableRowActions } from '@/components/admin/table-row-actions'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
 import { Switch } from '@/components/ui/switch'
-import { FilterBar } from '@/components/shared/filter-bar'
-import { ProjectPhaseBadge, ProjectPublishStatusBadge } from '@/components/shared/status-badge'
-import { Plus, MoreHorizontal, Eye, Pencil, Trash2, FolderKanban, Send, EyeOff, Tag } from 'lucide-react'
+import { AdminListPage } from '@/components/admin/list-page'
+import { AdminDataTable } from '@/components/admin/data-table'
+import { ProjectPhaseBadge } from '@/components/shared/status-badge'
+import { Plus, Eye, Pencil, Trash2, FolderKanban, Tag, Folder, Play, CheckCircle, Archive, XCircle } from 'lucide-react'
 import { projects, enterprises } from '@/lib/mock-data'
-import { PROJECT_PHASE_LABELS, PROJECT_PUBLISH_STATUS_LABELS } from '@/lib/types'
-import type { ProjectPhase, ProjectPublishStatus } from '@/lib/types'
+import { PROJECT_PHASE_LABELS, SECONDARY_COLLEGES } from '@/lib/types'
+import type { ProjectPhase } from '@/lib/types'
 import CooperationTypeManager from '@/components/admin/cooperation-type-manager'
 
 const PROJECT_TYPES = [
@@ -48,6 +35,7 @@ export default function ProjectsListPage() {
   })
   const [cooperationTypeDialogOpen, setCooperationTypeDialogOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [activeCollegeTab, setActiveCollegeTab] = useState('全部')
 
   const filteredProjects = useMemo(() => {
     return projects.filter((project) => {
@@ -61,9 +49,24 @@ export default function ProjectsListPage() {
       if (filters.phase !== 'all' && project.phase !== filters.phase) return false
       if (filters.type !== 'all' && project.type !== filters.type) return false
       if (filters.publishStatus !== 'all' && project.publishStatus !== filters.publishStatus) return false
+      if (activeCollegeTab !== '全部') {
+        const colleges = project.secondaryColleges || []
+        if (!colleges.includes(activeCollegeTab)) return false
+      }
       return true
     })
-  }, [search, filters, refreshKey])
+  }, [search, filters, refreshKey, activeCollegeTab])
+
+  const phaseStats = useMemo(() => {
+    return {
+      initiation: projects.filter((p) => p.phase === 'initiation').length,
+      execution: projects.filter((p) => p.phase === 'execution').length,
+      acceptance: projects.filter((p) => p.phase === 'acceptance').length,
+      closure: projects.filter((p) => p.phase === 'closure').length,
+      archived: projects.filter((p) => p.phase === 'archived').length,
+      terminated: projects.filter((p) => p.phase === 'terminated').length,
+    }
+  }, [projects, refreshKey])
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
@@ -76,6 +79,7 @@ export default function ProjectsListPage() {
       type: 'all',
       publishStatus: 'all',
     })
+    setActiveCollegeTab('全部')
   }
 
   const handleTogglePublicDisplay = (project: typeof projects[0]) => {
@@ -113,15 +117,147 @@ export default function ProjectsListPage() {
     },
   ]
 
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <p className="text-muted-foreground">
-            共 {filteredProjects.length} 个合作项目
-          </p>
-        </div>
+  const stats = [
+    { key: 'initiation', label: '立项阶段', value: phaseStats.initiation, icon: ClipboardListIcon, color: 'blue' as const, filterKey: 'phase', filterValue: 'initiation' },
+    { key: 'execution', label: '执行阶段', value: phaseStats.execution, icon: Play, color: 'indigo' as const, filterKey: 'phase', filterValue: 'execution' },
+    { key: 'acceptance', label: '验收阶段', value: phaseStats.acceptance, icon: CheckCircle, color: 'purple' as const, filterKey: 'phase', filterValue: 'acceptance' },
+    { key: 'closure', label: '结项阶段', value: phaseStats.closure, icon: Folder, color: 'green' as const, filterKey: 'phase', filterValue: 'closure' },
+    { key: 'archived', label: '已归档', value: phaseStats.archived, icon: Archive, color: 'slate' as const, filterKey: 'phase', filterValue: 'archived' },
+    { key: 'terminated', label: '已终止', value: phaseStats.terminated, icon: XCircle, color: 'red' as const, filterKey: 'phase', filterValue: 'terminated' },
+  ]
+
+  const columns = [
+    {
+      key: 'seq',
+      title: '序号',
+      width: 'w-16',
+      align: 'center' as const,
+      render: (_: typeof projects[0], index: number) => <span className="text-sm text-muted-foreground">{index + 1}</span>,
+    },
+    {
+      key: 'display',
+      title: '前台展示',
+      render: (project: typeof projects[0]) => {
+        const enterprise = enterprises.find((e) => e.id === project.partnerId)
+        return (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={enterprise?.isPublicDisplay ?? true}
+              onCheckedChange={() => handleTogglePublicDisplay(project)}
+            />
+            <span className={`text-sm ${(enterprise?.isPublicDisplay ?? true) ? 'text-green-600' : 'text-gray-400'}`}>
+              {(enterprise?.isPublicDisplay ?? true) ? '展示' : '隐藏'}
+            </span>
+          </div>
+        )
+      },
+    },
+    {
+      key: 'name',
+      title: '项目名称',
+      render: (project: typeof projects[0]) => (
         <div className="flex items-center gap-2">
+          <FolderKanban className="h-4 w-4 text-muted-foreground" />
+          <Link href={`/admin/projects/${project.id}`} className="font-medium hover:underline">
+            {project.name}
+          </Link>
+        </div>
+      ),
+    },
+    {
+      key: 'partner',
+      title: '合作主体',
+      render: (project: typeof projects[0]) => (
+        <Link href={`/admin/partners/${project.partnerId}`} className="hover:underline">
+          {project.partnerName}
+        </Link>
+      ),
+    },
+    {
+      key: 'type',
+      title: '合作类型',
+      render: (p: typeof projects[0]) => p.type,
+    },
+    {
+      key: 'dateRange',
+      title: '起止时间',
+      render: (p: typeof projects[0]) => (
+        <div className="text-sm">
+          <div>{p.startDate.toLocaleDateString('zh-CN')}</div>
+          <div className="text-muted-foreground">至 {p.endDate.toLocaleDateString('zh-CN')}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'progress',
+      title: '里程碑进度',
+      render: (p: typeof projects[0]) => {
+        const progress = getMilestoneProgress(p.milestones)
+        return (
+          <div className="flex items-center gap-2">
+            <Progress value={progress} className="w-20 h-2" />
+            <span className="text-sm text-muted-foreground">{progress}%</span>
+          </div>
+        )
+      },
+    },
+    {
+      key: 'phase',
+      title: '阶段',
+      render: (p: typeof projects[0]) => <ProjectPhaseBadge phase={p.phase} />,
+    },
+    { key: 'createdBy', title: '创建人', render: (p: typeof projects[0]) => <span className="text-sm">{p.createdBy || '-'}</span> },
+    { key: 'createdAt', title: '创建时间', render: (p: typeof projects[0]) => <span className="text-sm">{p.createdAt.toLocaleDateString('zh-CN')}</span> },
+    { key: 'updatedAt', title: '更新时间', render: (p: typeof projects[0]) => <span className="text-sm">{p.updatedAt.toLocaleDateString('zh-CN')}</span> },
+    {
+      key: 'actions',
+      title: '',
+      width: 'w-[50px]',
+      align: 'right' as const,
+      render: (project: typeof projects[0]) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/projects/${project.id}`}>
+              <Eye className="mr-1 h-3 w-3" />
+              查看
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/projects/${project.id}/edit`}>
+              <Pencil className="mr-1 h-3 w-3" />
+              编辑
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-red-500 hover:text-red-600">
+            <Trash2 className="mr-1 h-3 w-3" />
+            删除
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
+
+  return (
+    <AdminListPage
+      title="合作项目管理"
+      subtitle="跟踪项目全生命周期与里程碑进展"
+      count={filteredProjects.length}
+      countLabel="个合作项目"
+      stats={stats}
+      statsColumns={6}
+      activeFilters={filters}
+      onFilterChange={handleFilterChange}
+      searchPlaceholder="搜索项目名称、合作主体..."
+      searchValue={search}
+      onSearchChange={setSearch}
+      filters={filterConfigs}
+      filterValues={filters}
+      onClearFilters={handleClearFilters}
+      tabs={['全部', ...SECONDARY_COLLEGES].map((c) => ({ value: c, label: c }))}
+      activeTab={activeCollegeTab}
+      onTabChange={setActiveCollegeTab}
+      actions={
+        <>
           <Button variant="outline" size="sm" onClick={() => setCooperationTypeDialogOpen(true)}>
             <Tag className="h-4 w-4 mr-1" />
             合作类型管理
@@ -132,173 +268,16 @@ export default function ProjectsListPage() {
               新增项目
             </Button>
           </Link>
-        </div>
-      </div>
+        </>
+      }
+    >
+      <AdminDataTable
+        columns={columns}
+        data={filteredProjects}
+        rowKey={(p) => p.id}
+        emptyText="暂无符合条件的合作项目"
+      />
 
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <FilterBar
-            searchPlaceholder="搜索项目名称、合作主体..."
-            searchValue={search}
-            onSearchChange={setSearch}
-            filters={filterConfigs}
-            filterValues={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={handleClearFilters}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>项目名称</TableHead>
-              <TableHead>合作主体</TableHead>
-              <TableHead>前台展示</TableHead>
-              <TableHead>合作类型</TableHead>
-              <TableHead>起止时间</TableHead>
-              <TableHead>里程碑进度</TableHead>
-              <TableHead>阶段</TableHead>
-              <TableHead>发布状态</TableHead>
-              <TableHead>创建人</TableHead>
-              <TableHead>创建时间</TableHead>
-              <TableHead>更新时间</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredProjects.length > 0 ? (
-              filteredProjects.map((project) => {
-                const progress = getMilestoneProgress(project.milestones)
-                const enterprise = enterprises.find((e) => e.id === project.partnerId)
-                return (
-                  <TableRow key={project.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <FolderKanban className="h-4 w-4 text-muted-foreground" />
-                        <Link
-                          href={`/admin/projects/${project.id}`}
-                          className="font-medium hover:underline"
-                        >
-                          {project.name}
-                        </Link>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/admin/partners/${project.partnerId}`}
-                        className="hover:underline"
-                      >
-                        {project.partnerName}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={enterprise?.isPublicDisplay ?? true}
-                          onCheckedChange={() => handleTogglePublicDisplay(project)}
-                        />
-                        <span className={`text-sm ${(enterprise?.isPublicDisplay ?? true) ? 'text-green-600' : 'text-gray-400'}`}>
-                          {(enterprise?.isPublicDisplay ?? true) ? '展示' : '隐藏'}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{project.type}</TableCell>
-                    <TableCell className="text-sm">
-                      <div>
-                        {project.startDate.toLocaleDateString('zh-CN')}
-                      </div>
-                      <div className="text-muted-foreground">
-                        至 {project.endDate.toLocaleDateString('zh-CN')}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={progress} className="w-20 h-2" />
-                        <span className="text-sm text-muted-foreground">{progress}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <ProjectPhaseBadge phase={project.phase} />
-                    </TableCell>
-                    <TableCell>
-                      <ProjectPublishStatusBadge status={project.publishStatus} />
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{project.createdBy || '-'}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{project.createdAt.toLocaleDateString('zh-CN')}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{project.updatedAt.toLocaleDateString('zh-CN')}</span>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/projects/${project.id}`}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              查看详情
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/projects/${project.id}/edit`}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              编辑
-                            </Link>
-                          </DropdownMenuItem>
-                          {project.publishStatus === 'draft' ? (
-                            <DropdownMenuItem
-                              onClick={() => {
-                                project.publishStatus = 'published'
-                                project.updatedAt = new Date()
-                                window.location.reload()
-                              }}
-                            >
-                              <Send className="h-4 w-4 mr-2" />
-                              发布
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              onClick={() => {
-                                project.publishStatus = 'draft'
-                                project.updatedAt = new Date()
-                                window.location.reload()
-                              }}
-                            >
-                              <EyeOff className="h-4 w-4 mr-2" />
-                              撤销发布
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            删除
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
-                  暂无符合条件的合作项目
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
-
-      {/* Cooperation Type Dialog */}
       <Dialog open={cooperationTypeDialogOpen} onOpenChange={setCooperationTypeDialogOpen}>
         <DialogContent className="w-[95vw] max-w-[1400px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
@@ -308,6 +287,30 @@ export default function ProjectsListPage() {
           <CooperationTypeManager />
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminListPage>
+  )
+}
+
+function ClipboardListIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <path d="M12 11h4" />
+      <path d="M12 16h4" />
+      <path d="M8 11h.01" />
+      <path d="M8 16h.01" />
+    </svg>
   )
 }

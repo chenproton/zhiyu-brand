@@ -1,27 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
+import { TableRowActions } from "@/components/admin/table-row-actions"
 import {
   Dialog,
   DialogContent,
@@ -37,8 +23,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Search, MoreHorizontal, Pencil, Trash2, AlertCircle } from "lucide-react"
-import { jobBrands, jobs, enterprises } from "@/lib/mock-data"
+import { AdminListPage } from "@/components/admin/list-page"
+import { AdminDataTable } from "@/components/admin/data-table"
+import { Pencil, Trash2, AlertCircle } from "lucide-react"
+import { jobBrands, jobs } from "@/lib/mock-data"
 import type { JobBrand, Job } from "@/lib/types"
 import { BRAND_STATUS_LABELS, INDUSTRIES, JOB_CATEGORY_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
 import {
@@ -59,9 +47,11 @@ const virtualPartner = { id: "virtual", name: "岗位品牌", logo: "" }
 
 export default function JobBrandPage() {
   const [data, setData] = useState<JobBrand[]>(jobBrands)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [levelFilter, setLevelFilter] = useState("all")
-  const [industryFilter, setIndustryFilter] = useState("all")
+  const [search, setSearch] = useState("")
+  const [filters, setFilters] = useState<Record<string, string>>({
+    level: "all",
+    industry: "all",
+  })
 
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<JobBrand | null>(null)
@@ -72,11 +62,37 @@ export default function JobBrandPage() {
   const [editForm, setEditForm] = useState<Partial<JobBrand>>({})
 
   const filteredJobs = data.filter((job) => {
-    const matchesSearch = job.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesLevel = levelFilter === "all" || job.level === levelFilter
-    const matchesIndustry = industryFilter === "all" || job.industry === industryFilter
+    const matchesSearch = job.name.toLowerCase().includes(search.toLowerCase())
+    const matchesLevel = filters.level === "all" || job.level === filters.level
+    const matchesIndustry = filters.industry === "all" || job.industry === filters.industry
     return matchesSearch && matchesLevel && matchesIndustry
   })
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleClearFilters = () => {
+    setSearch("")
+    setFilters({ level: "all", industry: "all" })
+  }
+
+  const filterConfigs = [
+    {
+      key: "level",
+      label: "全部等级",
+      options: [
+        { value: "recommended", label: "推荐品牌" },
+        { value: "key", label: "重点品牌" },
+        { value: "standard", label: "标准品牌" },
+      ],
+    },
+    {
+      key: "industry",
+      label: "全部行业",
+      options: INDUSTRIES.map((industry) => ({ value: industry, label: industry })),
+    },
+  ]
 
   const handleDelete = (id: string) => {
     if (confirm("确定要删除该岗位品牌吗？")) {
@@ -142,154 +158,97 @@ export default function JobBrandPage() {
     setNonTeachingOpen(false)
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/brands">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">岗位品牌管理</h1>
-          <p className="text-muted-foreground">管理职业岗位的品牌化展示配置</p>
+  const columns = [
+    { key: "name", title: "岗位名称", render: (job: JobBrand) => <span className="font-medium">{job.name}</span> },
+    { key: "industry", title: "所属行业", render: (job: JobBrand) => job.industry },
+    {
+      key: "jobCategory",
+      title: "岗位分类",
+      render: (job: JobBrand) => (
+        <Badge variant="outline">{JOB_CATEGORY_LABELS[job.jobCategory || "non-teaching"]}</Badge>
+      ),
+    },
+    { key: "secondaryCollege", title: "关联二级学院", render: (job: JobBrand) => job.secondaryCollege || "-" },
+    { key: "averageSalary", title: "薪资范围", render: (job: JobBrand) => job.averageSalary || "-" },
+    { key: "demandCount", title: "需求量", render: (job: JobBrand) => job.demandCount ?? 0 },
+    {
+      key: "suitableMajors",
+      title: "适用专业",
+      render: (job: JobBrand) => (
+        <div className="flex flex-wrap gap-1 max-w-[200px]">
+          {job.suitableMajors.slice(0, 2).map((major) => (
+            <Badge key={major} variant="outline" className="text-[10px]">{major}</Badge>
+          ))}
+          {job.suitableMajors.length > 2 && (
+            <Badge variant="outline" className="text-[10px]">+{job.suitableMajors.length - 2}</Badge>
+          )}
+          {job.suitableMajors.length === 0 && "-"}
         </div>
-      </div>
+      ),
+    },
+    {
+      key: "status",
+      title: "状态",
+      render: (job: JobBrand) => (
+        <Badge variant={job.status === "published" ? "secondary" : "outline"}>
+          {BRAND_STATUS_LABELS[job.status]}
+        </Badge>
+      ),
+    },
+    {
+      key: "actions",
+      title: "",
+      width: "w-[50px]",
+      align: "right" as const,
+      render: (job: JobBrand) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEdit(job)}>
+            <Pencil className="mr-1 h-3 w-3" />
+            编辑
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+            onClick={() => handleDelete(job.id)}
+          >
+            <Trash2 className="mr-1 h-3 w-3" />
+            删除
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>岗位品牌列表</CardTitle>
-              <CardDescription>从职业岗位平台同步岗位，进行品牌化配置</CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <JobActionButtons
-                onAddTeaching={() => setTeachingOpen(true)}
-                onAddNonTeaching={() => setNonTeachingOpen(true)}
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="搜索岗位名称..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={levelFilter} onValueChange={setLevelFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="品牌等级" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部等级</SelectItem>
-                <SelectItem value="recommended">推荐品牌</SelectItem>
-                <SelectItem value="key">重点品牌</SelectItem>
-                <SelectItem value="standard">标准品牌</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={industryFilter} onValueChange={setIndustryFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="所属行业" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部行业</SelectItem>
-                {INDUSTRIES.map((industry) => (
-                  <SelectItem key={industry} value={industry}>
-                    {industry}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+  return (
+    <AdminListPage
+      title="岗位品牌管理"
+      subtitle="管理职业岗位的品牌化展示配置"
+      count={filteredJobs.length}
+      countLabel="个岗位品牌"
+      backHref="/admin/brands"
+      activeFilters={filters}
+      onFilterChange={handleFilterChange}
+      searchPlaceholder="搜索岗位名称..."
+      searchValue={search}
+      onSearchChange={setSearch}
+      filters={filterConfigs}
+      filterValues={filters}
+      onClearFilters={handleClearFilters}
+      actions={
+        <JobActionButtons
+          onAddTeaching={() => setTeachingOpen(true)}
+          onAddNonTeaching={() => setNonTeachingOpen(true)}
+        />
+      }
+    >
+      <AdminDataTable
+        columns={columns}
+        data={filteredJobs}
+        rowKey={(j) => j.id}
+        emptyText="暂无符合条件的岗位品牌"
+      />
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>岗位名称</TableHead>
-                <TableHead>所属行业</TableHead>
-                <TableHead>岗位分类</TableHead>
-                <TableHead>关联二级学院</TableHead>
-                <TableHead>薪资范围</TableHead>
-                <TableHead>需求量</TableHead>
-                <TableHead>适用专业</TableHead>
-                <TableHead>状态</TableHead>
-                <TableHead className="w-[80px]">操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredJobs.length > 0 ? (
-                filteredJobs.map((job) => (
-                  <TableRow key={job.id}>
-                    <TableCell className="font-medium">{job.name}</TableCell>
-                    <TableCell>{job.industry}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {JOB_CATEGORY_LABELS[job.jobCategory || "non-teaching"]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{job.secondaryCollege || "-"}</TableCell>
-                    <TableCell>{job.averageSalary || "-"}</TableCell>
-                    <TableCell>{job.demandCount ?? 0}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1 max-w-[200px]">
-                        {job.suitableMajors.slice(0, 2).map((major) => (
-                          <Badge key={major} variant="outline" className="text-[10px]">
-                            {major}
-                          </Badge>
-                        ))}
-                        {job.suitableMajors.length > 2 && (
-                          <Badge variant="outline" className="text-[10px]">
-                            +{job.suitableMajors.length - 2}
-                          </Badge>
-                        )}
-                        {job.suitableMajors.length === 0 && "-"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={job.status === "published" ? "secondary" : "outline"}>
-                        {BRAND_STATUS_LABELS[job.status]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEdit(job)}>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            编辑
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(job.id)}>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            删除
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                    暂无符合条件的岗位品牌
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* 引用教学岗位 Dialog */}
       <TeachingJobDialog
         open={teachingOpen}
         onOpenChange={setTeachingOpen}
@@ -298,7 +257,6 @@ export default function JobBrandPage() {
         description="从岗位库中选择教学岗位，保存后添加到岗位品牌列表。"
       />
 
-      {/* 添加非教学岗位 Dialog */}
       <NonTeachingJobDialog
         open={nonTeachingOpen}
         onOpenChange={setNonTeachingOpen}
@@ -307,7 +265,6 @@ export default function JobBrandPage() {
         description="填写岗位基础信息，保存后添加到岗位品牌列表。"
       />
 
-      {/* 编辑 Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -317,10 +274,7 @@ export default function JobBrandPage() {
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="col-span-2 space-y-2">
               <Label>岗位名称</Label>
-              <Input
-                value={editForm.name || ""}
-                disabled
-              />
+              <Input value={editForm.name || ""} disabled />
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 岗位名称不可修改，修改仅影响品牌展示，不会回写岗位库
@@ -337,14 +291,11 @@ export default function JobBrandPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {INDUSTRIES.map((ind) => (
-                    <SelectItem key={ind} value={ind}>
-                      {ind}
-                    </SelectItem>
+                    <SelectItem key={ind} value={ind}>{ind}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-
             <div className="space-y-2">
               <Label>薪资范围</Label>
               <Input
@@ -360,14 +311,11 @@ export default function JobBrandPage() {
                 onChange={(e) => setEditForm((prev) => ({ ...prev, demandCount: Number(e.target.value) }))}
               />
             </div>
-
             <div className="space-y-2">
               <Label>适用专业（逗号分隔）</Label>
               <Input
                 value={editForm.suitableMajors?.join(", ") || ""}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, suitableMajors: splitByComma(e.target.value) }))
-                }
+                onChange={(e) => setEditForm((prev) => ({ ...prev, suitableMajors: splitByComma(e.target.value) }))}
               />
             </div>
             <div className="space-y-2">
@@ -422,27 +370,22 @@ export default function JobBrandPage() {
               <Label>特色标签（逗号分隔）</Label>
               <Input
                 value={editForm.featureTags?.join(", ") || ""}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, featureTags: splitByComma(e.target.value) }))
-                }
+                onChange={(e) => setEditForm((prev) => ({ ...prev, featureTags: splitByComma(e.target.value) }))}
               />
             </div>
             <div className="space-y-2">
               <Label>能力要求（逗号分隔）</Label>
               <Input
                 value={editForm.abilityModel?.join(", ") || ""}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, abilityModel: splitByComma(e.target.value) }))
-                }
+                onChange={(e) => setEditForm((prev) => ({ ...prev, abilityModel: splitByComma(e.target.value) }))}
               />
             </div>
-
             <div className="col-span-2 space-y-2">
               <Label>岗位描述</Label>
-              <Textarea
+              <FakeRichTextEditor
                 value={editForm.description || ""}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
-                rows={4}
+                onChange={(value) => setEditForm((prev) => ({ ...prev, description: value }))}
+                minHeight="140px"
               />
             </div>
           </div>
@@ -450,12 +393,10 @@ export default function JobBrandPage() {
             <Button variant="outline" onClick={() => setIsEditOpen(false)}>
               取消
             </Button>
-            <Button onClick={handleEditSubmit}>
-              保存修改
-            </Button>
+            <Button onClick={handleEditSubmit}>保存修改</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminListPage>
   )
 }

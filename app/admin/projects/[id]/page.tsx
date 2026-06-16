@@ -5,13 +5,8 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  ProjectPhaseBadge,
-  ProjectPublishStatusBadge,
-} from '@/components/shared/status-badge'
+import { ProjectPhaseBadge } from '@/components/shared/status-badge'
 import {
   ArrowLeft,
   Pencil,
@@ -19,12 +14,12 @@ import {
   Building2,
   FileText,
   Award,
+  Plus,
 } from 'lucide-react'
-import { projects, partners } from '@/lib/mock-data'
-import { PROJECT_PHASE_LABELS, SECONDARY_COLLEGES } from '@/lib/types'
+import { projects, partners, achievements } from '@/lib/mock-data'
+import { PROJECT_PHASE_LABELS } from '@/lib/types'
 import type { Project } from '@/lib/types'
-import ProjectActionBar from './project-action-bar'
-import { ProjectMilestoneManager, ProjectAgreementManager, ProjectAchievementManager } from './project-detail-actions'
+import { ProjectMilestoneManager, ProjectAgreementManager } from './project-detail-actions'
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -62,10 +57,7 @@ export default function ProjectDetailPage() {
 
   const partnerIds = project.partnerIds?.length ? project.partnerIds : [project.partnerId]
   const projectPartners = partnerIds.map((pid) => partners.find((p) => p.id === pid)).filter(Boolean)
-
-  const completedMilestones = project.milestones.filter((m) => m.status === 'completed').length
-  const totalMilestones = project.milestones.length
-  const progress = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0
+  const projectAchievements = achievements.filter((a) => a.projectId === project.id)
 
   return (
     <div>
@@ -83,22 +75,15 @@ export default function ProjectDetailPage() {
           <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center">
             <FolderKanban className="w-8 h-8 text-purple-600" />
           </div>
-          <div>
+            <div>
             <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
             <p className="text-muted-foreground">{project.type}</p>
             <div className="flex items-center gap-2 mt-2">
               <ProjectPhaseBadge phase={project.phase} />
-              <ProjectPublishStatusBadge status={project.publishStatus} />
-              {project.rating && (
-                <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                  评级 {project.rating} 分
-                </Badge>
-              )}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <ProjectActionBar projectId={project.id} publishStatus={project.publishStatus} />
           <Link href={`/admin/projects/${id}/edit`}>
             <Button variant="outline">
               <Pencil className="h-4 w-4 mr-2" />
@@ -108,44 +93,12 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="grid md:grid-cols-4 gap-6">
-            <div className="md:col-span-2">
-              <p className="text-sm text-muted-foreground mb-2">整体进度</p>
-              <div className="flex items-center gap-4">
-                <Progress value={progress} className="flex-1 h-3" />
-                <span className="text-2xl font-bold">{progress}%</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                已完成 {completedMilestones} / {totalMilestones} 个里程碑
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">项目周期</p>
-              <p className="font-medium">
-                {project.startDate.toLocaleDateString('zh-CN')}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                至 {project.endDate.toLocaleDateString('zh-CN')}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">项目预算</p>
-              <p className="text-2xl font-bold">
-                {project.budget ? `¥${(project.budget / 10000).toFixed(1)}万` : '未设置'}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       <Tabs defaultValue="info" className="space-y-6">
         <TabsList>
           <TabsTrigger value="info">项目信息</TabsTrigger>
           <TabsTrigger value="milestones">项目里程碑 ({project.milestones.length})</TabsTrigger>
           <TabsTrigger value="agreement">项目协议 ({(project.projectAgreements || []).length})</TabsTrigger>
-          <TabsTrigger value="achievements">关联成果 ({(project.supportingResults || []).length})</TabsTrigger>
+          <TabsTrigger value="achievements">关联成果 ({projectAchievements.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
@@ -193,14 +146,14 @@ export default function ProjectDetailPage() {
                     </div>
                   </div>
                 )}
-                {(project.supportingResults || []).length > 0 && (
+                {projectAchievements.length > 0 && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
                       <Award className="h-5 w-5 text-purple-600" />
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">关联成果</p>
-                      <p className="font-medium">{(project.supportingResults || []).length} 项成果</p>
+                      <p className="font-medium">{projectAchievements.length} 项成果</p>
                     </div>
                   </div>
                 )}
@@ -277,18 +230,53 @@ export default function ProjectDetailPage() {
 
         <TabsContent value="achievements">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">关联成果</CardTitle>
-              <CardDescription>管理项目产生的合作成果</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base">关联成果</CardTitle>
+                <CardDescription>管理项目产生的合作成果</CardDescription>
+              </div>
+              <Button asChild size="sm">
+                <Link href="/admin/achievements/new">
+                  <Plus className="h-4 w-4 mr-1" />
+                  新增成果
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
-              <ProjectAchievementManager
-                projectId={project.id}
-                items={project.supportingResults || []}
-                onChange={(items) => {
-                  setProject((prev) => prev ? { ...prev, supportingResults: items, updatedAt: new Date() } : prev)
-                }}
-              />
+              {projectAchievements.length > 0 ? (
+                <div className="space-y-4">
+                  {projectAchievements.map((achievement) => (
+                    <div
+                      key={achievement.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">{achievement.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {achievement.publishDate.toLocaleDateString('zh-CN')} 发布
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link href={`/admin/achievements/${achievement.id}`}>
+                          <Button variant="outline" size="sm">
+                            查看详情
+                          </Button>
+                        </Link>
+                        <Link href={`/admin/achievements/${achievement.id}/edit`}>
+                          <Button variant="outline" size="sm">
+                            <Pencil className="h-3 w-3 mr-1" />
+                            编辑
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  暂无关联成果
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

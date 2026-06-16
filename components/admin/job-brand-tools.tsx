@@ -30,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { TableRowActions } from "@/components/admin/table-row-actions"
 import { Check, Pencil, Plus, Search, Trash2 } from "lucide-react"
 import { INDUSTRIES, JOB_CATEGORY_LABELS, JOB_STATUS_LABELS, MAJORS, SECONDARY_COLLEGES } from "@/lib/types"
 import { jobBrands } from "@/lib/mock-data"
@@ -199,7 +200,7 @@ export function NonTeachingJobDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label>关联专业</Label>
+            <Label>面向专业</Label>
             <div className="grid max-h-40 grid-cols-2 gap-2 overflow-y-auto rounded-md border p-2 md:grid-cols-3">
               {MAJORS.map((major) => (
                 <label key={major} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-muted">
@@ -311,7 +312,7 @@ export function TeachingJobDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>引用教学岗位</DialogTitle>
+          <DialogTitle>引用职业岗位库</DialogTitle>
           <DialogDescription>{description || "从岗位库中选择教学岗位，保存后关联到当前雇主品牌。"}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
@@ -369,11 +370,12 @@ export function AssociatedJobsTable({
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-12 text-center">序号</TableHead>
           <TableHead>岗位名称</TableHead>
           <TableHead>分类</TableHead>
           <TableHead>薪资范围</TableHead>
           <TableHead>岗位介绍</TableHead>
-          <TableHead>关联专业</TableHead>
+          <TableHead>面向专业</TableHead>
           <TableHead>所属行业</TableHead>
           <TableHead>状态</TableHead>
           <TableHead className="text-right">操作</TableHead>
@@ -381,10 +383,11 @@ export function AssociatedJobsTable({
       </TableHeader>
       <TableBody>
         {jobs.length === 0 ? (
-          <TableRow><TableCell colSpan={8} className="py-10 text-center text-muted-foreground">暂无关联岗位</TableCell></TableRow>
+          <TableRow><TableCell colSpan={9} className="py-10 text-center text-muted-foreground">暂无关联岗位</TableCell></TableRow>
         ) : (
-          jobs.map((job) => (
-            <TableRow key={job.id}>
+          jobs.map((job, index) => (
+            <TableRow key={job.id} className="group">
+              <TableCell className="text-center">{index + 1}</TableCell>
               <TableCell className="font-medium">{job.title}</TableCell>
               <TableCell><Badge variant="outline">{JOB_CATEGORY_LABELS[job.jobCategory || "non-teaching"]}</Badge></TableCell>
               <TableCell>{getSalary(job)}</TableCell>
@@ -392,11 +395,17 @@ export function AssociatedJobsTable({
               <TableCell><p className="max-w-[140px] truncate text-sm text-muted-foreground">{job.suitableMajors.join("、") || "-"}</p></TableCell>
               <TableCell>{job.industry || "-"}</TableCell>
               <TableCell><Badge variant="secondary">{JOB_STATUS_LABELS[job.status]}</Badge></TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => onEdit(job)}><Pencil className="mr-1 h-4 w-4" />编辑</Button>
-                  <Button variant="ghost" size="sm" onClick={() => onDelete(job.id)}><Trash2 className="mr-1 h-4 w-4" />删除</Button>
-                </div>
+              <TableCell className="text-right relative">
+                <TableRowActions>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onEdit(job)}>
+                    <Pencil className="mr-1 h-3 w-3" />
+                    编辑
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-red-500 hover:text-red-600" onClick={() => onDelete(job.id)}>
+                    <Trash2 className="mr-1 h-3 w-3" />
+                    删除
+                  </Button>
+                </TableRowActions>
               </TableCell>
             </TableRow>
           ))
@@ -419,11 +428,11 @@ export function JobActionButtons({
     <div className="flex gap-2">
       <Button variant="outline" size={size} onClick={onAddTeaching}>
         <Plus className="mr-1 h-4 w-4" />
-        引用教学岗位
+        引用职业岗位库
       </Button>
       <Button size={size} onClick={onAddNonTeaching}>
         <Plus className="mr-1 h-4 w-4" />
-        添加非教学岗位
+        新增独立岗位
       </Button>
     </div>
   )

@@ -20,7 +20,7 @@ import {
 } from "@/lib/mock-data"
 import {
   PARTNER_TYPE_LABELS, PROJECT_PHASE_LABELS, ACHIEVEMENT_TYPE_LABELS,
-  EXPERT_RATING_LABELS, TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS,
+  TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS,
   EMPLOYMENT_PROJECT_STATUS_LABELS, EMPLOYMENT_PROJECT_TYPE_LABELS,
   SECONDARY_COLLEGES,
 } from "@/lib/types"
@@ -90,6 +90,15 @@ const featuredProjects = projects.filter(p => p.publishStatus === "published").s
 const featuredAchievements = achievements.filter(a => a.status === "published").slice(0, 4)
 const featuredExperts = experts.filter(e => e.status === "active").slice(0, 6)
 const featuredTalent = talentProfiles.sort((a, b) => b.abilityScore - a.abilityScore).slice(0, 4)
+function getJobLogo(job: typeof jobBrands[0]) {
+  const partnersList = job.cooperationPartners
+  if (partnersList && partnersList.length > 0) {
+    const partner = enterprises.find((e) => e.name === partnersList[0])
+    if (partner?.logo) return partner.logo
+  }
+  return "/placeholder.svg?height=64&width=64"
+}
+
 const featuredJobs = jobBrands.filter(j => j.status === "published").slice(0, 4)
 const featuredMajors = majorBrands.filter(m => m.status === "published").slice(0, 4)
 const featuredTeachers = teacherBrands.filter(t => t.status === "published").slice(0, 4)
@@ -378,13 +387,15 @@ function CooperationSection() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <h4 className="font-semibold text-black text-sm truncate">{expert.name}</h4>
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-gray-200 text-gray-500">
-                      {EXPERT_RATING_LABELS[expert.rating]}
-                    </Badge>
+                    {expert.isPublicDisplay && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-gray-200 text-gray-500">
+                        认证专家
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-gray-400 text-xs mb-2">{expert.title} · {expert.partnerName}</p>
+                  <p className="text-gray-400 text-xs mb-2">{expert.title || expert.position} · {expert.organization || expert.partnerName}</p>
                   <div className="flex flex-wrap gap-1">
-                    {expert.specialties.slice(0, 2).map((s, j) => (
+                    {expert.specialties?.slice(0, 2).map((s, j) => (
                       <span key={j} className="px-1.5 py-0.5 bg-gray-50 text-gray-500 text-[10px] rounded-md border border-gray-100">{s}</span>
                     ))}
                   </div>
@@ -491,9 +502,15 @@ function BrandShowcase() {
               <div className="space-y-3">
                 {featuredJobs.slice(0, 3).map((j) => (
                   <div key={j.id} className="flex items-center justify-between">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-black truncate">{j.name}</p>
-                      <p className="text-xs text-gray-400">{j.industry} · 需求 {j.demandCount}</p>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Avatar className="h-9 w-9 rounded-lg border border-gray-200">
+                        <AvatarImage src={getJobLogo(j)} alt={j.name} className="object-contain p-1" />
+                        <AvatarFallback className="rounded-lg bg-gray-100 font-bold text-xs">{j.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-black truncate">{j.name}</p>
+                        <p className="text-xs text-gray-400">{j.industry} · 需求 {j.demandCount}</p>
+                      </div>
                     </div>
                     {j.averageSalary && (
                       <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md whitespace-nowrap border border-emerald-100">{j.averageSalary}</span>

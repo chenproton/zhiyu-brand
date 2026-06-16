@@ -68,12 +68,7 @@ const navigation = [
     icon: Star,
   },
   {
-    name: '品牌运营',
-    href: '/admin/brands',
-    icon: Megaphone,
-  },
-  {
-    name: '就业服务',
+    name: '就业供需',
     href: '/admin/employment',
     icon: Briefcase,
   },
@@ -97,7 +92,7 @@ export function AdminSidebar() {
             <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
               <Building2 className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-gray-900 text-sm">产教融合管理</span>
+            <span className="font-semibold text-gray-900 text-sm">产教融合运营</span>
           </Link>
         )}
         {collapsed && (

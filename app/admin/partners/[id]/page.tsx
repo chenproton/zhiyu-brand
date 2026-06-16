@@ -9,7 +9,6 @@ import {
   CooperationRatingBadge,
   AgreementStatusBadge,
   ProjectPhaseBadge,
-  ExpertRatingBadge,
 } from '@/components/shared/status-badge'
 import {
   ArrowLeft,
@@ -348,7 +347,7 @@ export default async function PartnerDetailPage({ params }: PageProps) {
                             >
                               {expert.name}
                             </Link>
-                            <ExpertRatingBadge rating={expert.rating} />
+                            {expert.title || expert.position || '—'}
                           </div>
                           <p className="text-sm text-muted-foreground">
                             {expert.title}

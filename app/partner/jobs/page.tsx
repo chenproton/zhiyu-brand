@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { TableRowActions } from '@/components/admin/table-row-actions'
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Search,
   Plus,
@@ -36,7 +38,7 @@ import {
   Trash2,
   Send,
 } from 'lucide-react'
-import { jobs, jobBrands } from '@/lib/mock-data'
+import { jobs, jobBrands, employmentProjects } from '@/lib/mock-data'
 import {
   JOB_STATUS_LABELS,
   JOB_CATEGORY_LABELS,
@@ -57,7 +59,15 @@ export default function PartnerJobsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [projectFilter, setProjectFilter] = useState<string>('all')
   const [deleteId, setDeleteId] = useState<string | null>(null)
+
+  const partnerProjects = useMemo(() => {
+    if (!selectedEnterpriseId) return []
+    return employmentProjects.filter((p) =>
+      p.partnerIds.includes(selectedEnterpriseId)
+    )
+  }, [selectedEnterpriseId])
 
   const filteredJobs = useMemo(() => {
     if (!selectedEnterpriseId) return []
@@ -68,10 +78,24 @@ export default function PartnerJobsPage() {
       const matchesStatus = statusFilter === 'all' || job.status === statusFilter
       const matchesCategory =
         categoryFilter === 'all' || job.jobCategory === categoryFilter
+      const matchesProject =
+        projectFilter === 'all' || job.employmentProjectId === projectFilter
       const matchesPartner = job.partnerId === selectedEnterpriseId
-      return matchesSearch && matchesStatus && matchesCategory && matchesPartner
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesCategory &&
+        matchesProject &&
+        matchesPartner
+      )
     })
-  }, [searchTerm, statusFilter, categoryFilter, selectedEnterpriseId])
+  }, [
+    searchTerm,
+    statusFilter,
+    categoryFilter,
+    projectFilter,
+    selectedEnterpriseId,
+  ])
 
   const handlePublish = (jobId: string) => {
     const job = jobs.find((j) => j.id === jobId)
@@ -184,14 +208,27 @@ export default function PartnerJobsPage() {
       {/* 岗位列表 */}
       <Card>
         <CardContent className="p-0">
+          <div className="p-4 border-b">
+            <Tabs value={projectFilter} onValueChange={setProjectFilter}>
+              <TabsList className="flex-wrap h-auto">
+                <TabsTrigger value="all">全部</TabsTrigger>
+                {partnerProjects.map((project) => (
+                  <TabsTrigger key={project.id} value={project.id}>
+                    {project.name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>岗位名称</TableHead>
+                <TableHead>就业项目</TableHead>
                 <TableHead>岗位类型</TableHead>
                 <TableHead>薪资范围</TableHead>
                 <TableHead>岗位介绍</TableHead>
-                <TableHead>关联专业</TableHead>
+                <TableHead>面向专业</TableHead>
                 <TableHead>所属行业</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead className="text-right">操作</TableHead>
@@ -201,7 +238,7 @@ export default function PartnerJobsPage() {
               {filteredJobs.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={9}
                     className="text-center py-12 text-muted-foreground"
                   >
                     没有找到符合条件的岗位
@@ -209,8 +246,15 @@ export default function PartnerJobsPage() {
                 </TableRow>
               ) : (
                 filteredJobs.map((job) => (
-                  <TableRow key={job.id}>
+                  <TableRow key={job.id} className="group">
                     <TableCell className="font-medium">{job.title}</TableCell>
+                    <TableCell>
+                      {job.employmentProjectName ? (
+                        <Badge variant="secondary">{job.employmentProjectName}</Badge>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
                     <TableCell>
                       {job.jobCategory ? (
                         <Badge variant="outline">
@@ -243,11 +287,11 @@ export default function PartnerJobsPage() {
                         {JOB_STATUS_LABELS[job.status]}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" asChild>
+                    <TableCell className="text-right relative">
+                      <TableRowActions>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
                           <Link href={`/partner/jobs/${job.id}/edit`}>
-                            <Pencil className="h-4 w-4 mr-1" />
+                            <Pencil className="mr-1 h-3 w-3" />
                             编辑
                           </Link>
                         </Button>
@@ -255,21 +299,23 @@ export default function PartnerJobsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="h-7 px-2 text-xs"
                             onClick={() => handlePublish(job.id)}
                           >
-                            <Send className="h-4 w-4 mr-1" />
+                            <Send className="mr-1 h-3 w-3" />
                             发布
                           </Button>
                         )}
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
                           onClick={() => setDeleteId(job.id)}
                         >
-                          <Trash2 className="h-4 w-4 mr-1" />
+                          <Trash2 className="mr-1 h-3 w-3" />
                           删除
                         </Button>
-                      </div>
+                      </TableRowActions>
                     </TableCell>
                   </TableRow>
                 ))

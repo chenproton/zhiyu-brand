@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
+import { GraduationCap, Users, TrendingUp, Search, X, BookOpen, Building2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,228 +13,212 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, GraduationCap, Users, TrendingUp, BookOpen, Building2, Award } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
 import { majorBrands } from "@/lib/mock-data"
-import { BRAND_LEVEL_LABELS } from "@/lib/types"
+import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
+import type { BrandLevel, BrandStatus } from "@/lib/types"
+
+const IMAGES = [
+  "/images/landingpage/lab.jpg",
+  "/images/landingpage/coding.jpg",
+  "/images/landingpage/factory.jpg",
+  "/images/landingpage/office.jpg",
+  "/images/landingpage/tech.jpg",
+  "/images/landingpage/meeting.jpg",
+  "/images/landingpage/workspace.jpg",
+  "/images/landingpage/students.jpg",
+]
+
+function getImage(index: number) {
+  return IMAGES[index % IMAGES.length]
+}
 
 export default function MajorBrandPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [levelFilter, setLevelFilter] = useState("all")
-  const [departmentFilter, setDepartmentFilter] = useState("all")
-
-  const departments = [...new Set(majorBrands.map((m) => m.department))]
-
-  const filteredMajors = majorBrands.filter((major) => {
-    const matchesSearch = major.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesLevel = levelFilter === "all" || major.level === levelFilter
-    const matchesDepartment = departmentFilter === "all" || major.department === departmentFilter
-    return matchesSearch && matchesLevel && matchesDepartment && major.status === "published"
+  const [search, setSearch] = useState("")
+  const [filters, setFilters] = useState<Record<string, string>>({
+    level: "all",
+    department: "all",
   })
 
-  const getLevelBadgeVariant = (level: string): "outline" | "secondary" | "default" => {
-    switch (level) {
-      case "recommended":
-        return "secondary"
-      case "key":
-        return "outline"
-      default:
-        return "outline"
-    }
+  const departments = useMemo(
+    () => [...new Set(majorBrands.map((m) => m.department))].sort(),
+    []
+  )
+
+  const filteredMajors = useMemo(() => {
+    return majorBrands.filter((major) => {
+      if (search) {
+        const term = search.toLowerCase()
+        const matchesSearch =
+          major.name.toLowerCase().includes(term) ||
+          major.department.toLowerCase().includes(term) ||
+          major.introduction.toLowerCase().includes(term)
+        if (!matchesSearch) return false
+      }
+      if (filters.level !== "all" && major.level !== filters.level) return false
+      if (filters.department !== "all" && major.department !== filters.department) return false
+      return major.status === "published"
+    })
+  }, [search, filters])
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
+  const handleClearFilters = () => {
+    setSearch("")
+    setFilters({ level: "all", department: "all" })
+  }
+
+  const hasActiveFilters = search || Object.values(filters).some((v) => v !== "all")
+
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-b from-background to-muted/30 py-12">
-        <div className="container mx-auto">
-          <div className="max-w-3xl">
-            <Badge variant="secondary" className="mb-4">
-              专业品牌
-            </Badge>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              特色专业展示
-            </h1>
-            <p className="text-muted-foreground">
-              展示学校特色专业的培养目标、课程体系、就业成果和合作资源
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50/80 via-white to-blue-50/30">
+      <section className="relative overflow-hidden py-20 lg:py-28">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-violet-600/5" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-violet-500/10 rounded-full blur-[100px]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-5">
+            专业品牌
+          </h1>
+          <p className="text-slate-500 text-lg md:text-xl max-w-2xl mx-auto">
+            展示学校特色专业的培养目标、课程体系、就业成果和合作资源
+          </p>
         </div>
       </section>
 
-      <section className="container mx-auto py-8">
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4 mb-8">
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="搜索专业名称..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={levelFilter} onValueChange={setLevelFilter}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="品牌等级" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部等级</SelectItem>
-              <SelectItem value="recommended">推荐品牌</SelectItem>
-              <SelectItem value="key">重点品牌</SelectItem>
-              <SelectItem value="standard">标准品牌</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="所属院系" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部院系</SelectItem>
-              {departments.map((dept) => (
-                <SelectItem key={dept} value={dept}>
-                  {dept}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Major Cards */}
-        <div className="space-y-8">
-          {filteredMajors.map((major) => (
-            <Link key={major.id} href={`/brands/major/${major.id}`}>
-              <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
-                <div className="grid grid-cols-1 lg:grid-cols-3">
-                {/* Cover Image */}
-                <div className="aspect-[4/3] lg:aspect-auto bg-muted relative">
-                  <img
-                    src={major.coverImage || "/placeholder.svg?height=300&width=500"}
-                    alt={major.name}
-                    className="w-full h-full object-cover"
+      <section className="pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card className="border-0 shadow-lg shadow-slate-200/50 rounded-3xl bg-white/80 backdrop-blur-sm mb-10">
+            <CardContent className="p-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="搜索专业名称或院系..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 rounded-xl"
                   />
-                  <div className="absolute top-4 left-4 flex gap-2">
-                    <Badge variant={getLevelBadgeVariant(major.level)}>
-                      {BRAND_LEVEL_LABELS[major.level]}
-                    </Badge>
-                  </div>
                 </div>
-
-                {/* Content */}
-                <div className="lg:col-span-2 p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h2 className="text-base font-semibold text-foreground">{major.name}</h2>
-                      <p className="text-muted-foreground">{major.department}</p>
-                    </div>
-                    <Button variant="outline" asChild>
-                      <Link href={`/brands/major/${major.id}`}>了解更多</Link>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Select value={filters.level} onValueChange={(v) => handleFilterChange("level", v)}>
+                    <SelectTrigger className="w-[150px] rounded-xl">
+                      <SelectValue placeholder="全部等级" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">全部等级</SelectItem>
+                      {Object.entries(BRAND_LEVEL_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={filters.department} onValueChange={(v) => handleFilterChange("department", v)}>
+                    <SelectTrigger className="w-[150px] rounded-xl">
+                      <SelectValue placeholder="全部院系" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">全部院系</SelectItem>
+                      {departments.map((dept) => (
+                        <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {hasActiveFilters && (
+                    <Button variant="ghost" size="sm" onClick={handleClearFilters} className="rounded-xl">
+                      <X className="h-4 w-4 mr-1" />
+                      清除筛选
                     </Button>
-                  </div>
-
-                  <p className="text-muted-foreground mb-6">{major.introduction}</p>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4 py-4 border-y mb-6">
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <Users className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-2xl font-bold text-foreground">{major.studentCount}</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">在校生</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-2xl font-bold text-foreground">{major.employmentRate}%</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">就业率</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <Building2 className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-2xl font-bold text-foreground">{major.cooperationPartners.length}</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">合作企业</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Core Courses */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <BookOpen className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">课程体系</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {major.coreCourses.map((course) => {
-                          const courseName = typeof course === 'string' ? course : course.name
-                          return (
-                            <Badge key={courseName} variant="outline" className="text-xs">
-                              {courseName}
-                            </Badge>
-                          )
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Employment Directions */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">就业方向</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {major.employmentDirections.map((direction) => (
-                          <Badge key={direction} variant="secondary" className="text-xs">
-                            {direction}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Cooperation Partners */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">合作企业</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {major.cooperationPartners.map((partner) => (
-                          <Badge key={partner} variant="outline" className="text-xs">
-                            {partner}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Featured Achievements */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Award className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">特色成果</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {major.featuredAchievements.map((achievement) => (
-                          <Badge key={achievement} variant="outline" className="text-xs">
-                            {achievement}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
-            </Card>
-          </Link>
-        ))}
-        </div>
+            </CardContent>
+          </Card>
 
-        {filteredMajors.length === 0 && (
-          <div className="text-center py-12">
-            <GraduationCap className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">暂无符合条件的专业品牌</p>
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-slate-500 text-sm">
+              共 <span className="font-bold text-slate-900">{filteredMajors.length}</span> 个专业品牌
+            </p>
           </div>
-        )}
+
+          {filteredMajors.length > 0 ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
+              {filteredMajors.map((major, index) => (
+                <Link key={major.id} href={`/brands/major/${major.id}`}>
+                  <Card className="group border-0 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden bg-white h-full flex flex-col">
+                    <div className="relative h-56 overflow-hidden shrink-0">
+                      <img
+                        src={major.coverImage || getImage(index)}
+                        alt={major.name}
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                      <div className="absolute top-4 left-4">
+                        <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm font-bold border-0 shadow-lg">
+                          {BRAND_LEVEL_LABELS[major.level as BrandLevel]}
+                        </Badge>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-6">
+                        <h4 className="font-bold text-white text-xl mb-1 drop-shadow-md">{major.name}</h4>
+                        <p className="text-white/70 text-sm mb-3">{major.department}</p>
+                        <div className="flex items-center gap-5 text-sm text-white/90">
+                          <span className="flex items-center gap-1.5">
+                            <Users className="h-4 w-4" /> {major.studentCount} 在校生
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <TrendingUp className="h-4 w-4 text-emerald-400" /> 就业率 {major.employmentRate}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <CardContent className="p-5 flex flex-col flex-1">
+                      <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4">{major.introduction}</p>
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {major.coreCourses.slice(0, 3).map((course) => (
+                          <span
+                            key={typeof course === "string" ? course : course.name}
+                            className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 font-medium"
+                          >
+                            {typeof course === "string" ? course : course.name}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="space-y-3 mt-auto">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs text-slate-500">
+                            <span className="flex items-center gap-1">
+                              <BookOpen className="h-3.5 w-3.5" /> 课程完成度
+                            </span>
+                            <span>{Math.round(major.employmentRate)}%</span>
+                          </div>
+                          <Progress value={major.employmentRate} className="h-1.5" />
+                        </div>
+                        <div className="flex flex-wrap gap-3 text-xs text-slate-500 pt-3 border-t border-slate-100">
+                          <span className="flex items-center gap-1">
+                            <Building2 className="h-3.5 w-3.5 text-blue-500" /> {major.cooperationPartners.slice(0, 2).join("、") || "暂无合作"}
+                            {major.cooperationPartners.length > 2 && ` 等${major.cooperationPartners.length}家`}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-24">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-slate-100 mb-5">
+                <GraduationCap className="h-10 w-10 text-slate-400" />
+              </div>
+              <p className="text-slate-500 text-lg mb-5">暂无符合条件的专业品牌</p>
+              <Button variant="outline" onClick={handleClearFilters} className="rounded-full px-6">
+                清除筛选条件
+              </Button>
+            </div>
+          )}
+        </div>
       </section>
     </div>
   )

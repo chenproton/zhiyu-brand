@@ -83,8 +83,8 @@ export function ImportAchievementsButton() {
 
   return (
     <>
-      <Button variant="outline" onClick={() => setOpen(true)}>
-        <Link2 className="h-4 w-4 mr-2" />
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <Link2 className="h-4 w-4 mr-1" />
         引用成果
       </Button>
 

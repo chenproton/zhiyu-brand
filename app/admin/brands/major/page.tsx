@@ -3,24 +3,9 @@
 import { useMemo, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { TableRowActions } from "@/components/admin/table-row-actions"
 import {
   Dialog,
   DialogContent,
@@ -29,30 +14,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { ArrowLeft, Eye, Pencil, Search, Settings, MoreHorizontal, Trash2 } from "lucide-react"
+import { AdminListPage } from "@/components/admin/list-page"
+import { AdminDataTable } from "@/components/admin/data-table"
+import { Eye, Pencil, Settings, Trash2 } from "lucide-react"
 import { majorBrands } from "@/lib/mock-data"
 import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
 import type { MajorBrand } from "@/lib/types"
 
 export default function MajorBrandPage() {
   const [data, setData] = useState<MajorBrand[]>(majorBrands)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [levelFilter, setLevelFilter] = useState("all")
+  const [search, setSearch] = useState("")
+  const [filters, setFilters] = useState<Record<string, string>>({
+    level: "all",
+  })
   const [configDialogOpen, setConfigDialogOpen] = useState(false)
   const [enabledMajors, setEnabledMajors] = useState<Record<string, boolean>>(
     Object.fromEntries(majorBrands.map((item) => [item.id, item.status !== "archived"]))
   )
 
   const filteredMajors = data.filter((major) => {
-    const matchesSearch = major.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesLevel = levelFilter === "all" || major.level === levelFilter
+    const matchesSearch = major.name.toLowerCase().includes(search.toLowerCase())
+    const matchesLevel = filters.level === "all" || major.level === filters.level
     return matchesSearch && matchesLevel && enabledMajors[major.id] !== false
   })
 
@@ -62,119 +44,121 @@ export default function MajorBrandPage() {
     if (confirm("确定要删除该专业品牌吗？")) setData((prev) => prev.filter((item) => item.id !== id))
   }
 
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleClearFilters = () => {
+    setSearch("")
+    setFilters({ level: "all" })
+  }
+
+  const filterConfigs = [
+    {
+      key: "level",
+      label: "全部等级",
+      options: [
+        { value: "recommended", label: "推荐品牌" },
+        { value: "key", label: "重点品牌" },
+        { value: "standard", label: "标准品牌" },
+      ],
+    },
+  ]
+
+  const columns = [
+    { key: "name", title: "专业名称", render: (major: MajorBrand) => <span className="font-medium">{major.name}</span> },
+    { key: "department", title: "所属院系", render: (major: MajorBrand) => major.department },
+    {
+      key: "level",
+      title: "品牌等级",
+      render: (major: MajorBrand) => <Badge variant="outline">{BRAND_LEVEL_LABELS[major.level]}</Badge>,
+    },
+    {
+      key: "status",
+      title: "状态",
+      render: (major: MajorBrand) => (
+        <Badge variant={major.status === "published" ? "secondary" : "outline"}>
+          {BRAND_STATUS_LABELS[major.status]}
+        </Badge>
+      ),
+    },
+    { key: "studentCount", title: "在校生", render: (major: MajorBrand) => major.studentCount },
+    { key: "employmentRate", title: "就业率", render: (major: MajorBrand) => `${major.employmentRate}%` },
+    { key: "viewCount", title: "浏览量", render: (major: MajorBrand) => major.viewCount },
+    {
+      key: "coreCourses",
+      title: "核心课程",
+      render: (major: MajorBrand) => (
+        <div className="flex flex-wrap gap-1">
+          {major.coreCourses.slice(0, 3).map((course) => (
+            <Badge key={typeof course === "string" ? course : course.name} variant="outline" className="text-xs font-normal">
+              {typeof course === "string" ? course : course.name}
+            </Badge>
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      title: "",
+      width: "w-[50px]",
+      align: "right" as const,
+      render: (major: MajorBrand) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/brands/major/${major.id}/preview`}>
+              <Eye className="mr-1 h-3 w-3" />
+              预览
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/brands/major/${major.id}`}>
+              <Pencil className="mr-1 h-3 w-3" />
+              编辑
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+            onClick={() => deleteMajor(major.id)}
+          >
+            <Trash2 className="mr-1 h-3 w-3" />
+            删除
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/brands"><Button variant="ghost" size="icon"><ArrowLeft className="h-5 w-5" /></Button></Link>
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">专业品牌管理</h1>
-          <p className="text-muted-foreground">管理各专业的品牌展示内容</p>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="搜索专业名称..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
-          </div>
-          <Select value={levelFilter} onValueChange={setLevelFilter}>
-            <SelectTrigger className="w-[150px]"><SelectValue placeholder="品牌等级" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部等级</SelectItem>
-              <SelectItem value="recommended">推荐品牌</SelectItem>
-              <SelectItem value="key">重点品牌</SelectItem>
-              <SelectItem value="standard">标准品牌</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button variant="outline" onClick={() => setConfigDialogOpen(true)}>
-          <Settings className="mr-2 h-4 w-4" />专业启用管理
+    <AdminListPage
+      title="专业品牌管理"
+      subtitle="管理各专业的品牌展示内容"
+      count={filteredMajors.length}
+      countLabel="个专业"
+      backHref="/admin/brands"
+      activeFilters={filters}
+      onFilterChange={handleFilterChange}
+      searchPlaceholder="搜索专业名称..."
+      searchValue={search}
+      onSearchChange={setSearch}
+      filters={filterConfigs}
+      filterValues={filters}
+      onClearFilters={handleClearFilters}
+      actions={
+        <Button variant="outline" size="sm" onClick={() => setConfigDialogOpen(true)}>
+          <Settings className="mr-1 h-4 w-4" />
+          专业启用管理
         </Button>
-      </div>
-
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>专业名称</TableHead>
-              <TableHead>所属院系</TableHead>
-              <TableHead>品牌等级</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>在校生</TableHead>
-              <TableHead>就业率</TableHead>
-              <TableHead>浏览量</TableHead>
-              <TableHead>核心课程</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredMajors.length > 0 ? (
-              filteredMajors.map((major) => (
-                <TableRow key={major.id}>
-                  <TableCell>
-                    <span className="font-medium">{major.name}</span>
-                  </TableCell>
-                  <TableCell>{major.department}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{BRAND_LEVEL_LABELS[major.level]}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={major.status === "published" ? "secondary" : "outline"}>
-                      {BRAND_STATUS_LABELS[major.status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{major.studentCount}</TableCell>
-                  <TableCell>{major.employmentRate}%</TableCell>
-                  <TableCell>{major.viewCount}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {major.coreCourses.slice(0, 3).map((course) => (
-                        <Badge key={typeof course === 'string' ? course : course.name} variant="outline" className="text-xs font-normal">
-                          {typeof course === 'string' ? course : course.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/brands/major/${major.id}/preview`}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            预览
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/brands/major/${major.id}`}>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            编辑
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600" onClick={() => deleteMajor(major.id)}>
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          删除
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                  暂无符合条件的专业品牌
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+      }
+    >
+      <AdminDataTable
+        columns={columns}
+        data={filteredMajors}
+        rowKey={(m) => m.id}
+        emptyText="暂无符合条件的专业品牌"
+      />
 
       <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
         <DialogContent className="max-w-lg">
@@ -199,8 +183,6 @@ export default function MajorBrandPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-
-    </div>
+    </AdminListPage>
   )
 }

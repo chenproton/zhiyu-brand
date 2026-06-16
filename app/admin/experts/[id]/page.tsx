@@ -7,16 +7,16 @@ import {
   ArrowLeft,
   Pencil,
   Users,
-  Mail,
-  Phone,
-  Building2,
-  GraduationCap,
-  Clock,
-  EyeOff,
   User,
   School,
+  GraduationCap,
+  Clock,
+  Building2,
+  MapPin,
   Briefcase,
   Tag,
+  FileText,
+  Award,
 } from 'lucide-react'
 import { getExpertById, getEnterpriseById } from '@/lib/mock-data'
 
@@ -33,10 +33,10 @@ export default async function ExpertDetailPage({ params }: PageProps) {
   }
 
   const enterprise = expert.partnerId ? getEnterpriseById(expert.partnerId) : null
+  const organization = expert.organization || expert.partnerName
 
   return (
     <div>
-      {/* Back Button */}
       <div className="mb-6">
         <Link href="/admin/experts">
           <Button variant="ghost" size="sm">
@@ -46,7 +46,6 @@ export default async function ExpertDetailPage({ params }: PageProps) {
         </Link>
       </div>
 
-      {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-start gap-4">
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
@@ -59,21 +58,29 @@ export default async function ExpertDetailPage({ params }: PageProps) {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-gray-900">{expert.name}</h1>
+              <Badge variant={expert.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                {expert.status === 'active' ? '启用' : '禁用'}
+              </Badge>
+              {expert.isPublicDisplay && (
+                <Badge variant="outline" className="text-xs text-green-600 border-green-200 bg-green-50">前台展示</Badge>
+              )}
             </div>
-            <p className="text-muted-foreground">{expert.title}</p>
-            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-1">{[expert.title, expert.position].filter(Boolean).join(' · ') || '-'}</p>
+            <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <User className="h-4 w-4" />
                 {expert.gender === 'male' ? '男' : expert.gender === 'female' ? '女' : '未设置'}
+                {expert.age ? ` · ${expert.age}岁` : ''}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                {expert.experience}年经验
+                {expert.experience ? `${expert.experience}年经验` : '未设置'}
               </span>
-              {expert.expertType && (
-                <Badge variant="outline" className="text-xs">
-                  {expert.expertType}
-                </Badge>
+              {expert.city && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  {expert.city}
+                </span>
               )}
             </div>
           </div>
@@ -87,138 +94,12 @@ export default async function ExpertDetailPage({ params }: PageProps) {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Left Column */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
-                所属行业领域
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {expert.specialties.map((specialty) => (
-                  <Badge key={specialty} variant="outline" className="text-sm py-1 px-3">
-                    {specialty}
-                  </Badge>
-                ))}
-                {expert.specialties.length === 0 && (
-                  <span className="text-sm text-muted-foreground">-</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                擅长岗位领域
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {expert.relatedPositions && expert.relatedPositions.length > 0 ? (
-                  expert.relatedPositions.map((pos) => (
-                    <Badge key={pos} variant="secondary" className="text-sm py-1 px-3">
-                      {pos}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-sm text-muted-foreground">-</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <School className="h-4 w-4" />
-                关联二级学院
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-3">
-                <span className="text-sm text-gray-600">
-                  {expert.secondaryColleges && expert.secondaryColleges.length > 0
-                    ? expert.secondaryColleges.join('、')
-                    : '-'}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <GraduationCap className="h-4 w-4" />
-                教育背景
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <span className="text-sm text-gray-600">{expert.education || '-'}</span>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                联系方式
-              </CardTitle>
-              {expert.isContactHidden && (
-                <Badge variant="secondary" className="text-xs">
-                  <EyeOff className="h-3 w-3 mr-1" />
-                  已隐藏
-                </Badge>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {expert.isContactHidden ? (
-                <p className="text-sm text-muted-foreground">该专家的联系方式已设置为隐藏</p>
-              ) : (
-                <>
-                  {expert.contactEmail ? (
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <a href={`mailto:${expert.contactEmail}`} className="text-sm hover:underline">
-                        {expert.contactEmail}
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">-</span>
-                    </div>
-                  )}
-                  {expert.contactPhone ? (
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <a href={`tel:${expert.contactPhone}`} className="text-sm hover:underline">
-                        {expert.contactPhone}
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">-</span>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                所属企业
+                所属机构
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -237,8 +118,8 @@ export default async function ExpertDetailPage({ params }: PageProps) {
                     <p className="text-sm text-muted-foreground">{enterprise.industry}</p>
                   </div>
                 </div>
-              ) : expert.partnerName ? (
-                <span className="text-sm text-gray-600">{expert.partnerName}</span>
+              ) : organization ? (
+                <span className="text-sm text-gray-600">{organization}</span>
               ) : (
                 <span className="text-sm text-muted-foreground">-</span>
               )}
@@ -247,10 +128,120 @@ export default async function ExpertDetailPage({ params }: PageProps) {
 
           <Card>
             <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                擅长领域
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {expert.specialties && expert.specialties.length > 0 ? (
+                  expert.specialties.map((specialty) => (
+                    <Badge key={specialty} variant="outline" className="text-sm py-1 px-3">
+                      {specialty}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-sm text-muted-foreground">-</span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <School className="h-4 w-4" />
+                关联二级学院
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <span className="text-sm text-gray-600">
+                {expert.secondaryColleges && expert.secondaryColleges.length > 0
+                  ? expert.secondaryColleges.join('、')
+                  : '-'}
+              </span>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <GraduationCap className="h-4 w-4" />
+                教育背景
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <span className="text-sm text-gray-600">{expert.education || '-'}</span>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
+                行业/岗位方向
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground shrink-0">行业方向：</span>
+                <span className="text-gray-600">{expert.industryDirection || '-'}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground shrink-0">岗位方向：</span>
+                <span className="text-gray-600">{expert.positionDirection || '-'}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">专家简介</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">{expert.introduction || '-'}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle className="text-base">从业经历</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 whitespace-pre-line">{expert.workExperience || '-'}</p>
+              <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">{expert.workExperience || '-'}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Award className="h-4 w-4" />
+                资质荣誉（佐证材料）
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {expert.attachments && expert.attachments.length > 0 ? (
+                <div className="space-y-2">
+                  {expert.attachments.map((attachment, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <a
+                        href={attachment.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm hover:underline truncate"
+                      >
+                        {attachment.name}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-sm text-muted-foreground">-</span>
+              )}
             </CardContent>
           </Card>
 
@@ -259,12 +250,6 @@ export default async function ExpertDetailPage({ params }: PageProps) {
               <CardTitle className="text-base">其他信息</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">状态</span>
-                <Badge variant={expert.status === 'active' ? 'default' : 'secondary'}>
-                  {expert.status === 'active' ? '启用' : '禁用'}
-                </Badge>
-              </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">入库时间</span>
                 <span>{expert.createdAt.toLocaleDateString('zh-CN')}</span>

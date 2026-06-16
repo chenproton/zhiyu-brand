@@ -14,6 +14,7 @@ import {
   Award,
   GraduationCap,
   FileText,
+  Medal,
 } from "lucide-react"
 import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS, JOB_CATEGORY_LABELS } from "@/lib/types"
 import type { MajorBrand } from "@/lib/types"
@@ -28,6 +29,7 @@ export function MajorDetailView({ major, mode }: MajorDetailViewProps) {
   const directions = major.employmentDirections || []
   const partners = major.cooperationPartners || []
   const achievements = major.featuredAchievements || []
+  const levels = major.level ? [{ title: BRAND_LEVEL_LABELS[major.level], description: "", attachments: [] as string[] }] : []
 
   const backHref = mode === "admin-preview" ? "/admin/brands/major" : "/brands/major"
   const backText = mode === "admin-preview" ? "返回列表" : "返回专业品牌"
@@ -118,11 +120,12 @@ export function MajorDetailView({ major, mode }: MajorDetailViewProps) {
         {/* Tabs */}
         <Tabs defaultValue="info" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="info">专业基本信息</TabsTrigger>
-            <TabsTrigger value="directions">专业就业方向 ({directions.length})</TabsTrigger>
-            <TabsTrigger value="companies">专业合作企业 ({partners.length})</TabsTrigger>
-            <TabsTrigger value="achievements">专业特色成果 ({achievements.length})</TabsTrigger>
-            <TabsTrigger value="courses">专业课程体系 ({courses.length})</TabsTrigger>
+          <TabsTrigger value="info">专业基本信息</TabsTrigger>
+          <TabsTrigger value="levels">专业品牌 ({levels.length})</TabsTrigger>
+          <TabsTrigger value="directions">专业就业方向 ({directions.length})</TabsTrigger>
+          <TabsTrigger value="companies">专业合作企业 ({partners.length})</TabsTrigger>
+          <TabsTrigger value="achievements">专业特色成果 ({achievements.length})</TabsTrigger>
+          <TabsTrigger value="courses">专业课程体系 ({courses.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info">
@@ -170,6 +173,49 @@ export function MajorDetailView({ major, mode }: MajorDetailViewProps) {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="levels">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">专业品牌</CardTitle>
+                <CardDescription>专业品牌及认定说明</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {levels.length > 0 ? (
+                  <div className="space-y-4">
+                    {levels.map((row, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg"
+                      >
+                        <div className="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+                          <Medal className="h-5 w-5 text-amber-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium">{row.title}</p>
+                          {row.description && (
+                            <p className="text-sm text-muted-foreground mt-1">{row.description}</p>
+                          )}
+                          {row.attachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {row.attachments.map((file, i) => (
+                                <Badge key={i} variant="secondary" className="text-xs">
+                                  <FileText className="h-3 w-3 mr-1" />
+                                  {file}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">暂无等级描述</div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="directions">

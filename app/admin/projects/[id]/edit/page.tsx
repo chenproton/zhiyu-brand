@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { SearchableSelect } from '@/components/shared/searchable-select'
 import {
   Select,
   SelectContent,
@@ -17,10 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, Save, Send } from 'lucide-react'
+import { ArrowLeft, Save, Send, Upload, X } from 'lucide-react'
+import { FakeRichTextEditor } from '@/components/shared/fake-rich-text-editor'
 import { projects, partners } from '@/lib/mock-data'
 import { PROJECT_PHASE_LABELS, SECONDARY_COLLEGES } from '@/lib/types'
-import type { ProjectPhase } from '@/lib/types'
+import type { Project, ProjectPhase, ProjectSupportingResult, ProjectAgreement, ProjectPhaseItem } from '@/lib/types'
 
 const PROJECT_TYPES = [
   '人才培养项目',
@@ -30,12 +32,16 @@ const PROJECT_TYPES = [
   '创新创业项目',
   '师资培训项目',
   '课程开发项目',
+  '专业共建项目',
 ]
+
+const partnerOptions = partners.map((p) => ({ value: p.id, label: p.name }))
 
 export default function EditProjectPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.id as string
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [notFound, setNotFound] = useState(false)
@@ -49,12 +55,12 @@ export default function EditProjectPage() {
     startDate: '',
     endDate: '',
     publishStatus: 'draft' as 'draft' | 'published',
+    coverImage: '',
   })
 
-  // Keep references to sub-data so we don't lose them on save
-  const [supportingResults, setSupportingResults] = useState<any[]>([])
-  const [projectAgreements, setProjectAgreements] = useState<any[]>([])
-  const [phases, setPhases] = useState<any[]>([])
+  const [supportingResults, setSupportingResults] = useState<ProjectSupportingResult[]>([])
+  const [projectAgreements, setProjectAgreements] = useState<ProjectAgreement[]>([])
+  const [phases, setPhases] = useState<ProjectPhaseItem[]>([])
 
   useEffect(() => {
     const project = projects.find((p) => p.id === projectId)
@@ -72,11 +78,24 @@ export default function EditProjectPage() {
       startDate: project.startDate.toISOString().split('T')[0],
       endDate: project.endDate.toISOString().split('T')[0],
       publishStatus: project.publishStatus,
+      coverImage: project.coverImage || '',
     })
     setSupportingResults(project.supportingResults || [])
     setProjectAgreements(project.projectAgreements || [])
     setPhases(project.phases || [])
   }, [projectId])
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    setFormData((prev) => ({ ...prev, coverImage: url }))
+    e.target.value = ''
+  }
+
+  const removeCover = () => {
+    setFormData((prev) => ({ ...prev, coverImage: '' }))
+  }
 
   const handleSubmit = async (e: React.FormEvent, action?: 'save' | 'publish') => {
     e.preventDefault()
@@ -95,10 +114,10 @@ export default function EditProjectPage() {
       project.description = formData.description
       project.startDate = new Date(formData.startDate)
       project.endDate = new Date(formData.endDate)
-      // Preserve sub-data managed on detail page
       project.supportingResults = supportingResults
       project.projectAgreements = projectAgreements
       project.phases = phases
+      project.coverImage = formData.coverImage || undefined
       if (action === 'publish') {
         project.publishStatus = 'published'
       }
@@ -107,15 +126,6 @@ export default function EditProjectPage() {
 
     alert(action === 'publish' ? '项目已发布（演示）' : '项目信息已保存（演示）')
     router.push('/admin/projects')
-  }
-
-  const togglePartner = (partnerId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      partnerIds: prev.partnerIds.includes(partnerId)
-        ? prev.partnerIds.filter((id) => id !== partnerId)
-        : [...prev.partnerIds, partnerId],
-    }))
   }
 
   if (notFound) {
@@ -171,7 +181,7 @@ export default function EditProjectPage() {
                     />
                   </div>
 
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="type">合作类型 *</Label>
                       <Select
@@ -205,51 +215,25 @@ export default function EditProjectPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="secondaryColleges">关联二级学院</Label>
-                      <div className="flex flex-wrap gap-2 p-3 border rounded-md">
-                        {SECONDARY_COLLEGES.map((college) => (
-                          <Badge
-                            key={college}
-                            variant={formData.secondaryColleges.includes(college) ? 'default' : 'outline'}
-                            className="cursor-pointer"
-                            onClick={() =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                secondaryColleges: prev.secondaryColleges.includes(college)
-                                  ? prev.secondaryColleges.filter((c) => c !== college)
-                                  : [...prev.secondaryColleges, college],
-                              }))
-                            }
-                          >
-                            {college}
-                          </Badge>
-                        ))}
-                      </div>
-                      <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
-                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>合作主体 *</Label>
-                    <div className="flex flex-wrap gap-2 p-3 border rounded-md">
-                      {partners.map((partner) => (
-                        <Badge
-                          key={partner.id}
-                          variant={formData.partnerIds.includes(partner.id) ? 'default' : 'outline'}
-                          className="cursor-pointer"
-                          onClick={() => togglePartner(partner.id)}
-                        >
-                          {partner.name}
-                        </Badge>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
+                    <Label htmlFor="partnerIds">合作主体 *</Label>
+                    <SearchableSelect
+                      options={partnerOptions}
+                      value={formData.partnerIds}
+                      onChange={(value) =>
+                        setFormData((prev) => ({ ...prev, partnerIds: value as string[] }))
+                      }
+                      placeholder="请选择合作主体"
+                      searchPlaceholder="搜索合作主体..."
+                      multiple
+                    />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="startDate">开始日期 *</Label>
+                      <Label htmlFor="startDate">项目开始日期 *</Label>
                       <Input
                         id="startDate"
                         type="date"
@@ -259,7 +243,7 @@ export default function EditProjectPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="endDate">结束日期 *</Label>
+                      <Label htmlFor="endDate">项目结束日期 *</Label>
                       <Input
                         id="endDate"
                         type="date"
@@ -272,12 +256,11 @@ export default function EditProjectPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="description">项目简介</Label>
-                    <Textarea
-                      id="description"
+                    <FakeRichTextEditor
                       value={formData.description}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                      onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
                       placeholder="请输入项目简介"
-                      rows={6}
+                      minHeight="140px"
                     />
                   </div>
                 </CardContent>
@@ -285,6 +268,75 @@ export default function EditProjectPage() {
             </div>
 
             <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">其他信息</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>关联二级学院</Label>
+                    <div className="flex flex-wrap gap-2 p-3 border rounded-md">
+                      {SECONDARY_COLLEGES.map((college) => (
+                        <Badge
+                          key={college}
+                          variant={formData.secondaryColleges.includes(college) ? 'default' : 'outline'}
+                          className="cursor-pointer"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              secondaryColleges: prev.secondaryColleges.includes(college)
+                                ? prev.secondaryColleges.filter((c) => c !== college)
+                                : [...prev.secondaryColleges, college],
+                            }))
+                          }
+                        >
+                          {college}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>项目封面</Label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={coverInputRef}
+                      className="hidden"
+                      onChange={handleCoverChange}
+                    />
+                    {formData.coverImage ? (
+                      <div className="relative w-fit">
+                        <img
+                          src={formData.coverImage}
+                          alt="项目封面"
+                          className="h-40 w-auto rounded-lg border object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-6 w-6"
+                          onClick={removeCover}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => coverInputRef.current?.click()}
+                        className="w-full flex items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg hover:bg-muted transition-colors"
+                      >
+                        <Upload className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">点击上传封面图片</span>
+                      </button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">操作</CardTitle>

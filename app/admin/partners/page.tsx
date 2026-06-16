@@ -3,27 +3,22 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { TableRowActions } from '@/components/admin/table-row-actions'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { FilterBar } from '@/components/shared/filter-bar'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { AdminListPage } from '@/components/admin/list-page'
+import { AdminDataTable } from '@/components/admin/data-table'
 import {
   CooperationStatusBadge,
   CooperationRatingBadge,
 } from '@/components/shared/status-badge'
-import { Plus, MoreHorizontal, Eye, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Eye, Pencil, Trash2 } from 'lucide-react'
 import { partners } from '@/lib/mock-data'
 import {
   PARTNER_TYPE_LABELS,
@@ -41,10 +36,11 @@ export default function PartnersListPage() {
     rating: 'all',
     industry: 'all',
   })
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deletingPartner, setDeletingPartner] = useState<typeof partners[0] | null>(null)
 
   const filteredPartners = useMemo(() => {
     return partners.filter((partner) => {
-      // Search filter
       if (search) {
         const searchLower = search.toLowerCase()
         const matchesSearch =
@@ -53,22 +49,23 @@ export default function PartnersListPage() {
           partner.region.toLowerCase().includes(searchLower)
         if (!matchesSearch) return false
       }
-
-      // Type filter
       if (filters.type !== 'all' && partner.type !== filters.type) return false
-
-      // Status filter
       if (filters.status !== 'all' && partner.status !== filters.status) return false
-
-      // Rating filter
       if (filters.rating !== 'all' && partner.rating !== filters.rating) return false
-
-      // Industry filter
       if (filters.industry !== 'all' && partner.industry !== filters.industry) return false
-
       return true
     })
   }, [search, filters])
+
+  const statusStats = useMemo(() => {
+    return {
+      total: partners.length,
+      active: partners.filter((p) => p.status === 'active').length,
+      negotiating: partners.filter((p) => p.status === 'negotiating').length,
+      paused: partners.filter((p) => p.status === 'paused').length,
+      terminated: partners.filter((p) => p.status === 'terminated').length,
+    }
+  }, [partners])
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
@@ -84,6 +81,16 @@ export default function PartnersListPage() {
     })
   }
 
+  const handleDelete = (partner: typeof partners[0]) => {
+    setDeletingPartner(partner)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    setDeleteDialogOpen(false)
+    setDeletingPartner(null)
+  }
+
   const filterConfigs = [
     {
       key: 'type',
@@ -95,18 +102,12 @@ export default function PartnersListPage() {
     {
       key: 'status',
       label: '全部状态',
-      options: Object.entries(COOPERATION_STATUS_LABELS).map(([value, label]) => ({
-        value,
-        label,
-      })),
+      options: Object.entries(COOPERATION_STATUS_LABELS).map(([value, label]) => ({ value, label })),
     },
     {
       key: 'rating',
       label: '全部评级',
-      options: Object.entries(COOPERATION_RATING_LABELS).map(([value, label]) => ({
-        value,
-        label,
-      })),
+      options: Object.entries(COOPERATION_RATING_LABELS).map(([value, label]) => ({ value, label })),
     },
     {
       key: 'industry',
@@ -115,118 +116,124 @@ export default function PartnersListPage() {
     },
   ]
 
+  const stats = [
+    { key: 'total', label: '全部主体', value: statusStats.total, icon: Eye, color: 'slate' as const },
+    { key: 'active', label: '合作中', value: statusStats.active, icon: Eye, color: 'green' as const, filterKey: 'status', filterValue: 'active' },
+    { key: 'negotiating', label: '洽谈中', value: statusStats.negotiating, icon: Eye, color: 'blue' as const, filterKey: 'status', filterValue: 'negotiating' },
+    { key: 'paused', label: '已暂停', value: statusStats.paused, icon: Eye, color: 'amber' as const, filterKey: 'status', filterValue: 'paused' },
+    { key: 'terminated', label: '已终止', value: statusStats.terminated, icon: Eye, color: 'red' as const, filterKey: 'status', filterValue: 'terminated' },
+  ]
+
+  const columns = [
+    {
+      key: 'name',
+      title: '主体名称',
+      render: (partner: typeof partners[0]) => (
+        <Link href={`/admin/partners/${partner.id}`} className="font-medium hover:underline">
+          {partner.name}
+        </Link>
+      ),
+    },
+    {
+      key: 'type',
+      title: '类型',
+      render: (partner: typeof partners[0]) => PARTNER_TYPE_LABELS[partner.type as PartnerType],
+    },
+    { key: 'industry', title: '行业', render: (p: typeof partners[0]) => p.industry },
+    { key: 'region', title: '地区', render: (p: typeof partners[0]) => p.region },
+    {
+      key: 'status',
+      title: '状态',
+      render: (p: typeof partners[0]) => <CooperationStatusBadge status={p.status} />,
+    },
+    {
+      key: 'rating',
+      title: '合作深度',
+      render: (p: typeof partners[0]) => <CooperationRatingBadge rating={p.rating} />,
+    },
+    {
+      key: 'updatedAt',
+      title: '更新时间',
+      render: (p: typeof partners[0]) => <span className="text-muted-foreground">{p.updatedAt.toLocaleDateString('zh-CN')}</span>,
+    },
+    {
+      key: 'actions',
+      title: '',
+      width: 'w-[50px]',
+      align: 'right' as const,
+      render: (partner: typeof partners[0]) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/partners/${partner.id}`}>
+              <Eye className="mr-1 h-3 w-3" />
+              查看
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+            <Link href={`/admin/partners/${partner.id}/edit`}>
+              <Pencil className="mr-1 h-3 w-3" />
+              编辑
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+            onClick={() => handleDelete(partner)}
+          >
+            <Trash2 className="mr-1 h-3 w-3" />
+            删除
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
+
   return (
-    <div>
-        {/* Header Actions */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <p className="text-muted-foreground">
-              共 {filteredPartners.length} 个合作主体
-            </p>
-          </div>
-          <Link href="/admin/partners/new">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              新增主体
-            </Button>
-          </Link>
-        </div>
+    <AdminListPage
+      title="合作主体管理"
+      subtitle="维护校企合作主体信息及合作状态"
+      count={filteredPartners.length}
+      countLabel="个合作主体"
+      stats={stats}
+      activeFilters={filters}
+      onFilterChange={handleFilterChange}
+      searchPlaceholder="搜索主体名称、行业、地区..."
+      searchValue={search}
+      onSearchChange={setSearch}
+      filters={filterConfigs}
+      filterValues={filters}
+      onClearFilters={handleClearFilters}
+      actions={
+        <Link href="/admin/partners/new">
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-1" />
+            新增主体
+          </Button>
+        </Link>
+      }
+    >
+      <AdminDataTable
+        columns={columns}
+        data={filteredPartners}
+        rowKey={(p) => p.id}
+        emptyText="暂无符合条件的合作主体"
+      />
 
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <FilterBar
-              searchPlaceholder="搜索主体名称、行业、地区..."
-              searchValue={search}
-              onSearchChange={setSearch}
-              filters={filterConfigs}
-              filterValues={filters}
-              onFilterChange={handleFilterChange}
-              onClearFilters={handleClearFilters}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Table */}
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>主体名称</TableHead>
-                <TableHead>类型</TableHead>
-                <TableHead>行业</TableHead>
-                <TableHead>地区</TableHead>
-                <TableHead>状态</TableHead>
-                <TableHead>合作深度</TableHead>
-                <TableHead>更新时间</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPartners.length > 0 ? (
-                filteredPartners.map((partner) => (
-                  <TableRow key={partner.id}>
-                    <TableCell>
-                      <Link
-                        href={`/admin/partners/${partner.id}`}
-                        className="font-medium hover:underline"
-                      >
-                        {partner.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      {PARTNER_TYPE_LABELS[partner.type as PartnerType]}
-                    </TableCell>
-                    <TableCell>{partner.industry}</TableCell>
-                    <TableCell>{partner.region}</TableCell>
-                    <TableCell>
-                      <CooperationStatusBadge status={partner.status} />
-                    </TableCell>
-                    <TableCell>
-                      <CooperationRatingBadge rating={partner.rating} />
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {partner.updatedAt.toLocaleDateString('zh-CN')}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/partners/${partner.id}`}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              查看详情
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/partners/${partner.id}/edit`}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              编辑
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600" onClick={() => { if (confirm('确定要删除该合作主体吗？')) alert('合作主体已删除（演示）') }}>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            删除
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    暂无符合条件的合作主体
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Card>
-    </div>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>
+              确定要删除合作主体「{deletingPartner?.name}」吗？此操作不可撤销。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>取消</Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>确认删除</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </AdminListPage>
   )
 }

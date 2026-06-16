@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ArrowLeft, Plus, Check, Search } from "lucide-react"
+import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
 import { jobBrands, partners } from "@/lib/mock-data"
 import {
   JOB_TYPE_LABELS,
@@ -371,13 +372,13 @@ export default function NewJobPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="description">岗位描述</Label>
-                    <Input
-                      id="description"
+                    <FakeRichTextEditor
                       value={formData.description}
-                      onChange={(e) =>
-                        setFormData({ ...formData, description: e.target.value })
+                      onChange={(value) =>
+                        setFormData({ ...formData, description: value })
                       }
                       placeholder="描述岗位职责和要求..."
+                      minHeight="140px"
                     />
                   </div>
                 </CardContent>

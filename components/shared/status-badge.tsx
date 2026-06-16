@@ -8,7 +8,6 @@ import type {
   AgreementStatus,
   ProjectPhase,
   ProjectPublishStatus,
-  ExpertRating,
   ActivityStatus,
   AchievementType,
 } from '@/lib/types'
@@ -18,7 +17,6 @@ import {
   AGREEMENT_STATUS_LABELS,
   PROJECT_PHASE_LABELS,
   PROJECT_PUBLISH_STATUS_LABELS,
-  EXPERT_RATING_LABELS,
   ACTIVITY_STATUS_LABELS,
   ACHIEVEMENT_TYPE_LABELS,
 } from '@/lib/types'
@@ -119,25 +117,6 @@ export function ProjectPublishStatusBadge({ status, className }: ProjectPublishS
   return (
     <Badge variant="outline" className={cn(variants[status], className)}>
       {PROJECT_PUBLISH_STATUS_LABELS[status]}
-    </Badge>
-  )
-}
-
-interface ExpertRatingBadgeProps {
-  rating: ExpertRating
-  className?: string
-}
-
-export function ExpertRatingBadge({ rating, className }: ExpertRatingBadgeProps) {
-  const variants: Record<ExpertRating, string> = {
-    gold: 'bg-amber-100 text-amber-800 border-amber-200',
-    silver: 'bg-slate-100 text-slate-700 border-slate-200',
-    bronze: 'bg-orange-100 text-orange-800 border-orange-200',
-  }
-
-  return (
-    <Badge variant="outline" className={cn(variants[rating], className)}>
-      {EXPERT_RATING_LABELS[rating]}
     </Badge>
   )
 }

@@ -8,20 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { TableRowActions } from "@/components/admin/table-row-actions"
 import {
   Dialog,
   DialogContent,
@@ -40,9 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Search, Plus, Pencil, Trash2, Star, ChevronRight, Award, FileText, MoreHorizontal } from "lucide-react"
+import { AdminPageHeader } from "@/components/admin/page-header"
+import { AdminDataTable } from "@/components/admin/data-table"
+import { Plus, Pencil, Trash2, Star, ChevronRight, Award, FileText, Search } from "lucide-react"
 import { teacherBrands, experts } from "@/lib/mock-data"
-import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS, EXPERT_RATING_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
+import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
 import type { TeacherBrand, Expert, BrandStatus } from "@/lib/types"
 import { AchievementManager } from "@/app/admin/projects/_components/achievement-manager"
 
@@ -66,11 +55,12 @@ const emptyTeacherForm = {
 const emptyExpertForm = {
   name: "",
   title: "",
+  position: "",
   partnerName: "",
+  organization: "",
   specialties: "",
   experience: "",
   secondaryCollege: "",
-  rating: "gold" as Expert["rating"],
 }
 
 function TransferPicker({
@@ -169,11 +159,10 @@ function TransferPicker({
 }
 
 export default function TeacherBrandPage() {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [search, setSearch] = useState("")
   const [teachers, setTeachers] = useState<TeacherBrand[]>([...teacherBrands])
   const [displayedExperts, setDisplayedExperts] = useState<Expert[]>([...experts])
 
-  // Teacher dialog
   const [teacherDialogOpen, setTeacherDialogOpen] = useState(false)
   const [editingTeacher, setEditingTeacher] = useState<TeacherBrand | null>(null)
   const [teacherForm, setTeacherForm] = useState(emptyTeacherForm)
@@ -190,7 +179,6 @@ export default function TeacherBrandPage() {
   const [teacherCourses, setTeacherCourses] = useState<string[]>([])
   const [teacherEditTab, setTeacherEditTab] = useState("basic")
 
-  // Expert dialog
   const [expertDialogOpen, setExpertDialogOpen] = useState(false)
   const [editingExpert, setEditingExpert] = useState<Expert | null>(null)
   const [expertForm, setExpertForm] = useState(emptyExpertForm)
@@ -198,17 +186,16 @@ export default function TeacherBrandPage() {
 
   const filteredTeachers = teachers.filter(
     (teacher) =>
-      teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      teacher.department.toLowerCase().includes(searchTerm.toLowerCase())
+      teacher.name.toLowerCase().includes(search.toLowerCase()) ||
+      teacher.department.toLowerCase().includes(search.toLowerCase())
   )
 
   const filteredExperts = displayedExperts.filter(
     (expert) =>
-      expert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (expert.partnerName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
+      expert.name.toLowerCase().includes(search.toLowerCase()) ||
+      (expert.partnerName?.toLowerCase().includes(search.toLowerCase()) ?? false)
   )
 
-  // Teacher CRUD
   function openAddTeacherDialog() {
     setEditingTeacher(null)
     setSelectedTeacherIds([])
@@ -316,7 +303,6 @@ export default function TeacherBrandPage() {
     }
   }
 
-  // Expert CRUD
   function openAddExpertDialog() {
     setEditingExpert(null)
     setSelectedExpertIds([])
@@ -327,12 +313,13 @@ export default function TeacherBrandPage() {
     setEditingExpert(expert)
     setExpertForm({
       name: expert.name,
-      title: expert.title,
+      title: expert.title || "",
+      position: expert.position || "",
       partnerName: expert.partnerName || "",
-      specialties: expert.specialties.join("，"),
-      experience: String(expert.experience),
+      organization: expert.organization || "",
+      specialties: expert.specialties?.join("，") || "",
+      experience: String(expert.experience || ""),
       secondaryCollege: expert.secondaryColleges?.[0] || "",
-      rating: expert.rating,
     })
     setExpertDialogOpen(true)
   }
@@ -368,11 +355,12 @@ export default function TeacherBrandPage() {
                 ...e,
                 name: expertForm.name,
                 title: expertForm.title,
+                position: expertForm.position,
                 partnerName: expertForm.partnerName,
+                organization: expertForm.organization,
                 specialties,
                 experience,
                 secondaryColleges: expertForm.secondaryCollege ? [expertForm.secondaryCollege] : [],
-                rating: expertForm.rating,
                 updatedAt: new Date(),
               }
             : e
@@ -383,11 +371,12 @@ export default function TeacherBrandPage() {
         id: generateId("ex"),
         name: expertForm.name,
         title: expertForm.title,
+        position: expertForm.position,
         partnerName: expertForm.partnerName,
+        organization: expertForm.organization,
         specialties,
         experience,
         secondaryColleges: expertForm.secondaryCollege ? [expertForm.secondaryCollege] : [],
-        rating: expertForm.rating,
         status: "active",
         updatedAt: new Date(),
         createdAt: new Date(),
@@ -403,19 +392,139 @@ export default function TeacherBrandPage() {
     }
   }
 
+  const teacherColumns = [
+    {
+      key: "name",
+      title: "姓名",
+      render: (teacher: TeacherBrand) => (
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{teacher.name}</span>
+          {teacher.isFeatured && <Star className="h-3.5 w-3.5 text-amber-500" />}
+        </div>
+      ),
+    },
+    { key: "department", title: "院系", render: (teacher: TeacherBrand) => teacher.department },
+    { key: "title", title: "职称", render: (teacher: TeacherBrand) => teacher.title },
+    {
+      key: "type",
+      title: "类型",
+      render: (teacher: TeacherBrand) => (
+        <Badge variant="secondary" className="text-xs">{TEACHER_TYPE_LABELS[teacher.type]}</Badge>
+      ),
+    },
+    {
+      key: "researchFields",
+      title: "研究领域",
+      render: (teacher: TeacherBrand) => (
+        <div className="flex flex-wrap gap-1">
+          {teacher.researchFields.map((field) => (
+            <Badge key={field} variant="outline" className="text-xs">{field}</Badge>
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: "awards",
+      title: "获奖荣誉",
+      render: (teacher: TeacherBrand) => (
+        <div className="flex flex-wrap gap-1">
+          {teacher.awards.slice(0, 2).map((award) => (
+            <Badge key={award} variant="secondary" className="text-xs">{award}</Badge>
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      title: "状态",
+      render: (teacher: TeacherBrand) => (
+        <Badge variant={teacher.status === "published" ? "secondary" : "outline"} className="text-xs">
+          {BRAND_STATUS_LABELS[teacher.status]}
+        </Badge>
+      ),
+    },
+    {
+      key: "actions",
+      title: "",
+      width: "w-[50px]",
+      align: "right" as const,
+      render: (teacher: TeacherBrand) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEditTeacherDialog(teacher)}>
+            <Pencil className="mr-1 h-3 w-3" />
+            编辑
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+            onClick={() => handleDeleteTeacher(teacher.id)}
+          >
+            <Trash2 className="mr-1 h-3 w-3" />
+            删除
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
+
+  const expertColumns = [
+    { key: "name", title: "姓名", render: (expert: Expert) => <span className="font-medium">{expert.name}</span> },
+    { key: "title", title: "职称", render: (expert: Expert) => expert.title || expert.position || "-" },
+    { key: "organization", title: "所属机构", render: (expert: Expert) => expert.organization || expert.partnerName || "-" },
+    {
+      key: "specialties",
+      title: "专业领域",
+      render: (expert: Expert) => (
+        <div className="flex flex-wrap gap-1">
+          {expert.specialties?.map((specialty) => (
+            <Badge key={specialty} variant="outline" className="text-xs">{specialty}</Badge>
+          ))}
+        </div>
+      ),
+    },
+    { key: "experience", title: "行业经验", render: (expert: Expert) => expert.experience ? `${expert.experience} 年` : '-' },
+    {
+      key: "organization",
+      title: "来源类型",
+      render: (expert: Expert) => (
+        <Badge variant="outline" className="text-xs">
+          {expert.partnerSource === 'cooperation' ? '合作企业' : expert.partnerSource === 'third-party' ? '第三方机构' : '独立'}
+        </Badge>
+      ),
+    },
+    {
+      key: "actions",
+      title: "",
+      width: "w-[50px]",
+      align: "right" as const,
+      render: (expert: Expert) => (
+        <TableRowActions>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEditExpertDialog(expert)}>
+            <Pencil className="mr-1 h-3 w-3" />
+            编辑
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+            onClick={() => handleDeleteExpert(expert.id)}
+          >
+            <Trash2 className="mr-1 h-3 w-3" />
+            删除
+          </Button>
+        </TableRowActions>
+      ),
+    },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/brands">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">师资品牌管理</h1>
-          <p className="text-muted-foreground">管理校本师资和企业专家的品牌展示</p>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="师资品牌管理"
+        subtitle="管理校本师资和企业专家的品牌展示"
+        backHref="/admin/brands"
+      />
 
       <Tabs defaultValue="teachers" className="space-y-6">
         <TabsList>
@@ -429,104 +538,23 @@ export default function TeacherBrandPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="搜索教师姓名或院系..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
               />
             </div>
-            <Button onClick={openAddTeacherDialog}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button size="sm" onClick={openAddTeacherDialog}>
+              <Plus className="h-4 w-4 mr-1" />
               引用教师
             </Button>
           </div>
 
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>姓名</TableHead>
-                  <TableHead>院系</TableHead>
-                  <TableHead>职称</TableHead>
-                  <TableHead>类型</TableHead>
-                  <TableHead>研究领域</TableHead>
-                  <TableHead>获奖荣誉</TableHead>
-                  <TableHead>状态</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTeachers.length > 0 ? (
-                  filteredTeachers.map((teacher) => (
-                    <TableRow key={teacher.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{teacher.name}</span>
-                          {teacher.isFeatured && (
-                            <Star className="h-3.5 w-3.5 text-amber-500" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{teacher.department}</TableCell>
-                      <TableCell>{teacher.title}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="text-xs">
-                          {TEACHER_TYPE_LABELS[teacher.type]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {teacher.researchFields.map((field) => (
-                            <Badge key={field} variant="outline" className="text-xs">
-                              {field}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {teacher.awards.slice(0, 2).map((award) => (
-                            <Badge key={award} variant="secondary" className="text-xs">
-                              {award}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={teacher.status === "published" ? "secondary" : "outline"} className="text-xs">
-                          {BRAND_STATUS_LABELS[teacher.status]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditTeacherDialog(teacher)}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              编辑
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteTeacher(teacher.id)}>
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              删除
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      暂无符合条件的教师
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card>
+          <AdminDataTable
+            columns={teacherColumns}
+            data={filteredTeachers}
+            rowKey={(t) => t.id}
+            emptyText="暂无符合条件的教师"
+          />
         </TabsContent>
 
         <TabsContent value="experts" className="space-y-4">
@@ -535,85 +563,23 @@ export default function TeacherBrandPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="搜索专家姓名或所属机构..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
               />
             </div>
             <Button variant="outline" size="sm" onClick={openAddExpertDialog}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-1" />
               引用专家
             </Button>
           </div>
 
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>姓名</TableHead>
-                  <TableHead>职称</TableHead>
-                  <TableHead>所属机构</TableHead>
-                  <TableHead>专业领域</TableHead>
-                  <TableHead>行业经验</TableHead>
-                  <TableHead>专家评级</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredExperts.length > 0 ? (
-                  filteredExperts.map((expert) => (
-                    <TableRow key={expert.id}>
-                      <TableCell>
-                        <span className="font-medium">{expert.name}</span>
-                      </TableCell>
-                      <TableCell>{expert.title}</TableCell>
-                      <TableCell>{expert.partnerName || '-'}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {expert.specialties.map((specialty) => (
-                            <Badge key={specialty} variant="outline" className="text-xs">
-                              {specialty}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>{expert.experience} 年</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">
-                          {EXPERT_RATING_LABELS[expert.rating]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditExpertDialog(expert)}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              编辑
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteExpert(expert.id)}>
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              删除
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      暂无符合条件的专家
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card>
+          <AdminDataTable
+            columns={expertColumns}
+            data={filteredExperts}
+            rowKey={(e) => e.id}
+            emptyText="暂无符合条件的专家"
+          />
         </TabsContent>
       </Tabs>
 
@@ -645,20 +611,15 @@ export default function TeacherBrandPage() {
             />
           ) : (
             <div className="space-y-4 py-2">
-              {/* Header - 模仿企业详情页风格 */}
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
                   <Avatar className="h-16 w-16 rounded-lg">
                     <AvatarImage src={editingTeacher.avatar} className="object-cover" />
-                    <AvatarFallback className="rounded-lg text-lg">
-                      {editingTeacher.name.charAt(0)}
-                    </AvatarFallback>
+                    <AvatarFallback className="rounded-lg text-lg">{editingTeacher.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
                     <h2 className="text-xl font-bold">{editingTeacher.name}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {teacherForm.department} · {teacherForm.title}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{teacherForm.department} · {teacherForm.title}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="outline">{TEACHER_TYPE_LABELS[teacherForm.type]}</Badge>
                       <Badge variant={teacherForm.status === 'published' ? 'default' : 'secondary'}>
@@ -675,7 +636,6 @@ export default function TeacherBrandPage() {
                 </div>
               </div>
 
-              {/* Stat cards */}
               <div className="grid grid-cols-3 gap-3">
                 <Card>
                   <CardContent className="pt-4 pb-3">
@@ -724,142 +684,134 @@ export default function TeacherBrandPage() {
                   <TabsTrigger value="achievements">教师成果</TabsTrigger>
                 </TabsList>
 
-              <TabsContent value="basic" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="t-name">姓名</Label>
-                    <Input
-                      id="t-name"
-                      value={teacherForm.name}
-                      disabled
-                      placeholder="请输入姓名"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      教师名称不可修改，修改仅影响品牌展示，不会回写教师库
-                    </p>
+                <TabsContent value="basic" className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="t-name">姓名</Label>
+                      <Input id="t-name" value={teacherForm.name} disabled placeholder="请输入姓名" />
+                      <p className="text-xs text-muted-foreground">教师名称不可修改，修改仅影响品牌展示，不会回写教师库</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="t-department">院系</Label>
+                      <Input
+                        id="t-department"
+                        value={teacherForm.department}
+                        onChange={(e) => setTeacherForm({ ...teacherForm, department: e.target.value })}
+                        placeholder="请输入院系"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="t-title">职称</Label>
+                      <Input
+                        id="t-title"
+                        value={teacherForm.title}
+                        onChange={(e) => setTeacherForm({ ...teacherForm, title: e.target.value })}
+                        placeholder="请输入职称"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="t-type">类型</Label>
+                      <Select
+                        value={teacherForm.type}
+                        onValueChange={(v) => setTeacherForm({ ...teacherForm, type: v as TeacherBrand["type"] })}
+                      >
+                        <SelectTrigger id="t-type">
+                          <SelectValue placeholder="选择类型" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="dual-qualified">双师型教师</SelectItem>
+                          <SelectItem value="teaching-master">教学名师</SelectItem>
+                          <SelectItem value="backbone">骨干教师</SelectItem>
+                          <SelectItem value="award-winning">获奖教师</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="t-department">院系</Label>
-                    <Input
-                      id="t-department"
-                      value={teacherForm.department}
-                      onChange={(e) => setTeacherForm({ ...teacherForm, department: e.target.value })}
-                      placeholder="请输入院系"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="t-title">职称</Label>
-                    <Input
-                      id="t-title"
-                      value={teacherForm.title}
-                      onChange={(e) => setTeacherForm({ ...teacherForm, title: e.target.value })}
-                      placeholder="请输入职称"
+                    <Label htmlFor="t-intro">简介</Label>
+                    <Textarea
+                      id="t-intro"
+                      value={teacherForm.introduction}
+                      onChange={(e) => setTeacherForm({ ...teacherForm, introduction: e.target.value })}
+                      placeholder="请输入教师简介"
+                      rows={3}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="t-type">类型</Label>
+                    <Label htmlFor="t-fields">研究领域（逗号分隔）</Label>
+                    <Input
+                      id="t-fields"
+                      value={teacherForm.researchFields}
+                      onChange={(e) => setTeacherForm({ ...teacherForm, researchFields: e.target.value })}
+                      placeholder="例如：人工智能，大数据，智能制造"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="t-awards">获奖荣誉（逗号分隔）</Label>
+                    <Input
+                      id="t-awards"
+                      value={teacherForm.awards}
+                      onChange={(e) => setTeacherForm({ ...teacherForm, awards: e.target.value })}
+                      placeholder="例如：省级教学名师，国家级教学成果奖"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 items-end">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="t-featured"
+                        checked={teacherForm.isFeatured}
+                        onCheckedChange={(v) => setTeacherForm({ ...teacherForm, isFeatured: v })}
+                      />
+                      <Label htmlFor="t-featured">重点展示</Label>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="t-status">状态</Label>
+                      <Select
+                        value={teacherForm.status}
+                        onValueChange={(v) => setTeacherForm({ ...teacherForm, status: v as BrandStatus })}
+                      >
+                        <SelectTrigger id="t-status">
+                          <SelectValue placeholder="选择状态" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="draft">草稿</SelectItem>
+                          <SelectItem value="pending">待审核</SelectItem>
+                          <SelectItem value="published">已发布</SelectItem>
+                          <SelectItem value="archived">已归档</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="t-secondaryCollege">关联二级学院</Label>
                     <Select
-                      value={teacherForm.type}
-                      onValueChange={(v) => setTeacherForm({ ...teacherForm, type: v as TeacherBrand["type"] })}
+                      value={teacherForm.secondaryCollege || ""}
+                      onValueChange={(v) => setTeacherForm({ ...teacherForm, secondaryCollege: v })}
                     >
-                      <SelectTrigger id="t-type">
-                        <SelectValue placeholder="选择类型" />
+                      <SelectTrigger id="t-secondaryCollege">
+                        <SelectValue placeholder="选择二级学院" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="dual-qualified">双师型教师</SelectItem>
-                        <SelectItem value="teaching-master">教学名师</SelectItem>
-                        <SelectItem value="backbone">骨干教师</SelectItem>
-                        <SelectItem value="award-winning">获奖教师</SelectItem>
+                        {SECONDARY_COLLEGES.map((college) => (
+                          <SelectItem key={college} value={college}>{college}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="t-intro">简介</Label>
-                  <Textarea
-                    id="t-intro"
-                    value={teacherForm.introduction}
-                    onChange={(e) => setTeacherForm({ ...teacherForm, introduction: e.target.value })}
-                    placeholder="请输入教师简介"
-                    rows={3}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="t-fields">研究领域（逗号分隔）</Label>
-                  <Input
-                    id="t-fields"
-                    value={teacherForm.researchFields}
-                    onChange={(e) => setTeacherForm({ ...teacherForm, researchFields: e.target.value })}
-                    placeholder="例如：人工智能，大数据，智能制造"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="t-awards">获奖荣誉（逗号分隔）</Label>
-                  <Input
-                    id="t-awards"
-                    value={teacherForm.awards}
-                    onChange={(e) => setTeacherForm({ ...teacherForm, awards: e.target.value })}
-                    placeholder="例如：省级教学名师，国家级教学成果奖"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4 items-end">
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id="t-featured"
-                      checked={teacherForm.isFeatured}
-                      onCheckedChange={(v) => setTeacherForm({ ...teacherForm, isFeatured: v })}
-                    />
-                    <Label htmlFor="t-featured">重点展示</Label>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="t-status">状态</Label>
-                    <Select
-                      value={teacherForm.status}
-                      onValueChange={(v) => setTeacherForm({ ...teacherForm, status: v as BrandStatus })}
-                    >
-                      <SelectTrigger id="t-status">
-                        <SelectValue placeholder="选择状态" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="draft">草稿</SelectItem>
-                        <SelectItem value="pending">待审核</SelectItem>
-                        <SelectItem value="published">已发布</SelectItem>
-                        <SelectItem value="archived">已归档</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="t-secondaryCollege">关联二级学院</Label>
-                  <Select
-                    value={teacherForm.secondaryCollege || ""}
-                    onValueChange={(v) => setTeacherForm({ ...teacherForm, secondaryCollege: v })}
-                  >
-                    <SelectTrigger id="t-secondaryCollege">
-                      <SelectValue placeholder="选择二级学院" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SECONDARY_COLLEGES.map((college) => (
-                        <SelectItem key={college} value={college}>{college}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </TabsContent>
+                </TabsContent>
 
-              <TabsContent value="achievements">
-                <AchievementManager
-                  items={teacherAchievements}
-                  onChange={setTeacherAchievements}
-                  title="成果管理"
-                  description="添加教师成果或引用成果库中的成果"
-                />
-              </TabsContent>
-
-            </Tabs>
-          </div>
+                <TabsContent value="achievements">
+                  <AchievementManager
+                    items={teacherAchievements}
+                    onChange={setTeacherAchievements}
+                    title="成果管理"
+                    description="添加教师成果或引用成果库中的成果"
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
           )}
 
           <DialogFooter>
@@ -892,12 +844,16 @@ export default function TeacherBrandPage() {
               items={experts.map((expert) => ({
                 id: expert.id,
                 title: expert.name,
-                subtitle: expert.title,
-                group: expert.partnerName || "未归属企业",
+                subtitle: expert.title || expert.position || "未设置",
+                group: expert.organization || expert.partnerName || "未归属企业",
               }))}
               selectedItems={experts
                 .filter((expert) => selectedExpertIds.includes(expert.id))
-                .map((expert) => ({ id: expert.id, title: expert.name, subtitle: `${expert.title} · ${expert.partnerName || "未归属企业"}` }))}
+                .map((expert) => ({
+                  id: expert.id,
+                  title: expert.name,
+                  subtitle: `${expert.title || expert.position || "未设置"} · ${expert.organization || expert.partnerName || "未归属企业"}`,
+                }))}
               selectedIds={selectedExpertIds}
               onSelectedIdsChange={setSelectedExpertIds}
               availableTitle="专家名单"
@@ -943,20 +899,22 @@ export default function TeacherBrandPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="e-rating">专家评级</Label>
-                <Select
-                  value={expertForm.rating}
-                  onValueChange={(v) => setExpertForm({ ...expertForm, rating: v as Expert["rating"] })}
-                >
-                  <SelectTrigger id="e-rating">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gold">金牌专家</SelectItem>
-                    <SelectItem value="silver">银牌专家</SelectItem>
-                    <SelectItem value="bronze">铜牌专家</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="e-position">任职岗位</Label>
+                <Input
+                  id="e-position"
+                  value={expertForm.position}
+                  onChange={(e) => setExpertForm({ ...expertForm, position: e.target.value })}
+                  placeholder="请输入任职岗位"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="e-organization">所属机构</Label>
+                <Input
+                  id="e-organization"
+                  value={expertForm.organization}
+                  onChange={(e) => setExpertForm({ ...expertForm, organization: e.target.value })}
+                  placeholder="请输入所属机构"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="e-experience">行业经验（年）</Label>

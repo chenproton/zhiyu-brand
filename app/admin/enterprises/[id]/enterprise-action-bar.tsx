@@ -23,6 +23,7 @@ import {
 import { Download, Eye, Plus, Upload, X } from 'lucide-react'
 import type { EnterpriseAgreement } from '@/lib/types'
 import { AgreementStatusBadge } from '@/components/shared/status-badge'
+import { Switch } from '@/components/ui/switch'
 
 const AGREEMENT_STATUS_OPTIONS = [
   { value: 'draft', label: '草稿' },
@@ -43,13 +44,14 @@ export function AddAgreementButton() {
     status: 'draft' as EnterpriseAgreement['status'],
     content: '',
     attachments: [] as string[],
+    isPublicDisplay: false,
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    alert(`协议「${formData.name}」已新增（演示）`)
+    alert(`协议「${formData.name}」已新增（演示）\n前台展示：${formData.isPublicDisplay ? '展示' : '隐藏'}`)
     setOpen(false)
-    setFormData({ name: '', type: '', startDate: '', endDate: '', status: 'draft', content: '', attachments: [] })
+    setFormData({ name: '', type: '', startDate: '', endDate: '', status: 'draft', content: '', attachments: [], isPublicDisplay: false })
   }
 
   return (
@@ -117,6 +119,18 @@ export function AddAgreementButton() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>前台展示</Label>
+                <div className="flex items-center gap-2 h-10">
+                  <Switch
+                    checked={formData.isPublicDisplay}
+                    onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isPublicDisplay: checked }))}
+                  />
+                  <span className={`text-sm ${formData.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
+                    {formData.isPublicDisplay ? '展示' : '隐藏'}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="space-y-2">

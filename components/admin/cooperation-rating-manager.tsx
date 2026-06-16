@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { TableRowActions } from '@/components/admin/table-row-actions'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import type { CooperationRating } from '@/lib/types'
@@ -132,6 +133,7 @@ export default function CooperationRatingManager() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12 text-center">序号</TableHead>
                 <TableHead>排序</TableHead>
                 <TableHead>评级名称</TableHead>
                 <TableHead>评级标识</TableHead>
@@ -141,8 +143,9 @@ export default function CooperationRatingManager() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ratings.sort((a, b) => a.sortOrder - b.sortOrder).map((item) => (
-                <TableRow key={item.id}>
+              {ratings.sort((a, b) => a.sortOrder - b.sortOrder).map((item, index) => (
+                <TableRow key={item.id} className="group">
+                  <TableCell className="text-center">{index + 1}</TableCell>
                   <TableCell>{item.sortOrder}</TableCell>
                   <TableCell>
                     <Badge className={ratingColors[item.rating]}>{item.label}</Badge>
@@ -152,15 +155,17 @@ export default function CooperationRatingManager() {
                   </TableCell>
                   <TableCell className="max-w-xs text-sm">{item.description}</TableCell>
                   <TableCell className="max-w-xs text-sm">{item.criteria}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(item)}>
-                        <Pencil className="h-4 w-4" />
+                  <TableCell className="text-right relative">
+                    <TableRowActions>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleEdit(item)}>
+                        <Pencil className="mr-1 h-3 w-3" />
+                        编辑
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(item)}>
-                        <Trash2 className="h-4 w-4" />
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-red-500 hover:text-red-600" onClick={() => handleDelete(item)}>
+                        <Trash2 className="mr-1 h-3 w-3" />
+                        删除
                       </Button>
-                    </div>
+                    </TableRowActions>
                   </TableCell>
                 </TableRow>
               ))}

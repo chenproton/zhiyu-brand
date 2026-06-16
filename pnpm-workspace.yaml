@@ -1,2 +1,5 @@
+packages:
+  - '.'
+  - 'platform-navigation-shell'
 allowBuilds:
   sharp: true

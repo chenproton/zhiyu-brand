@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { TableRowActions } from '@/components/admin/table-row-actions'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Tag, Plus, Pencil, Trash2 } from 'lucide-react'
 
@@ -51,7 +52,6 @@ export default function CooperationTypeManager() {
   const handleEdit = (item: CooperationType) => {
     setEditingItem(item)
     setFormData({ ...item })
-    setTagInput('')
     setDialogOpen(true)
   }
 
@@ -97,14 +97,16 @@ export default function CooperationTypeManager() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12 text-center">序号</TableHead>
                 <TableHead>类型名称</TableHead>
                 <TableHead>类型说明</TableHead>
                 <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {types.map((type) => (
-                <TableRow key={type.id}>
+              {types.map((type, index) => (
+                <TableRow key={type.id} className="group">
+                  <TableCell className="text-center">{index + 1}</TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <Tag className="h-4 w-4 text-primary" />
@@ -112,15 +114,17 @@ export default function CooperationTypeManager() {
                     </div>
                   </TableCell>
                   <TableCell className="max-w-xs text-sm">{type.description}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(type)}>
-                        <Pencil className="h-4 w-4" />
+                  <TableCell className="text-right relative">
+                    <TableRowActions>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleEdit(type)}>
+                        <Pencil className="mr-1 h-3 w-3" />
+                        编辑
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDelete(type)}>
-                        <Trash2 className="h-4 w-4" />
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-red-500 hover:text-red-600" onClick={() => handleDelete(type)}>
+                        <Trash2 className="mr-1 h-3 w-3" />
+                        删除
                       </Button>
-                    </div>
+                    </TableRowActions>
                   </TableCell>
                 </TableRow>
               ))}
