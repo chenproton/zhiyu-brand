@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # ==================== 配置区 ====================
-REMOTE_HOST="${REMOTE_HOST:-111.170.170.202}"
+REMOTE_HOST="${REMOTE_HOST:-demo2.zhiyu.com.cn}"
 REMOTE_USER="${REMOTE_USER:-root}"
 REMOTE_BASE="${REMOTE_BASE:-/var/www}"
 
