@@ -90,13 +90,6 @@ export default function AchievementsPage() {
 
   const columns = [
     {
-      key: 'seq',
-      title: '序号',
-      width: 'w-16',
-      align: 'center' as const,
-      render: (_: Achievement, index: number) => <span className="text-sm text-muted-foreground">{index + 1}</span>,
-    },
-    {
       key: 'display',
       title: '前台展示',
       render: (achievement: Achievement) => (

@@ -164,7 +164,7 @@ function NameDescDialog({
   )
 }
 
-// ============ 等级编辑弹窗（带附件上传） ============
+// ============ 品牌编辑弹窗（带附件上传） ============
 function LevelEditDialog({
   open,
   onOpenChange,
@@ -206,16 +206,16 @@ function LevelEditDialog({
     <Dialog open={open} onOpenChange={handleOpen}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{item ? "编辑等级描述" : "新增等级描述"}</DialogTitle>
+          <DialogTitle>{item ? "编辑品牌描述" : "新增品牌描述"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label>等级描述</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="填写等级描述" />
+            <Label>品牌描述</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="填写品牌描述" />
           </div>
           <div className="space-y-2">
             <Label>详细说明</Label>
-            <FakeRichTextEditor value={desc} onChange={setDesc} placeholder="填写该等级的认定依据、建设目标或佐证说明" minHeight="120px" />
+            <FakeRichTextEditor value={desc} onChange={setDesc} placeholder="填写该品牌的认定依据、建设目标或佐证说明" minHeight="120px" />
           </div>
           <div className="space-y-2">
             <Label>附件佐证</Label>
@@ -736,10 +736,10 @@ export default function MajorBrandDetailPage() {
                 <CardTitle className="text-base">专业品牌</CardTitle>
                 <CardDescription>添加专业品牌描述及佐证材料</CardDescription>
               </div>
-              <Button size="sm" onClick={() => setLevelDialog({ open: true, item: null })}>
-                <Plus className="h-4 w-4 mr-1" />
-                新增等级
-              </Button>
+                <Button size="sm" onClick={() => setLevelDialog({ open: true, item: null })}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  新增专业品牌
+                </Button>
             </CardHeader>
             <CardContent>
               {levels.length > 0 ? (
@@ -787,7 +787,7 @@ export default function MajorBrandDetailPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">暂无等级描述</div>
+                <div className="text-center py-8 text-muted-foreground">暂无品牌描述</div>
               )}
             </CardContent>
           </Card>
@@ -1096,7 +1096,7 @@ export default function MajorBrandDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 等级编辑弹窗 */}
+      {/* 品牌编辑弹窗 */}
       <LevelEditDialog
         open={levelDialog.open}
         onOpenChange={(open) => setLevelDialog({ open })}

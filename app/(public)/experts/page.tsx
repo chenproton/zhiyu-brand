@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { Search, Users, X, MapPin, Building2, GraduationCap, Award } from 'lucide-react'
+import { Search, Users, X, Building2, GraduationCap } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -215,18 +215,6 @@ export default function ExpertsPage() {
                             </div>
                           </div>
                         )}
-                        <div className="mt-auto pt-4 flex items-center justify-center gap-3 text-[11px] text-slate-400">
-                          {expert.city && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" /> {expert.city}
-                            </span>
-                          )}
-                          {expert.attachments && expert.attachments.length > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Award className="h-3 w-3" /> 已认证
-                            </span>
-                          )}
-                        </div>
                       </CardContent>
                     </Card>
                   </Link>

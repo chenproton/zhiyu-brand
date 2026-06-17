@@ -237,7 +237,7 @@ export default async function PartnerDetailPage({ params, searchParams }: PagePr
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
                         <ImageIcon className="h-4 w-4" />
-                        企业资质证明材料
+                        企业荣誉资质
                       </CardTitle>
                     </CardHeader>
                     <CardContent>

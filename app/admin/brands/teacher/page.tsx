@@ -1,13 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { TableRowActions } from "@/components/admin/table-row-actions"
 import {
   Dialog,
@@ -18,7 +17,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import {
   Select,
@@ -29,11 +27,11 @@ import {
 } from "@/components/ui/select"
 import { AdminPageHeader } from "@/components/admin/page-header"
 import { AdminDataTable } from "@/components/admin/data-table"
-import { Plus, Pencil, Trash2, Star, ChevronRight, Award, FileText, Search } from "lucide-react"
-import { teacherBrands, experts } from "@/lib/mock-data"
+import { Plus, Pencil, Trash2, Star, ChevronRight, FileText, Search, X, Upload } from "lucide-react"
+import { teacherBrands, experts, enterprises } from "@/lib/mock-data"
 import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
-import type { TeacherBrand, Expert, BrandStatus } from "@/lib/types"
-import { AchievementManager } from "@/app/admin/projects/_components/achievement-manager"
+import type { TeacherBrand, Expert, ExpertGender, ExpertAttachment } from "@/lib/types"
+import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
 
 function generateId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
@@ -41,26 +39,46 @@ function generateId(prefix: string) {
 
 const emptyTeacherForm = {
   name: "",
-  department: "",
+  gender: "male" as ExpertGender,
+  age: "",
+  city: "",
   title: "",
-  type: "dual-qualified" as TeacherBrand["type"],
+  position: "",
+  organization: "",
+  experience: "",
+  education: "",
+  industryDirection: "",
+  positionDirection: "",
   introduction: "",
-  researchFields: "",
-  awards: "",
-  secondaryCollege: "",
-  isFeatured: false,
-  status: "draft" as BrandStatus,
+  workExperience: "",
+  partnerSource: "" as "cooperation" | "third-party" | "",
+  partnerId: "",
+  thirdPartyName: "",
+  status: "active" as "active" | "inactive",
+  isPublicDisplay: true,
+  secondaryColleges: [] as string[],
 }
 
 const emptyExpertForm = {
   name: "",
+  gender: "male" as ExpertGender,
+  age: "",
+  city: "",
   title: "",
   position: "",
-  partnerName: "",
   organization: "",
-  specialties: "",
+  education: "",
+  industryDirection: "",
+  positionDirection: "",
+  introduction: "",
+  workExperience: "",
   experience: "",
-  secondaryCollege: "",
+  partnerSource: "" as "cooperation" | "third-party" | "",
+  partnerId: "",
+  thirdPartyName: "",
+  secondaryColleges: [] as string[],
+  status: "active" as "active" | "inactive",
+  isPublicDisplay: true,
 }
 
 function TransferPicker({
@@ -167,22 +185,121 @@ export default function TeacherBrandPage() {
   const [editingTeacher, setEditingTeacher] = useState<TeacherBrand | null>(null)
   const [teacherForm, setTeacherForm] = useState(emptyTeacherForm)
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([])
-  const [teacherAchievements, setTeacherAchievements] = useState<{
-    id: string
-    name: string
-    type: string
-    description: string
-    createdAt: Date
-    attachments?: string[]
-    secondaryColleges?: string[]
-  }[]>([])
-  const [teacherCourses, setTeacherCourses] = useState<string[]>([])
-  const [teacherEditTab, setTeacherEditTab] = useState("basic")
+  const [teacherSpecialties, setTeacherSpecialties] = useState<string[]>([])
+  const [newTeacherSpecialty, setNewTeacherSpecialty] = useState("")
+  const [teacherAvatar, setTeacherAvatar] = useState("")
+  const [teacherAttachments, setTeacherAttachments] = useState<ExpertAttachment[]>([])
+  const teacherFileInputRef = useRef<HTMLInputElement>(null)
+  const teacherAttachmentInputRef = useRef<HTMLInputElement>(null)
 
   const [expertDialogOpen, setExpertDialogOpen] = useState(false)
   const [editingExpert, setEditingExpert] = useState<Expert | null>(null)
   const [expertForm, setExpertForm] = useState(emptyExpertForm)
+  const [expertSpecialties, setExpertSpecialties] = useState<string[]>([])
+  const [newExpertSpecialty, setNewExpertSpecialty] = useState("")
   const [selectedExpertIds, setSelectedExpertIds] = useState<string[]>([])
+  const [expertAvatar, setExpertAvatar] = useState("")
+  const [expertAttachments, setExpertAttachments] = useState<ExpertAttachment[]>([])
+  const expertFileInputRef = useRef<HTMLInputElement>(null)
+  const expertAttachmentInputRef = useRef<HTMLInputElement>(null)
+
+  const toggleTeacherSecondaryCollege = (college: string) => {
+    setTeacherForm((prev) => ({
+      ...prev,
+      secondaryColleges: prev.secondaryColleges.includes(college)
+        ? prev.secondaryColleges.filter((c) => c !== college)
+        : [...prev.secondaryColleges, college],
+    }))
+  }
+
+  const handleAddTeacherSpecialty = () => {
+    if (newTeacherSpecialty.trim() && !teacherSpecialties.includes(newTeacherSpecialty.trim())) {
+      setTeacherSpecialties([...teacherSpecialties, newTeacherSpecialty.trim()])
+      setNewTeacherSpecialty('')
+    }
+  }
+
+  const handleRemoveTeacherSpecialty = (index: number) => {
+    setTeacherSpecialties(teacherSpecialties.filter((_, i) => i !== index))
+  }
+
+  const handleTeacherFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files[0]) {
+      setTeacherAvatar(URL.createObjectURL(files[0]))
+    }
+    e.target.value = ''
+  }
+
+  const handleTeacherAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    const newAttachments = Array.from(files).map((file) => ({
+      name: file.name,
+      url: URL.createObjectURL(file),
+    }))
+    setTeacherAttachments((prev) => [...prev, ...newAttachments])
+    e.target.value = ''
+  }
+
+  const handleRemoveTeacherAttachment = (index: number) => {
+    setTeacherAttachments((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleUpdateTeacherAttachmentName = (index: number, value: string) => {
+    setTeacherAttachments((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, name: value } : item))
+    )
+  }
+
+  const toggleExpertSecondaryCollege = (college: string) => {
+    setExpertForm((prev) => ({
+      ...prev,
+      secondaryColleges: prev.secondaryColleges.includes(college)
+        ? prev.secondaryColleges.filter((c) => c !== college)
+        : [...prev.secondaryColleges, college],
+    }))
+  }
+
+  const handleAddExpertSpecialty = () => {
+    if (newExpertSpecialty.trim() && !expertSpecialties.includes(newExpertSpecialty.trim())) {
+      setExpertSpecialties([...expertSpecialties, newExpertSpecialty.trim()])
+      setNewExpertSpecialty('')
+    }
+  }
+
+  const handleRemoveExpertSpecialty = (index: number) => {
+    setExpertSpecialties(expertSpecialties.filter((_, i) => i !== index))
+  }
+
+  const handleExpertFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files[0]) {
+      setExpertAvatar(URL.createObjectURL(files[0]))
+    }
+    e.target.value = ''
+  }
+
+  const handleExpertAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    const newAttachments = Array.from(files).map((file) => ({
+      name: file.name,
+      url: URL.createObjectURL(file),
+    }))
+    setExpertAttachments((prev) => [...prev, ...newAttachments])
+    e.target.value = ''
+  }
+
+  const handleRemoveExpertAttachment = (index: number) => {
+    setExpertAttachments((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleUpdateExpertAttachmentName = (index: number, value: string) => {
+    setExpertAttachments((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, name: value } : item))
+    )
+  }
 
   const filteredTeachers = teachers.filter(
     (teacher) =>
@@ -199,6 +316,10 @@ export default function TeacherBrandPage() {
   function openAddTeacherDialog() {
     setEditingTeacher(null)
     setSelectedTeacherIds([])
+    setTeacherForm(emptyTeacherForm)
+    setTeacherSpecialties([])
+    setTeacherAvatar("")
+    setTeacherAttachments([])
     setTeacherDialogOpen(true)
   }
 
@@ -206,25 +327,28 @@ export default function TeacherBrandPage() {
     setEditingTeacher(teacher)
     setTeacherForm({
       name: teacher.name,
-      department: teacher.department,
+      gender: teacher.gender || "male",
+      age: teacher.age ? String(teacher.age) : "",
+      city: teacher.city || "",
       title: teacher.title,
-      type: teacher.type,
+      position: teacher.position || "",
+      organization: teacher.organization || "",
+      experience: teacher.experience ? String(teacher.experience) : "",
+      education: teacher.education || "",
+      industryDirection: teacher.industryDirection || "",
+      positionDirection: teacher.positionDirection || "",
       introduction: teacher.introduction,
-      researchFields: teacher.researchFields.join("，"),
-      awards: teacher.awards.join("，"),
-      secondaryCollege: teacher.secondaryCollege || "",
-      isFeatured: teacher.isFeatured,
-      status: teacher.status,
+      workExperience: teacher.workExperience || "",
+      partnerSource: teacher.partnerSource || "",
+      partnerId: teacher.partnerId || "",
+      thirdPartyName: teacher.partnerSource === 'third-party' ? teacher.partnerName || '' : '',
+      status: teacher.status === 'published' ? 'active' : 'inactive',
+      isPublicDisplay: teacher.isPublicDisplay || false,
+      secondaryColleges: teacher.secondaryColleges || (teacher.secondaryCollege ? [teacher.secondaryCollege] : []),
     })
-    setTeacherAchievements(teacher.achievements.map((name, idx) => ({
-      id: `ta-${idx}`,
-      name,
-      type: '自定义',
-      description: '',
-      createdAt: new Date(),
-    })))
-    setTeacherCourses([...teacher.courses])
-    setTeacherEditTab("basic")
+    setTeacherSpecialties(teacher.specialties || teacher.researchFields || [])
+    setTeacherAvatar(teacher.avatar || "")
+    setTeacherAttachments(teacher.attachments || [])
     setTeacherDialogOpen(true)
   }
 
@@ -245,15 +369,9 @@ export default function TeacherBrandPage() {
   }
 
   function handleSaveTeacher() {
-    const researchFields = teacherForm.researchFields
-      .split(/,|，/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-    const awards = teacherForm.awards
-      .split(/,|，/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-    const achievements = teacherAchievements.map((a) => a.name)
+    const specialties = teacherSpecialties
+    const age = teacherForm.age ? parseInt(teacherForm.age) : undefined
+    const experienceNum = teacherForm.experience ? parseInt(teacherForm.experience) : undefined
 
     if (editingTeacher) {
       setTeachers((prev) =>
@@ -261,12 +379,33 @@ export default function TeacherBrandPage() {
           t.id === editingTeacher.id
             ? {
                 ...t,
-                ...teacherForm,
-                name: t.name,
-                researchFields,
-                courses: teacherCourses,
-                achievements,
-                awards,
+                name: teacherForm.name,
+                gender: teacherForm.gender,
+                age,
+                city: teacherForm.city || undefined,
+                title: teacherForm.title,
+                position: teacherForm.position || undefined,
+                organization: teacherForm.organization || undefined,
+                experience: experienceNum,
+                education: teacherForm.education || undefined,
+                industryDirection: teacherForm.industryDirection || undefined,
+                positionDirection: teacherForm.positionDirection || undefined,
+                introduction: teacherForm.introduction,
+                workExperience: teacherForm.workExperience || undefined,
+                specialties,
+                researchFields: specialties,
+                avatar: teacherAvatar || undefined,
+                attachments: teacherAttachments.length > 0 ? teacherAttachments : undefined,
+                partnerSource: teacherForm.partnerSource || undefined,
+                partnerId: teacherForm.partnerSource === 'cooperation' ? teacherForm.partnerId || undefined : undefined,
+                partnerName: teacherForm.partnerSource === 'cooperation'
+                  ? enterprises.find((e) => e.id === teacherForm.partnerId)?.name
+                  : teacherForm.partnerSource === 'third-party'
+                  ? teacherForm.thirdPartyName || undefined
+                  : undefined,
+                status: teacherForm.status === 'active' ? 'published' : 'draft',
+                isPublicDisplay: teacherForm.isPublicDisplay,
+                secondaryColleges: teacherForm.secondaryColleges.length > 0 ? teacherForm.secondaryColleges : undefined,
                 updatedAt: new Date(),
               }
             : t
@@ -276,19 +415,39 @@ export default function TeacherBrandPage() {
       const newTeacher: TeacherBrand = {
         id: generateId("tb"),
         name: teacherForm.name,
-        department: teacherForm.department,
+        gender: teacherForm.gender,
+        age,
+        city: teacherForm.city || undefined,
         title: teacherForm.title,
-        type: teacherForm.type,
-        avatar: undefined,
+        position: teacherForm.position || undefined,
+        organization: teacherForm.organization || undefined,
+        experience: experienceNum,
+        education: teacherForm.education || undefined,
+        industryDirection: teacherForm.industryDirection || undefined,
+        positionDirection: teacherForm.positionDirection || undefined,
         introduction: teacherForm.introduction,
-        researchFields,
-        achievements,
-        courses: teacherCourses,
-        awards,
-        secondaryCollege: teacherForm.secondaryCollege,
-        isFeatured: teacherForm.isFeatured,
-        status: teacherForm.status,
+        workExperience: teacherForm.workExperience || undefined,
+        specialties,
+        researchFields: specialties,
+        achievements: [],
+        courses: [],
+        awards: [],
+        avatar: teacherAvatar || undefined,
+        attachments: teacherAttachments.length > 0 ? teacherAttachments : undefined,
+        isFeatured: false,
+        isPublicDisplay: teacherForm.isPublicDisplay,
+        status: teacherForm.status === 'active' ? 'published' : 'draft',
         viewCount: 0,
+        secondaryColleges: teacherForm.secondaryColleges.length > 0 ? teacherForm.secondaryColleges : undefined,
+        partnerSource: teacherForm.partnerSource || undefined,
+        partnerId: teacherForm.partnerSource === 'cooperation' ? teacherForm.partnerId || undefined : undefined,
+        partnerName: teacherForm.partnerSource === 'cooperation'
+          ? enterprises.find((e) => e.id === teacherForm.partnerId)?.name
+          : teacherForm.partnerSource === 'third-party'
+          ? teacherForm.thirdPartyName || undefined
+          : undefined,
+        department: "",
+        type: "dual-qualified",
         createdAt: new Date(),
         updatedAt: new Date(),
       }
@@ -306,6 +465,10 @@ export default function TeacherBrandPage() {
   function openAddExpertDialog() {
     setEditingExpert(null)
     setSelectedExpertIds([])
+    setExpertForm(emptyExpertForm)
+    setExpertSpecialties([])
+    setExpertAvatar("")
+    setExpertAttachments([])
     setExpertDialogOpen(true)
   }
 
@@ -313,14 +476,28 @@ export default function TeacherBrandPage() {
     setEditingExpert(expert)
     setExpertForm({
       name: expert.name,
+      gender: expert.gender || "male",
+      age: expert.age ? String(expert.age) : "",
+      city: expert.city || "",
       title: expert.title || "",
       position: expert.position || "",
-      partnerName: expert.partnerName || "",
       organization: expert.organization || "",
-      specialties: expert.specialties?.join("，") || "",
+      education: expert.education || "",
+      industryDirection: expert.industryDirection || "",
+      positionDirection: expert.positionDirection || "",
+      introduction: expert.introduction || "",
+      workExperience: expert.workExperience || "",
       experience: String(expert.experience || ""),
-      secondaryCollege: expert.secondaryColleges?.[0] || "",
+      partnerSource: expert.partnerSource || "",
+      partnerId: expert.partnerId || "",
+      thirdPartyName: expert.partnerSource === 'third-party' ? expert.partnerName || '' : '',
+      secondaryColleges: expert.secondaryColleges || [],
+      status: expert.status,
+      isPublicDisplay: expert.isPublicDisplay || false,
     })
+    setExpertSpecialties(expert.specialties || [])
+    setExpertAvatar(expert.avatar || "")
+    setExpertAttachments(expert.attachments || [])
     setExpertDialogOpen(true)
   }
 
@@ -341,11 +518,9 @@ export default function TeacherBrandPage() {
   }
 
   function handleSaveExpert() {
-    const specialties = expertForm.specialties
-      .split(/,|，/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-    const experience = Number(expertForm.experience) || 0
+    const specialties = expertSpecialties
+    const age = expertForm.age ? parseInt(expertForm.age) : undefined
+    const experienceNum = expertForm.experience ? parseInt(expertForm.experience) : undefined
 
     if (editingExpert) {
       setDisplayedExperts((prev) =>
@@ -354,13 +529,31 @@ export default function TeacherBrandPage() {
             ? {
                 ...e,
                 name: expertForm.name,
+                gender: expertForm.gender,
+                age,
+                city: expertForm.city || undefined,
                 title: expertForm.title,
                 position: expertForm.position,
-                partnerName: expertForm.partnerName,
-                organization: expertForm.organization,
+                organization: expertForm.organization || undefined,
+                education: expertForm.education || undefined,
+                industryDirection: expertForm.industryDirection || undefined,
+                positionDirection: expertForm.positionDirection || undefined,
+                introduction: expertForm.introduction || undefined,
+                workExperience: expertForm.workExperience || undefined,
                 specialties,
-                experience,
-                secondaryColleges: expertForm.secondaryCollege ? [expertForm.secondaryCollege] : [],
+                experience: experienceNum,
+                avatar: expertAvatar || undefined,
+                attachments: expertAttachments.length > 0 ? expertAttachments : undefined,
+                partnerSource: expertForm.partnerSource || undefined,
+                partnerId: expertForm.partnerSource === 'cooperation' ? expertForm.partnerId || undefined : undefined,
+                partnerName: expertForm.partnerSource === 'cooperation'
+                  ? enterprises.find((e) => e.id === expertForm.partnerId)?.name
+                  : expertForm.partnerSource === 'third-party'
+                  ? expertForm.thirdPartyName || undefined
+                  : undefined,
+                secondaryColleges: expertForm.secondaryColleges.length > 0 ? expertForm.secondaryColleges : undefined,
+                status: expertForm.status,
+                isPublicDisplay: expertForm.isPublicDisplay,
                 updatedAt: new Date(),
               }
             : e
@@ -370,14 +563,31 @@ export default function TeacherBrandPage() {
       const newExpert: Expert = {
         id: generateId("ex"),
         name: expertForm.name,
+        gender: expertForm.gender,
+        age,
+        city: expertForm.city || undefined,
         title: expertForm.title,
         position: expertForm.position,
-        partnerName: expertForm.partnerName,
-        organization: expertForm.organization,
+        organization: expertForm.organization || undefined,
+        education: expertForm.education || undefined,
+        industryDirection: expertForm.industryDirection || undefined,
+        positionDirection: expertForm.positionDirection || undefined,
+        introduction: expertForm.introduction || undefined,
+        workExperience: expertForm.workExperience || undefined,
         specialties,
-        experience,
-        secondaryColleges: expertForm.secondaryCollege ? [expertForm.secondaryCollege] : [],
-        status: "active",
+        experience: experienceNum,
+        avatar: expertAvatar || undefined,
+        attachments: expertAttachments.length > 0 ? expertAttachments : undefined,
+        partnerSource: expertForm.partnerSource || undefined,
+        partnerId: expertForm.partnerSource === 'cooperation' ? expertForm.partnerId || undefined : undefined,
+        partnerName: expertForm.partnerSource === 'cooperation'
+          ? enterprises.find((e) => e.id === expertForm.partnerId)?.name
+          : expertForm.partnerSource === 'third-party'
+          ? expertForm.thirdPartyName || undefined
+          : undefined,
+        secondaryColleges: expertForm.secondaryColleges.length > 0 ? expertForm.secondaryColleges : undefined,
+        status: expertForm.status,
+        isPublicDisplay: expertForm.isPublicDisplay,
         updatedAt: new Date(),
         createdAt: new Date(),
       }
@@ -585,7 +795,7 @@ export default function TeacherBrandPage() {
 
       {/* Teacher Dialog */}
       <Dialog open={teacherDialogOpen} onOpenChange={setTeacherDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingTeacher ? "编辑教师" : "引用教师"}</DialogTitle>
             <DialogDescription>
@@ -611,206 +821,407 @@ export default function TeacherBrandPage() {
             />
           ) : (
             <div className="space-y-4 py-2">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <Avatar className="h-16 w-16 rounded-lg">
-                    <AvatarImage src={editingTeacher.avatar} className="object-cover" />
-                    <AvatarFallback className="rounded-lg text-lg">{editingTeacher.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h2 className="text-xl font-bold">{editingTeacher.name}</h2>
-                    <p className="text-sm text-muted-foreground">{teacherForm.department} · {teacherForm.title}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline">{TEACHER_TYPE_LABELS[teacherForm.type]}</Badge>
-                      <Badge variant={teacherForm.status === 'published' ? 'default' : 'secondary'}>
-                        {BRAND_STATUS_LABELS[teacherForm.status]}
-                      </Badge>
-                      {teacherForm.isFeatured && (
-                        <Badge variant="default" className="bg-amber-500 hover:bg-amber-600">
-                          <Star className="h-3 w-3 mr-1" />
-                          重点展示
-                        </Badge>
+              <div className="grid gap-6 lg:grid-cols-3">
+                <div className="lg:col-span-2 space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>基础信息</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="t-name">姓名 *</Label>
+                          <Input
+                            id="t-name"
+                            value={teacherForm.name}
+                            onChange={(e) => setTeacherForm({ ...teacherForm, name: e.target.value })}
+                            placeholder="请输入姓名"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="t-gender">性别</Label>
+                          <Select
+                            value={teacherForm.gender}
+                            onValueChange={(v) => setTeacherForm({ ...teacherForm, gender: v as ExpertGender })}
+                          >
+                            <SelectTrigger id="t-gender">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="male">男</SelectItem>
+                              <SelectItem value="female">女</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="t-age">年龄</Label>
+                          <Input
+                            id="t-age"
+                            type="number"
+                            value={teacherForm.age}
+                            onChange={(e) => setTeacherForm({ ...teacherForm, age: e.target.value })}
+                            placeholder="如：42"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="t-city">所在城市</Label>
+                          <Input
+                            id="t-city"
+                            value={teacherForm.city}
+                            onChange={(e) => setTeacherForm({ ...teacherForm, city: e.target.value })}
+                            placeholder="如：上海"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="t-title">职称/职位</Label>
+                          <Input
+                            id="t-title"
+                            value={teacherForm.title}
+                            onChange={(e) => setTeacherForm({ ...teacherForm, title: e.target.value })}
+                            placeholder="如：高级工程师 / 副院长"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="t-position">任职岗位</Label>
+                          <Input
+                            id="t-position"
+                            value={teacherForm.position}
+                            onChange={(e) => setTeacherForm({ ...teacherForm, position: e.target.value })}
+                            placeholder="如：产业咨询与企业服务负责人"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="t-organization">所属机构</Label>
+                        <Input
+                          id="t-organization"
+                          value={teacherForm.organization}
+                          onChange={(e) => setTeacherForm({ ...teacherForm, organization: e.target.value })}
+                          placeholder="如：上海智能制造产业研究院"
+                        />
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="t-experience">从业年限（年）</Label>
+                          <Input
+                            id="t-experience"
+                            type="number"
+                            value={teacherForm.experience}
+                            onChange={(e) => setTeacherForm({ ...teacherForm, experience: e.target.value })}
+                            placeholder="如：18"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="t-education">教育背景</Label>
+                          <Input
+                            id="t-education"
+                            value={teacherForm.education}
+                            onChange={(e) => setTeacherForm({ ...teacherForm, education: e.target.value })}
+                            placeholder="如：浙江大学 机械工程专业 硕士"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="t-industryDirection">行业方向</Label>
+                          <Input
+                            id="t-industryDirection"
+                            value={teacherForm.industryDirection}
+                            onChange={(e) => setTeacherForm({ ...teacherForm, industryDirection: e.target.value })}
+                            placeholder="如：智能制造、工业互联网、高端装备"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="t-positionDirection">岗位方向</Label>
+                          <Input
+                            id="t-positionDirection"
+                            value={teacherForm.positionDirection}
+                            onChange={(e) => setTeacherForm({ ...teacherForm, positionDirection: e.target.value })}
+                            placeholder="如：企业战略、技术研发、数字化转型"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>专家照片与擅长领域</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="t-avatar">专家头像</Label>
+                        <input
+                          ref={teacherFileInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleTeacherFileChange}
+                        />
+                        <div className="flex items-center gap-3">
+                          {teacherAvatar && (
+                            <div className="relative">
+                              <img src={teacherAvatar} alt="专家头像" className="w-24 h-32 object-cover rounded-lg border" />
+                              <button
+                                type="button"
+                                onClick={() => setTeacherAvatar('')}
+                                className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-24 h-32 flex flex-col items-center justify-center gap-2 border-dashed"
+                            onClick={() => teacherFileInputRef.current?.click()}
+                          >
+                            <Upload className="h-5 w-5 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">上传头像</span>
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>擅长领域</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={newTeacherSpecialty}
+                            onChange={(e) => setNewTeacherSpecialty(e.target.value)}
+                            placeholder="输入擅长领域，按回车添加"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                handleAddTeacherSpecialty()
+                              }
+                            }}
+                          />
+                          <Button type="button" variant="outline" onClick={handleAddTeacherSpecialty}>添加</Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {teacherSpecialties.map((specialty, index) => (
+                            <Badge key={index} variant="outline" className="gap-1">
+                              {specialty}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveTeacherSpecialty(index)}
+                                className="ml-1 hover:text-destructive"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>专家简介</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <FakeRichTextEditor
+                        value={teacherForm.introduction}
+                        onChange={(v) => setTeacherForm({ ...teacherForm, introduction: v })}
+                        placeholder="请输入专家简介..."
+                        minHeight="160px"
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>从业经历</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <FakeRichTextEditor
+                        value={teacherForm.workExperience}
+                        onChange={(v) => setTeacherForm({ ...teacherForm, workExperience: v })}
+                        placeholder="请输入从业经历描述..."
+                        minHeight="160px"
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>资质荣誉（佐证材料）</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <input
+                        ref={teacherAttachmentInputRef}
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={handleTeacherAttachmentChange}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => teacherAttachmentInputRef.current?.click()}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        上传佐证材料
+                      </Button>
+                      <div className="space-y-2">
+                        {teacherAttachments.map((attachment, index) => (
+                          <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <Input
+                                value={attachment.name}
+                                onChange={(e) => handleUpdateTeacherAttachmentName(index, e.target.value)}
+                                placeholder="请输入材料名称"
+                                className="h-8 text-sm"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-red-500 hover:text-red-600 shrink-0"
+                              onClick={() => handleRemoveTeacherAttachment(index)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                        {teacherAttachments.length === 0 && (
+                          <p className="text-sm text-muted-foreground">暂未上传佐证材料</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>所属机构来源</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>来源</Label>
+                        <Select
+                          value={teacherForm.partnerSource}
+                          onValueChange={(v) => {
+                            setTeacherForm((prev) => ({
+                              ...prev,
+                              partnerSource: v as 'cooperation' | 'third-party',
+                              partnerId: v !== 'cooperation' ? '' : prev.partnerId,
+                              thirdPartyName: v !== 'third-party' ? '' : prev.thirdPartyName,
+                            }))
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="请选择" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cooperation">合作企业库</SelectItem>
+                            <SelectItem value="third-party">自定义机构名称</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {teacherForm.partnerSource === 'cooperation' && (
+                        <div className="space-y-2">
+                          <Label>选择企业</Label>
+                          <Select
+                            value={teacherForm.partnerId}
+                            onValueChange={(v) => setTeacherForm((prev) => ({ ...prev, partnerId: v }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="请选择合作企业" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {enterprises.map((enterprise) => (
+                                <SelectItem key={enterprise.id} value={enterprise.id}>
+                                  {enterprise.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       )}
-                    </div>
-                  </div>
+
+                      {teacherForm.partnerSource === 'third-party' && (
+                        <div className="space-y-2">
+                          <Label>机构名称</Label>
+                          <Input
+                            value={teacherForm.thirdPartyName}
+                            onChange={(e) => setTeacherForm((prev) => ({ ...prev, thirdPartyName: e.target.value }))}
+                            placeholder="请输入机构名称"
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>关联二级学院</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {SECONDARY_COLLEGES.map((college) => (
+                          <Badge
+                            key={college}
+                            variant={teacherForm.secondaryColleges.includes(college) ? 'default' : 'outline'}
+                            className="cursor-pointer"
+                            onClick={() => toggleTeacherSecondaryCollege(college)}
+                          >
+                            {college}
+                          </Badge>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">点击标签进行选择，支持多选</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>状态与展示</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="t-status">状态</Label>
+                        <Select
+                          value={teacherForm.status}
+                          onValueChange={(v) => setTeacherForm({ ...teacherForm, status: v as 'active' | 'inactive' })}
+                        >
+                          <SelectTrigger id="t-status">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">启用</SelectItem>
+                            <SelectItem value="inactive">禁用</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="t-isPublicDisplay" className="flex-1">前台展示</Label>
+                        <Switch
+                          id="t-isPublicDisplay"
+                          checked={teacherForm.isPublicDisplay}
+                          onCheckedChange={(v) => setTeacherForm({ ...teacherForm, isPublicDisplay: v })}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <Card>
-                  <CardContent className="pt-4 pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Award className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-lg font-bold">{teacherAchievements.length}</p>
-                        <p className="text-xs text-muted-foreground">教师成果</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-4 pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <Star className="h-4 w-4 text-amber-600" />
-                      </div>
-                      <div>
-                        <p className="text-lg font-bold">{teacherForm.awards.split(/,|，/).filter(Boolean).length}</p>
-                        <p className="text-xs text-muted-foreground">荣誉奖项</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-4 pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 bg-green-100 rounded-lg flex items-center justify-center">
-                        <FileText className="h-4 w-4 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-lg font-bold">{teacherForm.researchFields.split(/,|，/).filter(Boolean).length}</p>
-                        <p className="text-xs text-muted-foreground">研究领域</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Tabs value={teacherEditTab} onValueChange={setTeacherEditTab}>
-                <TabsList className="mb-4">
-                  <TabsTrigger value="basic">基本信息</TabsTrigger>
-                  <TabsTrigger value="achievements">教师成果</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="basic" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="t-name">姓名</Label>
-                      <Input id="t-name" value={teacherForm.name} disabled placeholder="请输入姓名" />
-                      <p className="text-xs text-muted-foreground">教师名称不可修改，修改仅影响品牌展示，不会回写教师库</p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="t-department">院系</Label>
-                      <Input
-                        id="t-department"
-                        value={teacherForm.department}
-                        onChange={(e) => setTeacherForm({ ...teacherForm, department: e.target.value })}
-                        placeholder="请输入院系"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="t-title">职称</Label>
-                      <Input
-                        id="t-title"
-                        value={teacherForm.title}
-                        onChange={(e) => setTeacherForm({ ...teacherForm, title: e.target.value })}
-                        placeholder="请输入职称"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="t-type">类型</Label>
-                      <Select
-                        value={teacherForm.type}
-                        onValueChange={(v) => setTeacherForm({ ...teacherForm, type: v as TeacherBrand["type"] })}
-                      >
-                        <SelectTrigger id="t-type">
-                          <SelectValue placeholder="选择类型" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="dual-qualified">双师型教师</SelectItem>
-                          <SelectItem value="teaching-master">教学名师</SelectItem>
-                          <SelectItem value="backbone">骨干教师</SelectItem>
-                          <SelectItem value="award-winning">获奖教师</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="t-intro">简介</Label>
-                    <Textarea
-                      id="t-intro"
-                      value={teacherForm.introduction}
-                      onChange={(e) => setTeacherForm({ ...teacherForm, introduction: e.target.value })}
-                      placeholder="请输入教师简介"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="t-fields">研究领域（逗号分隔）</Label>
-                    <Input
-                      id="t-fields"
-                      value={teacherForm.researchFields}
-                      onChange={(e) => setTeacherForm({ ...teacherForm, researchFields: e.target.value })}
-                      placeholder="例如：人工智能，大数据，智能制造"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="t-awards">获奖荣誉（逗号分隔）</Label>
-                    <Input
-                      id="t-awards"
-                      value={teacherForm.awards}
-                      onChange={(e) => setTeacherForm({ ...teacherForm, awards: e.target.value })}
-                      placeholder="例如：省级教学名师，国家级教学成果奖"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 items-end">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        id="t-featured"
-                        checked={teacherForm.isFeatured}
-                        onCheckedChange={(v) => setTeacherForm({ ...teacherForm, isFeatured: v })}
-                      />
-                      <Label htmlFor="t-featured">重点展示</Label>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="t-status">状态</Label>
-                      <Select
-                        value={teacherForm.status}
-                        onValueChange={(v) => setTeacherForm({ ...teacherForm, status: v as BrandStatus })}
-                      >
-                        <SelectTrigger id="t-status">
-                          <SelectValue placeholder="选择状态" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="draft">草稿</SelectItem>
-                          <SelectItem value="pending">待审核</SelectItem>
-                          <SelectItem value="published">已发布</SelectItem>
-                          <SelectItem value="archived">已归档</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="t-secondaryCollege">关联二级学院</Label>
-                    <Select
-                      value={teacherForm.secondaryCollege || ""}
-                      onValueChange={(v) => setTeacherForm({ ...teacherForm, secondaryCollege: v })}
-                    >
-                      <SelectTrigger id="t-secondaryCollege">
-                        <SelectValue placeholder="选择二级学院" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SECONDARY_COLLEGES.map((college) => (
-                          <SelectItem key={college} value={college}>{college}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="achievements">
-                  <AchievementManager
-                    items={teacherAchievements}
-                    onChange={setTeacherAchievements}
-                    title="成果管理"
-                    description="添加教师成果或引用成果库中的成果"
-                  />
-                </TabsContent>
-              </Tabs>
             </div>
           )}
 
@@ -831,7 +1242,7 @@ export default function TeacherBrandPage() {
 
       {/* Expert Dialog */}
       <Dialog open={expertDialogOpen} onOpenChange={setExpertDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingExpert ? "编辑专家" : "引用专家"}</DialogTitle>
             <DialogDescription>
@@ -860,87 +1271,407 @@ export default function TeacherBrandPage() {
               selectedTitle="已选专家"
             />
           ) : (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="e-name">姓名</Label>
-                <Input
-                  id="e-name"
-                  value={expertForm.name}
-                  onChange={(e) => setExpertForm({ ...expertForm, name: e.target.value })}
-                  placeholder="请输入姓名"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="e-title">职称</Label>
-                <Input
-                  id="e-title"
-                  value={expertForm.title}
-                  onChange={(e) => setExpertForm({ ...expertForm, title: e.target.value })}
-                  placeholder="请输入职称"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="e-partner">所属机构</Label>
-                <Input
-                  id="e-partner"
-                  value={expertForm.partnerName}
-                  onChange={(e) => setExpertForm({ ...expertForm, partnerName: e.target.value })}
-                  placeholder="请输入所属机构"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="e-specialties">专业领域（逗号分隔）</Label>
-                <Textarea
-                  id="e-specialties"
-                  value={expertForm.specialties}
-                  onChange={(e) => setExpertForm({ ...expertForm, specialties: e.target.value })}
-                  placeholder="例如：人工智能，大数据"
-                  rows={2}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="e-position">任职岗位</Label>
-                <Input
-                  id="e-position"
-                  value={expertForm.position}
-                  onChange={(e) => setExpertForm({ ...expertForm, position: e.target.value })}
-                  placeholder="请输入任职岗位"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="e-organization">所属机构</Label>
-                <Input
-                  id="e-organization"
-                  value={expertForm.organization}
-                  onChange={(e) => setExpertForm({ ...expertForm, organization: e.target.value })}
-                  placeholder="请输入所属机构"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="e-experience">行业经验（年）</Label>
-                <Input
-                  id="e-experience"
-                  type="number"
-                  value={expertForm.experience}
-                  onChange={(e) => setExpertForm({ ...expertForm, experience: e.target.value })}
-                  placeholder="请输入行业经验年数"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="e-secondaryCollege">关联二级学院</Label>
-                <Select
-                  value={expertForm.secondaryCollege || ""}
-                  onValueChange={(v) => setExpertForm({ ...expertForm, secondaryCollege: v })}
-                >
-                  <SelectTrigger id="e-secondaryCollege">
-                    <SelectValue placeholder="选择二级学院" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SECONDARY_COLLEGES.map((college) => (
-                      <SelectItem key={college} value={college}>{college}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-4 py-2">
+              <div className="grid gap-6 lg:grid-cols-3">
+                <div className="lg:col-span-2 space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>基础信息</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="e-name">姓名 *</Label>
+                          <Input
+                            id="e-name"
+                            value={expertForm.name}
+                            onChange={(e) => setExpertForm({ ...expertForm, name: e.target.value })}
+                            placeholder="请输入姓名"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="e-gender">性别</Label>
+                          <Select
+                            value={expertForm.gender}
+                            onValueChange={(v) => setExpertForm({ ...expertForm, gender: v as ExpertGender })}
+                          >
+                            <SelectTrigger id="e-gender">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="male">男</SelectItem>
+                              <SelectItem value="female">女</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="e-age">年龄</Label>
+                          <Input
+                            id="e-age"
+                            type="number"
+                            value={expertForm.age}
+                            onChange={(e) => setExpertForm({ ...expertForm, age: e.target.value })}
+                            placeholder="如：42"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="e-city">所在城市</Label>
+                          <Input
+                            id="e-city"
+                            value={expertForm.city}
+                            onChange={(e) => setExpertForm({ ...expertForm, city: e.target.value })}
+                            placeholder="如：上海"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="e-title">职称/职位</Label>
+                          <Input
+                            id="e-title"
+                            value={expertForm.title}
+                            onChange={(e) => setExpertForm({ ...expertForm, title: e.target.value })}
+                            placeholder="如：高级工程师 / 副院长"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="e-position">任职岗位</Label>
+                          <Input
+                            id="e-position"
+                            value={expertForm.position}
+                            onChange={(e) => setExpertForm({ ...expertForm, position: e.target.value })}
+                            placeholder="如：产业咨询与企业服务负责人"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="e-organization">所属机构</Label>
+                        <Input
+                          id="e-organization"
+                          value={expertForm.organization}
+                          onChange={(e) => setExpertForm({ ...expertForm, organization: e.target.value })}
+                          placeholder="如：上海智能制造产业研究院"
+                        />
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="e-experience">从业年限（年）</Label>
+                          <Input
+                            id="e-experience"
+                            type="number"
+                            value={expertForm.experience}
+                            onChange={(e) => setExpertForm({ ...expertForm, experience: e.target.value })}
+                            placeholder="如：18"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="e-education">教育背景</Label>
+                          <Input
+                            id="e-education"
+                            value={expertForm.education}
+                            onChange={(e) => setExpertForm({ ...expertForm, education: e.target.value })}
+                            placeholder="如：浙江大学 机械工程专业 硕士"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="e-industryDirection">行业方向</Label>
+                          <Input
+                            id="e-industryDirection"
+                            value={expertForm.industryDirection}
+                            onChange={(e) => setExpertForm({ ...expertForm, industryDirection: e.target.value })}
+                            placeholder="如：智能制造、工业互联网、高端装备"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="e-positionDirection">岗位方向</Label>
+                          <Input
+                            id="e-positionDirection"
+                            value={expertForm.positionDirection}
+                            onChange={(e) => setExpertForm({ ...expertForm, positionDirection: e.target.value })}
+                            placeholder="如：企业战略、技术研发、数字化转型"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>专家照片与擅长领域</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="e-avatar">专家头像</Label>
+                        <input
+                          ref={expertFileInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleExpertFileChange}
+                        />
+                        <div className="flex items-center gap-3">
+                          {expertAvatar && (
+                            <div className="relative">
+                              <img src={expertAvatar} alt="专家头像" className="w-24 h-32 object-cover rounded-lg border" />
+                              <button
+                                type="button"
+                                onClick={() => setExpertAvatar('')}
+                                className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-24 h-32 flex flex-col items-center justify-center gap-2 border-dashed"
+                            onClick={() => expertFileInputRef.current?.click()}
+                          >
+                            <Upload className="h-5 w-5 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">上传头像</span>
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>擅长领域</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={newExpertSpecialty}
+                            onChange={(e) => setNewExpertSpecialty(e.target.value)}
+                            placeholder="输入擅长领域，按回车添加"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                handleAddExpertSpecialty()
+                              }
+                            }}
+                          />
+                          <Button type="button" variant="outline" onClick={handleAddExpertSpecialty}>添加</Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {expertSpecialties.map((specialty, index) => (
+                            <Badge key={index} variant="outline" className="gap-1">
+                              {specialty}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveExpertSpecialty(index)}
+                                className="ml-1 hover:text-destructive"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>专家简介</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <FakeRichTextEditor
+                        value={expertForm.introduction}
+                        onChange={(v) => setExpertForm({ ...expertForm, introduction: v })}
+                        placeholder="请输入专家简介..."
+                        minHeight="160px"
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>从业经历</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <FakeRichTextEditor
+                        value={expertForm.workExperience}
+                        onChange={(v) => setExpertForm({ ...expertForm, workExperience: v })}
+                        placeholder="请输入从业经历描述..."
+                        minHeight="160px"
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>资质荣誉（佐证材料）</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <input
+                        ref={expertAttachmentInputRef}
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={handleExpertAttachmentChange}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => expertAttachmentInputRef.current?.click()}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        上传佐证材料
+                      </Button>
+                      <div className="space-y-2">
+                        {expertAttachments.map((attachment, index) => (
+                          <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <Input
+                                value={attachment.name}
+                                onChange={(e) => handleUpdateExpertAttachmentName(index, e.target.value)}
+                                placeholder="请输入材料名称"
+                                className="h-8 text-sm"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-red-500 hover:text-red-600 shrink-0"
+                              onClick={() => handleRemoveExpertAttachment(index)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                        {expertAttachments.length === 0 && (
+                          <p className="text-sm text-muted-foreground">暂未上传佐证材料</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>所属机构来源</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>来源</Label>
+                        <Select
+                          value={expertForm.partnerSource}
+                          onValueChange={(v) => {
+                            setExpertForm((prev) => ({
+                              ...prev,
+                              partnerSource: v as 'cooperation' | 'third-party',
+                              partnerId: v !== 'cooperation' ? '' : prev.partnerId,
+                              thirdPartyName: v !== 'third-party' ? '' : prev.thirdPartyName,
+                            }))
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="请选择" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cooperation">合作企业库</SelectItem>
+                            <SelectItem value="third-party">自定义机构名称</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {expertForm.partnerSource === 'cooperation' && (
+                        <div className="space-y-2">
+                          <Label>选择企业</Label>
+                          <Select
+                            value={expertForm.partnerId}
+                            onValueChange={(v) => setExpertForm((prev) => ({ ...prev, partnerId: v }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="请选择合作企业" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {enterprises.map((enterprise) => (
+                                <SelectItem key={enterprise.id} value={enterprise.id}>
+                                  {enterprise.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      {expertForm.partnerSource === 'third-party' && (
+                        <div className="space-y-2">
+                          <Label>机构名称</Label>
+                          <Input
+                            value={expertForm.thirdPartyName}
+                            onChange={(e) => setExpertForm((prev) => ({ ...prev, thirdPartyName: e.target.value }))}
+                            placeholder="请输入机构名称"
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>关联二级学院</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {SECONDARY_COLLEGES.map((college) => (
+                          <Badge
+                            key={college}
+                            variant={expertForm.secondaryColleges.includes(college) ? 'default' : 'outline'}
+                            className="cursor-pointer"
+                            onClick={() => toggleExpertSecondaryCollege(college)}
+                          >
+                            {college}
+                          </Badge>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">点击标签进行选择，支持多选</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>状态与展示</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="e-status">状态</Label>
+                        <Select
+                          value={expertForm.status}
+                          onValueChange={(v) => setExpertForm({ ...expertForm, status: v as 'active' | 'inactive' })}
+                        >
+                          <SelectTrigger id="e-status">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">启用</SelectItem>
+                            <SelectItem value="inactive">禁用</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="e-isPublicDisplay" className="flex-1">前台展示</Label>
+                        <Switch
+                          id="e-isPublicDisplay"
+                          checked={expertForm.isPublicDisplay}
+                          onCheckedChange={(v) => setExpertForm({ ...expertForm, isPublicDisplay: v })}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
           )}

@@ -139,6 +139,12 @@ export default function EditExpertPage() {
     setAttachments((prev) => prev.filter((_, i) => i !== index))
   }
 
+  const handleUpdateAttachmentName = (index: number, value: string) => {
+    setAttachments((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, name: value } : item))
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -454,16 +460,21 @@ export default function EditExpertPage() {
                 </Button>
                 <div className="space-y-2">
                   {attachments.map((attachment, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="text-sm truncate">{attachment.name}</span>
+                    <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                      <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <Input
+                          value={attachment.name}
+                          onChange={(e) => handleUpdateAttachmentName(index, e.target.value)}
+                          placeholder="请输入材料名称"
+                          className="h-8 text-sm"
+                        />
                       </div>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-red-500 hover:text-red-600"
+                        className="h-7 px-2 text-red-500 hover:text-red-600 shrink-0"
                         onClick={() => handleRemoveAttachment(index)}
                       >
                         <Trash2 className="h-3 w-3" />

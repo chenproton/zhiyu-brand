@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { GraduationCap, Users, TrendingUp, Search, X, BookOpen, Building2 } from "lucide-react"
+import { GraduationCap, Users, TrendingUp, Search, X } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -14,10 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { majorBrands } from "@/lib/mock-data"
-import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
-import type { BrandLevel, BrandStatus } from "@/lib/types"
+import { BRAND_LEVEL_LABELS } from "@/lib/types"
 
 const IMAGES = [
   "/images/landingpage/lab.jpg",
@@ -155,12 +153,10 @@ export default function MajorBrandPage() {
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                      <div className="absolute top-4 left-4">
-                        <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm font-bold border-0 shadow-lg">
-                          {BRAND_LEVEL_LABELS[major.level as BrandLevel]}
-                        </Badge>
-                      </div>
                       <div className="absolute bottom-0 left-0 right-0 p-6">
+                        <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm font-bold border-0 mb-3 shadow-lg">
+                          {BRAND_LEVEL_LABELS[major.level]}
+                        </Badge>
                         <h4 className="font-bold text-white text-xl mb-1 drop-shadow-md">{major.name}</h4>
                         <p className="text-white/70 text-sm mb-3">{major.department}</p>
                         <div className="flex items-center gap-5 text-sm text-white/90">
@@ -173,34 +169,23 @@ export default function MajorBrandPage() {
                         </div>
                       </div>
                     </div>
-                    <CardContent className="p-5 flex flex-col flex-1">
-                      <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4">{major.introduction}</p>
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {major.coreCourses.slice(0, 3).map((course) => (
-                          <span
-                            key={typeof course === "string" ? course : course.name}
-                            className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 font-medium"
-                          >
-                            {typeof course === "string" ? course : course.name}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="space-y-3 mt-auto">
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-xs text-slate-500">
-                            <span className="flex items-center gap-1">
-                              <BookOpen className="h-3.5 w-3.5" /> 课程完成度
+                    <CardContent className="p-5 flex-1 flex flex-col">
+                      <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-2">{major.introduction}</p>
+                      <p className="text-xs text-slate-400 line-clamp-2 mb-3">{major.cultivationGoal}</p>
+                      <div className="space-y-2 mt-auto">
+                        <div className="flex flex-wrap gap-1">
+                          {major.coreCourses.slice(0, 3).map((course) => (
+                            <span key={typeof course === "string" ? course : course.name} className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 font-medium">
+                              {typeof course === "string" ? course : course.name}
                             </span>
-                            <span>{Math.round(major.employmentRate)}%</span>
-                          </div>
-                          <Progress value={major.employmentRate} className="h-1.5" />
+                          ))}
                         </div>
-                        <div className="flex flex-wrap gap-3 text-xs text-slate-500 pt-3 border-t border-slate-100">
-                          <span className="flex items-center gap-1">
-                            <Building2 className="h-3.5 w-3.5 text-blue-500" /> {major.cooperationPartners.slice(0, 2).join("、") || "暂无合作"}
-                            {major.cooperationPartners.length > 2 && ` 等${major.cooperationPartners.length}家`}
-                          </span>
-                        </div>
+                        {major.cooperationPartners.length > 0 && (
+                          <p className="text-xs text-slate-400 truncate">
+                            合作企业：{major.cooperationPartners.slice(0, 3).join("、")}
+                            {major.cooperationPartners.length > 3 && ` 等${major.cooperationPartners.length}家`}
+                          </p>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

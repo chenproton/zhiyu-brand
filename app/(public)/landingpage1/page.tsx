@@ -23,7 +23,7 @@ import {
 import {
   PROJECT_PHASE_LABELS, TEACHER_TYPE_LABELS, CULTURE_TYPE_LABELS,
   EMPLOYMENT_PROJECT_STATUS_LABELS, EMPLOYMENT_PROJECT_TYPE_LABELS,
-  BRAND_STATUS_LABELS, BRAND_LEVEL_LABELS,
+  BRAND_STATUS_LABELS, BRAND_LEVEL_LABELS, JOB_CATEGORY_LABELS,
   SECONDARY_COLLEGES,
 } from "@/lib/types"
 import {
@@ -386,12 +386,21 @@ function JobCard({ job }: { job: typeof jobBrands[0] }) {
   return (
     <Link href="/brands/job">
       <Card className="group border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 rounded-3xl overflow-hidden bg-white">
-        <CardContent className="p-5 flex flex-col justify-center min-w-0 h-28">
+        <CardContent className="p-5 flex flex-col justify-center min-w-0 h-auto">
           <div className="flex items-center justify-between gap-2 mb-1.5">
             <h4 className="font-bold text-slate-900 text-sm truncate">{job.name}</h4>
           </div>
-          <p className="text-xs text-slate-400 line-clamp-1 mb-2">{job.industry} · {job.description}</p>
+          {(job.industry || job.description) && (
+            <p className="text-xs text-slate-400 line-clamp-1 mb-2">
+              {[job.industry, job.description].filter(Boolean).join(" · ")}
+            </p>
+          )}
           <div className="flex flex-wrap gap-1 mb-2">
+            {job.jobCategory && (
+              <Badge variant="outline" className="text-[10px] font-medium border-slate-200 text-slate-500">
+                {JOB_CATEGORY_LABELS[job.jobCategory]}
+              </Badge>
+            )}
             {job.suitableMajors.slice(0, 2).map((major) => (
               <span key={major} className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium">
                 {major}
@@ -402,9 +411,26 @@ function JobCard({ job }: { job: typeof jobBrands[0] }) {
                 {tag}
               </span>
             ))}
+            {job.abilityModel.slice(0, 2).map((item) => (
+              <span key={item} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-medium">
+                {item}
+              </span>
+            ))}
           </div>
-          <div className="flex items-center gap-3 text-xs">
-            <span className="font-bold text-emerald-600">{job.averageSalary || "面议"}</span>
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            {job.averageSalary && (
+              <span className="font-bold text-emerald-600">{job.averageSalary}</span>
+            )}
+            {job.demandCount > 0 && (
+              <span className="text-slate-500 flex items-center gap-1">
+                <Users className="h-3 w-3" /> {job.demandCount}
+              </span>
+            )}
+            {job.secondaryCollege && (
+              <span className="text-slate-500 flex items-center gap-1">
+                <MapPin className="h-3 w-3" /> {job.secondaryCollege}
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -502,56 +528,65 @@ function MajorCard({ major, img }: { major: typeof majorBrands[0]; img: string }
 }
 
 function TeacherCard({ teacher, avatarSrc }: { teacher: typeof teacherBrands[0]; avatarSrc?: string }) {
+  const genderLabel = teacher.gender === "male" ? "男" : teacher.gender === "female" ? "女" : "—"
   return (
     <Link href="/brands/teacher">
-      <Card className="group border-0 shadow-sm hover:shadow-xl transition-all duration-500 rounded-3xl overflow-hidden bg-white h-full">
-        <div className="h-20 bg-gradient-to-r from-rose-400 via-pink-500 to-purple-500 relative">
-          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
-            <img
-              src={avatarSrc || teacher.avatar || "/placeholder.svg"}
-              alt={teacher.name}
-              className="w-16 h-16 rounded-full object-cover ring-4 ring-white shadow-xl bg-white"
-              onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg" }}
-            />
+      <Card className="group border-0 shadow-sm hover:shadow-xl transition-all duration-500 rounded-3xl overflow-hidden bg-white text-center h-full flex flex-col">
+        <div className="h-24 relative">
+          <img
+            src={"/images/landingpage/team.jpg"}
+            alt={teacher.organization || teacher.department}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
+            <Avatar className="h-20 w-20 ring-4 ring-white shadow-xl">
+              <AvatarImage src={avatarSrc || teacher.avatar} />
+              <AvatarFallback className="text-xl font-bold bg-white text-slate-800">{teacher.name[0]}</AvatarFallback>
+            </Avatar>
           </div>
         </div>
-        <CardContent className="pt-10 pb-5 px-5 text-center">
-          <h4 className="font-bold text-slate-900">{teacher.name}</h4>
-          <p className="text-xs text-slate-500 mt-0.5">{teacher.title}</p>
-          <div className="flex flex-wrap justify-center gap-1.5 mt-3">
-            <span className="text-[10px] px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 font-semibold border border-rose-100">
-              {TEACHER_TYPE_LABELS[teacher.type]}
-            </span>
-            <span className="text-[10px] px-2.5 py-1 rounded-full bg-slate-50 text-slate-600 font-medium border border-slate-100">
-              {teacher.department}
-            </span>
-            <Badge variant={teacher.status === "published" ? "secondary" : "outline"} className="text-[10px]">
-              {BRAND_STATUS_LABELS[teacher.status]}
-            </Badge>
+        <CardContent className="pt-12 pb-6 px-4 flex-1 flex flex-col text-left">
+          <h4 className="font-bold text-slate-900 text-center truncate">{teacher.name}</h4>
+          <p className="text-xs text-slate-500 text-center truncate mt-0.5">{teacher.title || teacher.position || '—'}</p>
+          <div className="mt-4 space-y-2 text-xs text-slate-600">
+            <div className="flex justify-between gap-2">
+              <span className="text-slate-400 shrink-0">所属机构</span>
+              <span className="text-right truncate">{teacher.organization || teacher.department || '—'}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-slate-400 shrink-0">年龄/性别</span>
+              <span className="text-right">{teacher.age ? `${teacher.age}岁` : '—'} / {genderLabel}</span>
+            </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">从业年限</span>
+                            <span className="text-right">{teacher.workExperience ? `${teacher.workExperience} 年` : '—'}</span>
+                          </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-slate-400 shrink-0">教育背景</span>
+              <span className="text-right truncate">{teacher.education || '—'}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-slate-400 shrink-0">行业方向</span>
+              <span className="text-right truncate">{teacher.industryDirection || '—'}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-slate-400 shrink-0">岗位方向</span>
+              <span className="text-right truncate">{teacher.positionDirection || '—'}</span>
+            </div>
           </div>
-          <div className="mt-4 space-y-2 text-left">
-            {teacher.researchFields.length > 0 && (
+          {teacher.researchFields && teacher.researchFields.length > 0 && (
+            <div className="mt-4">
+              <p className="text-[11px] text-slate-400 mb-1.5">研究领域</p>
               <div className="flex flex-wrap gap-1">
-                {teacher.researchFields.slice(0, 3).map((field) => (
-                  <span key={field} className="text-[10px] px-2 py-0.5 rounded-md bg-purple-50 text-purple-600 font-medium">
-                    {field}
+                {teacher.researchFields.slice(0, 4).map((tag) => (
+                  <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-violet-50 text-violet-600 font-medium">
+                    {tag}
                   </span>
                 ))}
               </div>
-            )}
-            {teacher.courses.length > 0 && (
-              <p className="text-xs text-slate-400 truncate">
-                主讲课程：{teacher.courses.slice(0, 3).join("、")}
-                {teacher.courses.length > 3 && ` 等${teacher.courses.length}门`}
-              </p>
-            )}
-            {teacher.achievements.length > 0 && (
-              <p className="text-xs text-slate-400 truncate">
-                主要成果：{teacher.achievements.slice(0, 2).join("、")}
-                {teacher.achievements.length > 2 && ` 等${teacher.achievements.length}项`}
-              </p>
-            )}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </Link>
@@ -568,9 +603,6 @@ function CultureCard({ cb, img }: { cb: typeof cultureBrands[0]; img: string }) 
           <div className="absolute top-4 left-4 flex flex-wrap gap-2">
             <Badge className="bg-white/90 text-pink-700 backdrop-blur-sm font-bold border-0 shadow-lg">
               {CULTURE_TYPE_LABELS[cb.type]}
-            </Badge>
-            <Badge variant={cb.status === "published" ? "secondary" : "outline"} className="text-[10px]">
-              {BRAND_STATUS_LABELS[cb.status]}
             </Badge>
           </div>
         </div>
@@ -816,6 +848,7 @@ export default function LandingPage() {
   const [achievementCollege, setAchievementCollege] = useLocalCollege()
   const [expertCollege, setExpertCollege] = useLocalCollege()
   const [talentMajor, setTalentMajor] = useState("all")
+  const [teacherTab, setTeacherTab] = useState<"teachers" | "experts">("teachers")
 
   const heroInfo = selectedCollege === "all"
     ? {
@@ -1103,11 +1136,51 @@ export default function LandingPage() {
           </div>
 
           {/* 师资品牌 */}
-          <SectionSubHeading title="师资品牌" action={<ViewAllLink href="/brands/teacher" />} />
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 mb-20">
-            {featuredTeachers.map((teacher, i) => (
-              <TeacherCard key={teacher.id} teacher={teacher} avatarSrc={getAvatar(i + 10)} />
-            ))}
+          <div className="mb-20">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-1.5 rounded-full bg-gradient-to-b from-blue-500 to-violet-500" />
+                <h3 className="text-xl font-bold text-slate-800">师资品牌</h3>
+                <div className="flex items-center gap-1 rounded-xl border border-slate-200 p-1 bg-slate-50 ml-4">
+                  <button
+                    onClick={() => setTeacherTab("teachers")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      teacherTab === "teachers"
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    校本师资
+                  </button>
+                  <button
+                    onClick={() => setTeacherTab("experts")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      teacherTab === "experts"
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    企业专家
+                  </button>
+                </div>
+              </div>
+              <ViewAllLink href="/brands/teacher" />
+            </div>
+            {teacherTab === "teachers" ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                {featuredTeachers.map((teacher, i) => (
+                  <TeacherCard key={teacher.id} teacher={teacher} avatarSrc={getAvatar(i + 10)} />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-5">
+                {featuredExperts.map((expert, i) => (
+                  <Link key={expert.id} href="/brands/teacher">
+                    <ExpertCard expert={expert} avatarSrc={getAvatar(i + 20)} />
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* 文化思政 */}
@@ -1127,7 +1200,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-14">
             {[
-              { label: "就业项目", value: employmentProjects.length, icon: Briefcase, color: "from-blue-500 to-blue-600" },
+              { label: "发布场次", value: employmentProjects.length, icon: Briefcase, color: "from-blue-500 to-blue-600" },
               { label: "进行中", value: employmentProjects.filter(p => p.status === "ongoing").length, icon: CheckCircle2, color: "from-emerald-500 to-emerald-600" },
               { label: "在招岗位", value: employmentProjects.reduce((sum, p) => sum + p.jobCount, 0), icon: Target, color: "from-violet-500 to-violet-600" },
               { label: "合作企业", value: new Set(employmentProjects.flatMap(p => p.partnerIds)).size, icon: Building2, color: "from-amber-500 to-amber-600" },

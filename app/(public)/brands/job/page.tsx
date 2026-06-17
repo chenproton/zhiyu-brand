@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Briefcase, Building2, Search, X, Target } from "lucide-react"
+import { Briefcase, Building2, Search, X, Users, MapPin } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -145,13 +145,17 @@ export default function JobBrandPage() {
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <h4 className="font-bold text-slate-900 text-lg truncate">{job.name}</h4>
                       </div>
-                      <p className="text-sm text-slate-500 truncate">{job.industry}</p>
+                      {job.industry && <p className="text-sm text-slate-500 truncate">{job.industry}</p>}
                     </div>
-                    <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4 flex-1">{job.description}</p>
+                    {job.description && (
+                      <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4 flex-1">{job.description}</p>
+                    )}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="outline" className="text-[10px] font-medium border-slate-200 text-slate-500">
-                        {JOB_CATEGORY_LABELS[job.jobCategory || "non-teaching"]}
-                      </Badge>
+                      {job.jobCategory && (
+                        <Badge variant="outline" className="text-[10px] font-medium border-slate-200 text-slate-500">
+                          {JOB_CATEGORY_LABELS[job.jobCategory]}
+                        </Badge>
+                      )}
                       {job.suitableMajors.slice(0, 2).map((major) => (
                         <span key={major} className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium">
                           {major}
@@ -162,14 +166,28 @@ export default function JobBrandPage() {
                           {tag}
                         </span>
                       ))}
+                      {job.abilityModel.slice(0, 2).map((item) => (
+                        <span key={item} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-medium">
+                          {item}
+                        </span>
+                      ))}
                     </div>
                     <div className="flex flex-wrap gap-3 text-xs text-slate-500 pt-4 border-t border-slate-100 mt-auto">
-                      <span className="flex items-center gap-1">
-                        <Building2 className="h-3.5 w-3.5 text-blue-500" /> {job.averageSalary || "面议"}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Target className="h-3.5 w-3.5 text-emerald-500" /> {job.suitableMajors.slice(0, 2).join("、") || "-"}
-                      </span>
+                      {job.averageSalary && (
+                        <span className="flex items-center gap-1">
+                          <Building2 className="h-3.5 w-3.5 text-blue-500" /> {job.averageSalary}
+                        </span>
+                      )}
+                      {job.demandCount > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3.5 w-3.5 text-emerald-500" /> 需求 {job.demandCount}
+                        </span>
+                      )}
+                      {job.secondaryCollege && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3.5 w-3.5 text-violet-500" /> {job.secondaryCollege}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Card>

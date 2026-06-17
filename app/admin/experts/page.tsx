@@ -130,13 +130,6 @@ export default function ExpertsListPage() {
 
   const columns = [
     {
-      key: 'seq',
-      title: '序号',
-      width: 'w-16',
-      align: 'center' as const,
-      render: (_: Expert, index: number) => <span className="text-sm text-muted-foreground">{index + 1}</span>,
-    },
-    {
       key: 'display',
       title: '前台展示',
       render: (expert: Expert) => (
@@ -255,7 +248,7 @@ export default function ExpertsListPage() {
       render: (expert: Expert) => (
         <TableRowActions>
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-            <Link href={`/admin/experts/${expert.id}`}>
+            <Link href={`/admin/experts/${expert.id}/edit`}>
               <Pencil className="mr-1 h-3 w-3" />
               编辑
             </Link>

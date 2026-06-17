@@ -38,6 +38,7 @@ const emptyForm = {
   type: "case" as CultureBrand["type"],
   description: "",
   relatedMajor: "",
+  relatedLink: "",
   status: "draft" as BrandStatus,
   coverImage: "",
   attachments: [] as string[],
@@ -117,6 +118,7 @@ export default function CultureBrandPage() {
       type: culture.type,
       description: culture.description,
       relatedMajor: culture.relatedMajor || "",
+      relatedLink: culture.relatedLink || "",
       status: culture.status,
       coverImage: culture.coverImage || "",
       attachments: culture.attachments || [],
@@ -133,6 +135,7 @@ export default function CultureBrandPage() {
                 ...c,
                 ...form,
                 relatedMajor: form.relatedMajor || undefined,
+                relatedLink: form.relatedLink || undefined,
                 coverImage: form.coverImage || c.coverImage,
                 attachments: form.attachments.length > 0 ? form.attachments : undefined,
                 updatedAt: new Date(),
@@ -148,6 +151,7 @@ export default function CultureBrandPage() {
         description: form.description,
         content: "",
         relatedMajor: form.relatedMajor || undefined,
+        relatedLink: form.relatedLink || undefined,
         coverImage: form.coverImage || "/placeholder.svg?height=200&width=300",
         attachments: form.attachments.length > 0 ? form.attachments : undefined,
         status: form.status,
@@ -404,6 +408,7 @@ export default function CultureBrandPage() {
                 <Upload className="h-4 w-4 mr-2" />
                 点击上传附件
               </Button>
+              <p className="text-xs text-muted-foreground">可上传视频、PDF、图片</p>
               {form.attachments.length > 0 && (
                 <div className="space-y-2 mt-2">
                   {form.attachments.map((file, index) => (
@@ -428,6 +433,15 @@ export default function CultureBrandPage() {
                   ))}
                 </div>
               )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="c-link">相关链接</Label>
+              <Input
+                id="c-link"
+                value={form.relatedLink}
+                onChange={(e) => setForm({ ...form, relatedLink: e.target.value })}
+                placeholder="请输入 https 链接"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="c-major">面向专业</Label>

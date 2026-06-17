@@ -497,7 +497,7 @@ export default function EditEnterprisePage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">企业资质证明材料</CardTitle>
+                <CardTitle className="text-base">企业荣誉资质</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <input ref={qualFileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange('qualificationPhotos')} />

@@ -56,7 +56,7 @@ export default function MajorBrandPage() {
   const filterConfigs = [
     {
       key: "level",
-      label: "全部等级",
+      label: "全部品牌",
       options: [
         { value: "recommended", label: "推荐品牌" },
         { value: "key", label: "重点品牌" },
@@ -70,7 +70,7 @@ export default function MajorBrandPage() {
     { key: "department", title: "所属院系", render: (major: MajorBrand) => major.department },
     {
       key: "level",
-      title: "品牌等级",
+      title: "品牌",
       render: (major: MajorBrand) => <Badge variant="outline">{BRAND_LEVEL_LABELS[major.level]}</Badge>,
     },
     {

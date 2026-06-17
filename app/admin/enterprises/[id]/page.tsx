@@ -324,7 +324,7 @@ export default async function EnterpriseDetailPage({ params, searchParams }: Pag
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Image className="h-4 w-4" />
-                    企业资质证明材料
+                    企业荣誉资质
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

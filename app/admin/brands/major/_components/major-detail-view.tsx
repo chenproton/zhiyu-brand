@@ -153,7 +153,7 @@ export function MajorDetailView({ major, mode }: MajorDetailViewProps) {
                       <p className="font-medium">{major.employmentRate}%</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">品牌等级</p>
+                      <p className="text-sm text-muted-foreground">品牌</p>
                       <p className="font-medium">{BRAND_LEVEL_LABELS[major.level]}</p>
                     </div>
                     <div>
@@ -212,7 +212,7 @@ export function MajorDetailView({ major, mode }: MajorDetailViewProps) {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">暂无等级描述</div>
+                  <div className="text-center py-8 text-muted-foreground">暂无品牌描述</div>
                 )}
               </CardContent>
             </Card>

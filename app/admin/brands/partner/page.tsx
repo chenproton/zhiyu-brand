@@ -797,7 +797,7 @@ export default function PartnerBrandPage() {
                 </div>
                 {/* 企业资质 */}
                 <div className="space-y-2">
-                  <Label>企业资质证明材料</Label>
+                  <Label>企业荣誉资质</Label>
                   <input ref={qualFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange(setQualPhotos)} />
                   <div className="flex flex-wrap gap-3">
                     {qualPhotos.map((photo, idx) => (

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { UserCircle, Star, Search, X, Award, BookOpen, Sparkles } from "lucide-react"
+import { UserCircle, Star, Search, X } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -16,8 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { teacherBrands, experts } from "@/lib/mock-data"
-import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
-import type { BrandStatus } from "@/lib/types"
+import { TEACHER_TYPE_LABELS } from "@/lib/types"
 
 const TEACHER_IMAGES = [
   "/images/landingpage/team.jpg",
@@ -168,87 +167,133 @@ export default function TeacherBrandPage() {
           {activeData.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
               {activeTab === "teachers"
-                ? filteredTeachers.map((teacher, index) => (
-                    <Card key={teacher.id} className="group border-0 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden bg-white h-full">
-                      <div className="h-20 bg-gradient-to-r from-rose-400 via-pink-500 to-purple-500 relative">
-                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
-                          <Avatar className="h-16 w-16 ring-4 ring-white shadow-xl">
+                ? filteredTeachers.map((teacher, index) => {
+                  const genderLabel = teacher.gender === "male" ? "男" : teacher.gender === "female" ? "女" : "—"
+                  return (
+                    <Card key={teacher.id} className="group border-0 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden bg-white text-center h-full flex flex-col">
+                      <div className="h-24 relative">
+                        <img
+                          src={getTeacherImage(index)}
+                          alt={teacher.organization || teacher.department}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
+                          <Avatar className="h-20 w-20 ring-4 ring-white shadow-xl">
                             <AvatarImage src={teacher.avatar} className="object-cover" />
-                            <AvatarFallback className="text-lg font-bold bg-white text-slate-800">{teacher.name[0]}</AvatarFallback>
+                            <AvatarFallback className="text-xl font-bold bg-white text-slate-800">{teacher.name[0]}</AvatarFallback>
                           </Avatar>
                         </div>
                       </div>
-                      <CardContent className="pt-10 pb-6 px-5 text-center">
+                      <CardContent className="pt-12 pb-6 px-4 flex-1 flex flex-col text-left">
                         <div className="flex items-center justify-center gap-1 mb-1">
-                          <h4 className="font-bold text-slate-900">{teacher.name}</h4>
+                          <h4 className="font-bold text-slate-900 text-center truncate">{teacher.name}</h4>
                           {teacher.isFeatured && <Star className="h-4 w-4 text-amber-500 fill-amber-500" />}
                         </div>
-                        <p className="text-xs text-slate-500">{teacher.title} · {teacher.department}</p>
-                        <div className="flex flex-wrap justify-center gap-1.5 mt-3">
-                          <span className="text-[10px] px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 font-semibold border border-rose-100">
-                            {TEACHER_TYPE_LABELS[teacher.type]}
-                          </span>
-                          <Badge variant={teacher.status === "published" ? "secondary" : "outline"} className="text-[10px]">
-                            {BRAND_STATUS_LABELS[teacher.status as BrandStatus]}
-                          </Badge>
+                        <p className="text-xs text-slate-500 text-center truncate mt-0.5">{teacher.title || teacher.position || '—'}</p>
+                        <div className="mt-4 space-y-2 text-xs text-slate-600">
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">所属机构</span>
+                            <span className="text-right truncate">{teacher.organization || teacher.department || '—'}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">年龄/性别</span>
+                            <span className="text-right">{teacher.age ? `${teacher.age}岁` : '—'} / {genderLabel}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">从业年限</span>
+                            <span className="text-right">{teacher.workExperience ? `${teacher.workExperience} 年` : '—'}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">教育背景</span>
+                            <span className="text-right truncate">{teacher.education || '—'}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">行业方向</span>
+                            <span className="text-right truncate">{teacher.industryDirection || '—'}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">岗位方向</span>
+                            <span className="text-right truncate">{teacher.positionDirection || '—'}</span>
+                          </div>
                         </div>
-                        <div className="mt-4 space-y-2 text-left">
-                          {teacher.researchFields.length > 0 && (
+                        
+                        {teacher.researchFields.length > 0 && (
+                          <div className="mt-4">
+                            <p className="text-[11px] text-slate-400 mb-1.5">研究领域</p>
                             <div className="flex flex-wrap gap-1">
-                              {teacher.researchFields.slice(0, 3).map((field) => (
-                                <span key={field} className="text-[10px] px-2 py-0.5 rounded-md bg-purple-50 text-purple-600 font-medium">
-                                  {field}
+                              {teacher.researchFields.slice(0, 4).map((tag) => (
+                                <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-violet-50 text-violet-600 font-medium">
+                                  {tag}
                                 </span>
                               ))}
                             </div>
-                          )}
-                          {teacher.courses.length > 0 && (
-                            <p className="text-xs text-slate-400 truncate flex items-center gap-1">
-                              <BookOpen className="h-3 w-3" /> 主讲：{teacher.courses.slice(0, 2).join("、")}
-                              {teacher.courses.length > 2 && ` 等${teacher.courses.length}门`}
-                            </p>
-                          )}
-                          {teacher.awards.length > 0 && (
-                            <p className="text-xs text-slate-400 truncate flex items-center gap-1">
-                              <Award className="h-3 w-3 text-amber-500" /> {teacher.awards.slice(0, 2).join("、")}
-                              {teacher.awards.length > 2 && ` 等${teacher.awards.length}项`}
-                            </p>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
-                  ))
+                  )
+                })
                 : filteredExperts.map((expert) => (
-                    <Card key={expert.id} className="group border-0 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden bg-white h-full">
-                      <div className="h-20 bg-gradient-to-r from-blue-400 via-indigo-500 to-violet-500 relative">
+                    <Card key={expert.id} className="group border-0 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden bg-white text-center h-full flex flex-col">
+                      <div className="h-24 relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-indigo-500 to-violet-500" />
                         <div className="absolute top-3 right-3">
                           <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm border-0 shadow-sm">
                             认证专家
                           </Badge>
                         </div>
-                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
-                          <Avatar className="h-16 w-16 ring-4 ring-white shadow-xl">
+                        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
+                          <Avatar className="h-20 w-20 ring-4 ring-white shadow-xl">
                             <AvatarImage src={expert.avatar} className="object-cover" />
-                            <AvatarFallback className="text-lg font-bold bg-white text-slate-800">{expert.name[0]}</AvatarFallback>
+                            <AvatarFallback className="text-xl font-bold bg-white text-slate-800">{expert.name[0]}</AvatarFallback>
                           </Avatar>
                         </div>
                       </div>
-                      <CardContent className="pt-10 pb-6 px-5 text-center">
-                        <h4 className="font-bold text-slate-900">{expert.name}</h4>
-                        <p className="text-xs text-slate-500">{expert.title || expert.position}</p>
-                        <p className="text-xs text-slate-400 mt-1 truncate">{expert.organization || expert.partnerName || "独立专家"}</p>
-                        <div className="flex flex-wrap justify-center gap-1 mt-3">
-                          {expert.specialties?.slice(0, 4).map((specialty) => (
-                            <span key={specialty} className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 font-medium">
-                              {specialty}
-                            </span>
-                          ))}
+                      <CardContent className="pt-12 pb-6 px-4 flex-1 flex flex-col text-left">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <h4 className="font-bold text-slate-900 text-center truncate">{expert.name}</h4>
                         </div>
-                        <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400">
-                          <p className="flex items-center justify-center gap-1">
-                            <Sparkles className="h-3 w-3 text-violet-500" /> 从业 {expert.experience || "—"} 年 · {expert.education || "—"}
-                          </p>
+                        <p className="text-xs text-slate-500 text-center truncate mt-0.5">{expert.title || expert.position || '—'}</p>
+                        <div className="mt-4 space-y-2 text-xs text-slate-600">
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">所属机构</span>
+                            <span className="text-right truncate">{expert.organization || expert.partnerName || '独立专家'}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">年龄/性别</span>
+                            <span className="text-right">{expert.age ? `${expert.age}岁` : '—'} / {expert.gender === 'male' ? '男' : expert.gender === 'female' ? '女' : '—'}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">从业年限</span>
+                            <span className="text-right">{expert.experience ? `${expert.experience} 年` : '—'}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">教育背景</span>
+                            <span className="text-right truncate">{expert.education || '—'}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">行业方向</span>
+                            <span className="text-right truncate">{expert.industryDirection || '—'}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 shrink-0">岗位方向</span>
+                            <span className="text-right truncate">{expert.positionDirection || '—'}</span>
+                          </div>
                         </div>
+
+                        {expert.specialties && expert.specialties.length > 0 && (
+                          <div className="mt-4">
+                            <p className="text-[11px] text-slate-400 mb-1.5">擅长领域</p>
+                            <div className="flex flex-wrap gap-1">
+                              {expert.specialties.slice(0, 4).map((tag) => (
+                                <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-violet-50 text-violet-600 font-medium">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}

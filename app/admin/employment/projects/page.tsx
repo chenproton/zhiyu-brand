@@ -128,7 +128,7 @@ export default function EmploymentProjectsPage() {
       render: (ep: typeof employmentProjects[0]) => (
         <TableRowActions>
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-            <Link href={`/admin/employment/projects/${ep.id}`}>
+            <Link href={`/jobs/project/${ep.id}`}>
               <Eye className="mr-1 h-3 w-3" />
               查看
             </Link>

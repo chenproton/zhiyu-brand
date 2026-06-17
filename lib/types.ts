@@ -783,15 +783,32 @@ export interface TeacherBrand {
   title: string
   type: 'dual-qualified' | 'teaching-master' | 'backbone' | 'award-winning'
   avatar?: string
+  gender?: ExpertGender
+  age?: number
+  city?: string
+  position?: string
+  organization?: string
+  education?: string
+  industryDirection?: string
+  positionDirection?: string
   introduction: string
+  workExperience?: string
+  experience?: number
+  specialties?: string[]
   researchFields: string[]
   achievements: string[]
   courses: string[]
   awards: string[]
+  attachments?: ExpertAttachment[]
   isFeatured: boolean
+  isPublicDisplay?: boolean
   status: BrandStatus
   viewCount: number
   secondaryCollege?: string
+  secondaryColleges?: string[]
+  partnerSource?: 'cooperation' | 'third-party'
+  partnerId?: string
+  partnerName?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -806,6 +823,7 @@ export interface CultureBrand {
   images?: string[]
   attachments?: string[]
   relatedMajor?: string
+  relatedLink?: string
   coverImage?: string
   status: BrandStatus
   viewCount: number
