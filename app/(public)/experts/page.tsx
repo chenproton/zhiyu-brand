@@ -179,10 +179,6 @@ export default function ExpertsPage() {
                         <p className="text-xs text-slate-500 text-center truncate mt-0.5">{expert.title || expert.position || '—'}</p>
                         <div className="mt-4 space-y-2 text-xs text-slate-600">
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-400 shrink-0">所属机构</span>
-                            <span className="text-right truncate">{expert.organization || expert.partnerName || '—'}</span>
-                          </div>
-                          <div className="flex justify-between gap-2">
                             <span className="text-slate-400 shrink-0">年龄/性别</span>
                             <span className="text-right">{expert.age ? `${expert.age}岁` : '—'} / {genderLabel}</span>
                           </div>

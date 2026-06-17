@@ -10,14 +10,13 @@ import {
   School,
   GraduationCap,
   Clock,
-  Building2,
   MapPin,
   Briefcase,
   Tag,
   FileText,
   Award,
 } from 'lucide-react'
-import { getExpertById, getEnterpriseById } from '@/lib/mock-data'
+import { getExpertById } from '@/lib/mock-data'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -30,9 +29,6 @@ export default async function PublicExpertDetailPage({ params }: PageProps) {
   if (!expert) {
     notFound()
   }
-
-  const enterprise = expert.partnerId ? getEnterpriseById(expert.partnerId) : null
-  const organization = expert.organization || expert.partnerName
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50/80 via-white to-violet-50/30">
@@ -93,32 +89,6 @@ export default async function PublicExpertDetailPage({ params }: PageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-6">
             <div className="space-y-6">
-              <Card className="border-0 shadow-sm rounded-3xl">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-violet-500" />
-                    所属机构
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {enterprise ? (
-                    <Link href={`/partners/${enterprise.id}`} className="flex items-start gap-3 group/link">
-                      <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shrink-0">
-                        <Building2 className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-slate-900 group-hover/link:text-violet-600 transition-colors">{enterprise.name}</p>
-                        <p className="text-sm text-slate-500">{enterprise.industry}</p>
-                      </div>
-                    </Link>
-                  ) : organization ? (
-                    <span className="text-sm text-slate-600">{organization}</span>
-                  ) : (
-                    <span className="text-sm text-slate-400">-</span>
-                  )}
-                </CardContent>
-              </Card>
-
               <Card className="border-0 shadow-sm rounded-3xl">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">

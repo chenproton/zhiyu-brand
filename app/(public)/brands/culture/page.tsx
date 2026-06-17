@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Heart, Eye, Search, X, Calendar, BookOpen } from "lucide-react"
+import { Heart, Search, X, Calendar, BookOpen } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -161,9 +161,6 @@ export default function CultureBrandPage() {
                           <BookOpen className="h-3.5 w-3.5 text-blue-500" /> {culture.relatedMajor}
                         </span>
                       )}
-                      <span className="flex items-center gap-1">
-                        <Eye className="h-3.5 w-3.5 text-violet-500" /> {culture.viewCount} 浏览
-                      </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5 text-emerald-500" /> {culture.updatedAt.toLocaleDateString("zh-CN")}
                       </span>

@@ -20,6 +20,7 @@ import { Plus, Users, Pencil, Trash2 } from 'lucide-react'
 import { experts } from '@/lib/mock-data'
 import { SECONDARY_COLLEGES } from '@/lib/types'
 import type { Expert } from '@/lib/types'
+import { PublicDisplaySwitch } from '@/components/shared/public-display-switch'
 
 const GENDER_LABELS: Record<string, string> = {
   male: '男',
@@ -130,24 +131,22 @@ export default function ExpertsListPage() {
 
   const columns = [
     {
-      key: 'display',
-      title: '前台展示',
-      render: (expert: Expert) => (
-        <div className="flex items-center gap-2">
-          <Switch checked={expert.isPublicDisplay} onCheckedChange={() => handleTogglePublicDisplay(expert)} />
-          <span className={`text-sm ${expert.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
-            {expert.isPublicDisplay ? '展示' : '隐藏'}
-          </span>
-        </div>
-      ),
-    },
-    {
       key: 'name',
       title: '姓名',
       render: (expert: Expert) => (
         <Link href={`/admin/experts/${expert.id}`} className="font-medium hover:underline">
           {expert.name}
         </Link>
+      ),
+    },
+    {
+      key: 'display',
+      title: '前台展示',
+      render: (expert: Expert) => (
+        <PublicDisplaySwitch
+          checked={expert.isPublicDisplay ?? true}
+          onChange={() => handleTogglePublicDisplay(expert)}
+        />
       ),
     },
     {

@@ -236,10 +236,7 @@ function AchievementCard({ ach, img }: { ach: typeof achievements[0]; img: strin
               </p>
             )}
           </div>
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <Eye className="h-3.5 w-3.5" /> {ach.viewCount}
-            </span>
+          <div className="flex items-center justify-end mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400">
             <span>{ach.publishDate.toLocaleDateString("zh-CN")}</span>
           </div>
         </CardContent>
@@ -272,10 +269,6 @@ function ExpertCard({ expert, avatarSrc, coverSrc }: { expert: typeof experts[0]
         <h4 className="font-bold text-slate-900 text-center truncate">{expert.name}</h4>
         <p className="text-xs text-slate-500 text-center truncate mt-0.5">{expert.title || expert.position || "—"}</p>
         <div className="mt-4 space-y-2 text-xs text-slate-600">
-          <div className="flex justify-between gap-2">
-            <span className="text-slate-400 shrink-0">所属机构</span>
-            <span className="text-right truncate">{expert.organization || expert.partnerName || "—"}</span>
-          </div>
           <div className="flex justify-between gap-2">
             <span className="text-slate-400 shrink-0">年龄/性别</span>
             <span className="text-right">{expert.age ? `${expert.age}岁` : "—"} / {genderLabel}</span>
@@ -854,8 +847,6 @@ export default function LandingPage() {
     ? {
         name: schoolInfo.name,
         logo: schoolInfo.logo,
-        type: schoolInfo.type,
-        location: `${schoolInfo.province}${schoolInfo.city}`,
         studentCount: schoolInfo.studentCount,
         teacherCount: schoolInfo.teacherCount,
         majorCount: schoolInfo.majorCount,
@@ -866,8 +857,6 @@ export default function LandingPage() {
         return {
           name: college?.name ?? schoolInfo.name,
           logo: college?.logo ?? schoolInfo.logo,
-          type: selectedCollege === "校本级" ? schoolInfo.type : `${schoolInfo.type} · 二级学院`,
-          location: `${schoolInfo.province}${schoolInfo.city}`,
           studentCount: college?.studentCount ?? schoolInfo.studentCount,
           teacherCount: college?.teacherCount ?? schoolInfo.teacherCount,
           majorCount: college?.majorCount ?? schoolInfo.majorCount,
@@ -924,7 +913,14 @@ export default function LandingPage() {
                     />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-xl text-white">{heroInfo.name}</h3>
-                      <p className="text-sm text-slate-300 mt-1">{heroInfo.type} · {heroInfo.location}</p>
+                      <a
+                        href={schoolInfo.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-300 hover:text-blue-200 mt-1 inline-flex items-center gap-1"
+                      >
+                        前往官网 <ArrowUpRight className="h-3 w-3" />
+                      </a>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 mt-6 py-6 border-y border-white/10">

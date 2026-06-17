@@ -29,9 +29,10 @@ import { AdminPageHeader } from "@/components/admin/page-header"
 import { AdminDataTable } from "@/components/admin/data-table"
 import { Plus, Pencil, Trash2, Star, ChevronRight, FileText, Search, X, Upload } from "lucide-react"
 import { teacherBrands, experts, enterprises } from "@/lib/mock-data"
-import { TEACHER_TYPE_LABELS, BRAND_STATUS_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
+import { TEACHER_TYPE_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
 import type { TeacherBrand, Expert, ExpertGender, ExpertAttachment } from "@/lib/types"
 import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
+import { PublicDisplaySwitch } from "@/components/shared/public-display-switch"
 
 function generateId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
@@ -54,7 +55,6 @@ const emptyTeacherForm = {
   partnerSource: "" as "cooperation" | "third-party" | "",
   partnerId: "",
   thirdPartyName: "",
-  status: "active" as "active" | "inactive",
   isPublicDisplay: true,
   secondaryColleges: [] as string[],
 }
@@ -342,7 +342,6 @@ export default function TeacherBrandPage() {
       partnerSource: teacher.partnerSource || "",
       partnerId: teacher.partnerId || "",
       thirdPartyName: teacher.partnerSource === 'third-party' ? teacher.partnerName || '' : '',
-      status: teacher.status === 'published' ? 'active' : 'inactive',
       isPublicDisplay: teacher.isPublicDisplay || false,
       secondaryColleges: teacher.secondaryColleges || (teacher.secondaryCollege ? [teacher.secondaryCollege] : []),
     })
@@ -403,7 +402,7 @@ export default function TeacherBrandPage() {
                   : teacherForm.partnerSource === 'third-party'
                   ? teacherForm.thirdPartyName || undefined
                   : undefined,
-                status: teacherForm.status === 'active' ? 'published' : 'draft',
+                status: teacherForm.isPublicDisplay ? 'published' : 'draft',
                 isPublicDisplay: teacherForm.isPublicDisplay,
                 secondaryColleges: teacherForm.secondaryColleges.length > 0 ? teacherForm.secondaryColleges : undefined,
                 updatedAt: new Date(),
@@ -436,7 +435,7 @@ export default function TeacherBrandPage() {
         attachments: teacherAttachments.length > 0 ? teacherAttachments : undefined,
         isFeatured: false,
         isPublicDisplay: teacherForm.isPublicDisplay,
-        status: teacherForm.status === 'active' ? 'published' : 'draft',
+        status: teacherForm.isPublicDisplay ? 'published' : 'draft',
         viewCount: 0,
         secondaryColleges: teacherForm.secondaryColleges.length > 0 ? teacherForm.secondaryColleges : undefined,
         partnerSource: teacherForm.partnerSource || undefined,
@@ -613,6 +612,24 @@ export default function TeacherBrandPage() {
         </div>
       ),
     },
+    {
+      key: "isPublicDisplay",
+      title: "前台展示",
+      render: (teacher: TeacherBrand) => (
+        <PublicDisplaySwitch
+          checked={teacher.isPublicDisplay ?? teacher.status === "published"}
+          onChange={(checked) => {
+            setTeachers((prev) =>
+              prev.map((t) =>
+                t.id === teacher.id
+                  ? { ...t, isPublicDisplay: checked, status: checked ? "published" : "draft", updatedAt: new Date() }
+                  : t
+              )
+            )
+          }}
+        />
+      ),
+    },
     { key: "department", title: "院系", render: (teacher: TeacherBrand) => teacher.department },
     { key: "title", title: "职称", render: (teacher: TeacherBrand) => teacher.title },
     {
@@ -645,15 +662,6 @@ export default function TeacherBrandPage() {
       ),
     },
     {
-      key: "status",
-      title: "状态",
-      render: (teacher: TeacherBrand) => (
-        <Badge variant={teacher.status === "published" ? "secondary" : "outline"} className="text-xs">
-          {BRAND_STATUS_LABELS[teacher.status]}
-        </Badge>
-      ),
-    },
-    {
       key: "actions",
       title: "",
       width: "w-[50px]",
@@ -680,6 +688,24 @@ export default function TeacherBrandPage() {
 
   const expertColumns = [
     { key: "name", title: "姓名", render: (expert: Expert) => <span className="font-medium">{expert.name}</span> },
+    {
+      key: "isPublicDisplay",
+      title: "前台展示",
+      render: (expert: Expert) => (
+        <PublicDisplaySwitch
+          checked={expert.isPublicDisplay ?? true}
+          onChange={(checked) => {
+            setDisplayedExperts((prev) =>
+              prev.map((e) =>
+                e.id === expert.id
+                  ? { ...e, isPublicDisplay: checked, updatedAt: new Date() }
+                  : e
+              )
+            )
+          }}
+        />
+      ),
+    },
     { key: "title", title: "职称", render: (expert: Expert) => expert.title || expert.position || "-" },
     { key: "organization", title: "所属机构", render: (expert: Expert) => expert.organization || expert.partnerName || "-" },
     {
@@ -695,7 +721,7 @@ export default function TeacherBrandPage() {
     },
     { key: "experience", title: "行业经验", render: (expert: Expert) => expert.experience ? `${expert.experience} 年` : '-' },
     {
-      key: "organization",
+      key: "sourceType",
       title: "来源类型",
       render: (expert: Expert) => (
         <Badge variant="outline" className="text-xs">
@@ -1192,24 +1218,9 @@ export default function TeacherBrandPage() {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle>状态与展示</CardTitle>
+                      <CardTitle>前台展示</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="t-status">状态</Label>
-                        <Select
-                          value={teacherForm.status}
-                          onValueChange={(v) => setTeacherForm({ ...teacherForm, status: v as 'active' | 'inactive' })}
-                        >
-                          <SelectTrigger id="t-status">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="active">启用</SelectItem>
-                            <SelectItem value="inactive">禁用</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
                       <div className="flex items-center gap-2">
                         <Label htmlFor="t-isPublicDisplay" className="flex-1">前台展示</Label>
                         <Switch
@@ -1643,24 +1654,9 @@ export default function TeacherBrandPage() {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle>状态与展示</CardTitle>
+                      <CardTitle>前台展示</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="e-status">状态</Label>
-                        <Select
-                          value={expertForm.status}
-                          onValueChange={(v) => setExpertForm({ ...expertForm, status: v as 'active' | 'inactive' })}
-                        >
-                          <SelectTrigger id="e-status">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="active">启用</SelectItem>
-                            <SelectItem value="inactive">禁用</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
                       <div className="flex items-center gap-2">
                         <Label htmlFor="e-isPublicDisplay" className="flex-1">前台展示</Label>
                         <Switch

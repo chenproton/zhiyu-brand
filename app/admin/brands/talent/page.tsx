@@ -17,20 +17,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { TableRowActions } from "@/components/admin/table-row-actions"
 import { Switch } from "@/components/ui/switch"
 import { AdminPageHeader } from "@/components/admin/page-header"
 import { AdminFilterBar } from "@/components/admin/filter-bar"
 import { AdminDataTable } from "@/components/admin/data-table"
-import { Search, Eye, Plus, Trash2, Settings, X, Check, ChevronDown, Award, Upload, Pencil } from "lucide-react"
+import { Search, Plus, Trash2, Settings, X, Check, ChevronDown, Award, Upload, Pencil } from "lucide-react"
 import {
   talentProfiles as initialTalentProfiles,
   employmentCases as initialEmploymentCases,
@@ -38,7 +31,8 @@ import {
   jobs,
   partners,
 } from "@/lib/mock-data"
-import { BRAND_STATUS_LABELS, type BrandStatus, type TalentProfile, type EmploymentCase } from "@/lib/types"
+import { type TalentProfile, type EmploymentCase } from "@/lib/types"
+import { PublicDisplaySwitch } from "@/components/shared/public-display-switch"
 
 interface MajorRankingConfig {
   major: string
@@ -84,7 +78,7 @@ export default function TalentBrandPage() {
   const [caseSalary, setCaseSalary] = useState("")
   const [caseStory, setCaseStory] = useState("")
   const [caseCoverImage, setCaseCoverImage] = useState("")
-  const [caseStatus, setCaseStatus] = useState<BrandStatus>("draft")
+  const [caseIsPublicDisplay, setCaseIsPublicDisplay] = useState(true)
 
   const coverFileInputRef = useRef<HTMLInputElement>(null)
 
@@ -179,7 +173,7 @@ export default function TalentBrandPage() {
     setCaseSalary("")
     setCaseStory("")
     setCaseCoverImage("")
-    setCaseStatus("draft")
+    setCaseIsPublicDisplay(true)
   }
 
   const openCaseEdit = (caseItem: EmploymentCase) => {
@@ -189,7 +183,7 @@ export default function TalentBrandPage() {
     setCaseSalary(caseItem.salary || "")
     setCaseStory(caseItem.story)
     setCaseCoverImage(caseItem.coverImage || "")
-    setCaseStatus(caseItem.status)
+    setCaseIsPublicDisplay(caseItem.isPublicDisplay ?? caseItem.status === "published")
     setCaseEditDialogOpen(true)
   }
 
@@ -210,7 +204,8 @@ export default function TalentBrandPage() {
       story: caseStory,
       photo: "/placeholder.svg?height=200&width=200",
       coverImage: caseCoverImage || undefined,
-      status: caseStatus,
+      isPublicDisplay: caseIsPublicDisplay,
+      status: caseIsPublicDisplay ? "published" : "draft",
       viewCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -233,7 +228,8 @@ export default function TalentBrandPage() {
               salary: caseSalary || undefined,
               story: caseStory,
               coverImage: caseCoverImage || undefined,
-              status: caseStatus,
+              isPublicDisplay: caseIsPublicDisplay,
+              status: caseIsPublicDisplay ? "published" : "draft",
               updatedAt: new Date(),
             }
           : c
@@ -357,30 +353,29 @@ export default function TalentBrandPage() {
         </div>
       ),
     },
+    {
+      key: "isPublicDisplay",
+      title: "前台展示",
+      render: (case_: EmploymentCase) => (
+        <PublicDisplaySwitch
+          checked={case_.isPublicDisplay ?? case_.status === "published"}
+          onChange={(checked) => {
+            setEmploymentCases((prev) =>
+              prev.map((c) =>
+                c.id === case_.id
+                  ? { ...c, isPublicDisplay: checked, status: checked ? "published" : "draft", updatedAt: new Date() }
+                  : c
+              )
+            )
+          }}
+        />
+      ),
+    },
     { key: "major", title: "专业", render: (case_: EmploymentCase) => <span className="text-sm">{case_.major}</span> },
     { key: "graduationYear", title: "毕业年份", render: (case_: EmploymentCase) => <span className="text-sm">{case_.graduationYear}届</span> },
-    { key: "company", title: "企业", render: (case_: EmploymentCase) => <span className="text-sm">{case_.company}</span> },
+    { key: "company", title: "雇主企业", render: (case_: EmploymentCase) => <span className="text-sm">{case_.company}</span> },
     { key: "position", title: "岗位", render: (case_: EmploymentCase) => <span className="text-sm">{case_.position}</span> },
     { key: "salary", title: "薪资", render: (case_: EmploymentCase) => <span className="text-sm font-medium">{case_.salary || "-"}</span> },
-    {
-      key: "status",
-      title: "状态",
-      render: (case_: EmploymentCase) => (
-        <Badge variant={case_.status === "published" ? "default" : "secondary"}>
-          {BRAND_STATUS_LABELS[case_.status]}
-        </Badge>
-      ),
-    },
-    {
-      key: "viewCount",
-      title: "浏览量",
-      render: (case_: EmploymentCase) => (
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Eye className="h-4 w-4" />
-          <span>{case_.viewCount}</span>
-        </div>
-      ),
-    },
     {
       key: "actions",
       title: "",
@@ -719,19 +714,13 @@ export default function TalentBrandPage() {
                 </Button>
               )}
             </div>
-            <div className="space-y-2">
-              <Label>发布状态</Label>
-              <Select value={caseStatus} onValueChange={(v) => setCaseStatus(v as BrandStatus)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择状态" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">草稿</SelectItem>
-                  <SelectItem value="pending">待审核</SelectItem>
-                  <SelectItem value="published">已发布</SelectItem>
-                  <SelectItem value="archived">已归档</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="case-isPublicDisplay" className="flex-1">前台展示</Label>
+              <Switch
+                id="case-isPublicDisplay"
+                checked={caseIsPublicDisplay}
+                onCheckedChange={setCaseIsPublicDisplay}
+              />
             </div>
           </div>
           <DialogFooter>
@@ -840,19 +829,13 @@ export default function TalentBrandPage() {
                 </Button>
               )}
             </div>
-            <div className="space-y-2">
-              <Label>发布状态</Label>
-              <Select value={caseStatus} onValueChange={(v) => setCaseStatus(v as BrandStatus)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择状态" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">草稿</SelectItem>
-                  <SelectItem value="pending">待审核</SelectItem>
-                  <SelectItem value="published">已发布</SelectItem>
-                  <SelectItem value="archived">已归档</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="edit-case-isPublicDisplay" className="flex-1">前台展示</Label>
+              <Switch
+                id="edit-case-isPublicDisplay"
+                checked={caseIsPublicDisplay}
+                onCheckedChange={setCaseIsPublicDisplay}
+              />
             </div>
           </div>
           <DialogFooter>

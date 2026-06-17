@@ -28,12 +28,14 @@ import { AdminDataTable } from "@/components/admin/data-table"
 import { Pencil, Trash2, AlertCircle } from "lucide-react"
 import { jobBrands, jobs } from "@/lib/mock-data"
 import type { JobBrand, Job } from "@/lib/types"
-import { BRAND_STATUS_LABELS, INDUSTRIES, JOB_CATEGORY_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
+import { INDUSTRIES, JOB_CATEGORY_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
+import { Switch } from "@/components/ui/switch"
 import {
   JobActionButtons,
   NonTeachingJobDialog,
   TeachingJobDialog,
 } from "@/components/admin/job-brand-tools"
+import { PublicDisplaySwitch } from "@/components/shared/public-display-switch"
 
 function generateId() {
   return "jb-" + Math.random().toString(36).substr(2, 9)
@@ -49,7 +51,6 @@ export default function JobBrandPage() {
   const [data, setData] = useState<JobBrand[]>(jobBrands)
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState<Record<string, string>>({
-    level: "all",
     industry: "all",
   })
 
@@ -63,9 +64,8 @@ export default function JobBrandPage() {
 
   const filteredJobs = data.filter((job) => {
     const matchesSearch = job.name.toLowerCase().includes(search.toLowerCase())
-    const matchesLevel = filters.level === "all" || job.level === filters.level
     const matchesIndustry = filters.industry === "all" || job.industry === filters.industry
-    return matchesSearch && matchesLevel && matchesIndustry
+    return matchesSearch && matchesIndustry
   })
 
   const handleFilterChange = (key: string, value: string) => {
@@ -74,19 +74,10 @@ export default function JobBrandPage() {
 
   const handleClearFilters = () => {
     setSearch("")
-    setFilters({ level: "all", industry: "all" })
+    setFilters({ industry: "all" })
   }
 
   const filterConfigs = [
-    {
-      key: "level",
-      label: "全部等级",
-      options: [
-        { value: "recommended", label: "推荐品牌" },
-        { value: "key", label: "重点品牌" },
-        { value: "standard", label: "标准品牌" },
-      ],
-    },
     {
       key: "industry",
       label: "全部行业",
@@ -137,7 +128,8 @@ export default function JobBrandPage() {
       averageSalary: salaryStr,
       demandCount: job.headcount || 1,
       featureTags: [],
-      status: "draft",
+      isPublicDisplay: true,
+      status: "published",
       viewCount: 0,
       jobCategory: category,
       secondaryCollege: job.secondaryCollege,
@@ -160,6 +152,24 @@ export default function JobBrandPage() {
 
   const columns = [
     { key: "name", title: "岗位名称", render: (job: JobBrand) => <span className="font-medium">{job.name}</span> },
+    {
+      key: "isPublicDisplay",
+      title: "前台展示",
+      render: (job: JobBrand) => (
+        <PublicDisplaySwitch
+          checked={job.isPublicDisplay ?? job.status === "published"}
+          onChange={(checked) => {
+            setData((prev) =>
+              prev.map((item) =>
+                item.id === job.id
+                  ? { ...item, isPublicDisplay: checked, status: checked ? "published" : "draft", updatedAt: new Date() }
+                  : item
+              )
+            )
+          }}
+        />
+      ),
+    },
     { key: "industry", title: "所属行业", render: (job: JobBrand) => job.industry },
     {
       key: "jobCategory",
@@ -184,15 +194,6 @@ export default function JobBrandPage() {
           )}
           {job.suitableMajors.length === 0 && "-"}
         </div>
-      ),
-    },
-    {
-      key: "status",
-      title: "状态",
-      render: (job: JobBrand) => (
-        <Badge variant={job.status === "published" ? "secondary" : "outline"}>
-          {BRAND_STATUS_LABELS[job.status]}
-        </Badge>
       ),
     },
     {
@@ -350,21 +351,17 @@ export default function JobBrandPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>状态</Label>
-              <Select
-                value={editForm.status || "draft"}
-                onValueChange={(val) => setEditForm((prev) => ({ ...prev, status: val as JobBrand["status"] }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">草稿</SelectItem>
-                  <SelectItem value="pending">待审核</SelectItem>
-                  <SelectItem value="published">已发布</SelectItem>
-                  <SelectItem value="archived">已归档</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="job-isPublicDisplay">前台展示</Label>
+              <div className="flex items-center gap-2 h-10">
+                <Switch
+                  id="job-isPublicDisplay"
+                  checked={editForm.isPublicDisplay ?? editForm.status === "published"}
+                  onCheckedChange={(checked) => setEditForm((prev) => ({ ...prev, isPublicDisplay: checked, status: checked ? "published" : "draft" }))}
+                />
+                <span className={`text-sm ${(editForm.isPublicDisplay ?? editForm.status === "published") ? 'text-green-600' : 'text-gray-400'}`}>
+                  {(editForm.isPublicDisplay ?? editForm.status === "published") ? '展示' : '隐藏'}
+                </span>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>特色标签（逗号分隔）</Label>

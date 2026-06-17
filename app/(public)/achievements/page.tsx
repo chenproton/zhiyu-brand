@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { Trophy, Building2, FolderKanban, Eye, Search, X } from 'lucide-react'
+import { Trophy, Building2, FolderKanban, Search, X } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -175,10 +175,7 @@ export default function PublicAchievementsPage() {
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-400">
-                        <span className="flex items-center gap-1.5">
-                          <Eye className="h-3.5 w-3.5" /> {achievement.viewCount}
-                        </span>
+                      <div className="flex items-center justify-end pt-4 border-t border-slate-100 text-xs text-slate-400">
                         <span>{achievement.publishDate.toLocaleDateString('zh-CN')}</span>
                       </div>
                     </CardContent>

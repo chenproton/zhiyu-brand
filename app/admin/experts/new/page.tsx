@@ -33,7 +33,6 @@ export default function NewExpertPage() {
   const [city, setCity] = useState('')
   const [title, setTitle] = useState('')
   const [position, setPosition] = useState('')
-  const [organization, setOrganization] = useState('')
   const [experience, setExperience] = useState('')
   const [education, setEducation] = useState('')
   const [industryDirection, setIndustryDirection] = useState('')
@@ -186,22 +185,12 @@ export default function NewExpertPage() {
                       onChange={(e) => setPosition(e.target.value)}
                       placeholder="如：产业咨询与企业服务负责人"
                     />
-                  </div>
                 </div>
+              </div>
 
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="organization">所属机构</Label>
-                  <Input
-                    id="organization"
-                    value={organization}
-                    onChange={(e) => setOrganization(e.target.value)}
-                    placeholder="如：上海智能制造产业研究院"
-                  />
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="experience">从业年限（年）</Label>
+                  <Label htmlFor="experience">从业年限（年）</Label>
                     <Input
                       id="experience"
                       type="number"

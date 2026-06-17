@@ -108,6 +108,8 @@ export interface EnterpriseAgreement {
 export interface Partner {
   id: string
   type: PartnerType
+  // 是否在前台展示
+  isPublicDisplay?: boolean
   name: string
   industry: string
   region: string
@@ -590,7 +592,7 @@ export type CooperationAccountType = 'enterprise_public' | 'expert_personal'
 
 export const COOPERATION_ACCOUNT_TYPE_LABELS: Record<CooperationAccountType, string> = {
   enterprise_public: '企业账号',
-  expert_personal: '个人账号',
+  expert_personal: '专家账号',
 }
 
 // 合作账号
@@ -724,6 +726,8 @@ export interface EmploymentCase {
   story: string
   photo?: string
   coverImage?: string
+  // 是否在前台展示
+  isPublicDisplay?: boolean
   status: BrandStatus
   viewCount: number
   createdAt: Date
@@ -744,6 +748,8 @@ export interface JobBrand {
   featureTags: string[]
   coverImage?: string
   cooperationPartners?: string[]
+  // 是否在前台展示
+  isPublicDisplay?: boolean
   status: BrandStatus
   viewCount: number
   secondaryCollege?: string
@@ -825,6 +831,8 @@ export interface CultureBrand {
   relatedMajor?: string
   relatedLink?: string
   coverImage?: string
+  // 是否在前台展示
+  isPublicDisplay?: boolean
   status: BrandStatus
   viewCount: number
   secondaryCollege?: string

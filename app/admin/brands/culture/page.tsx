@@ -24,10 +24,12 @@ import { Label } from "@/components/ui/label"
 import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
 import { AdminListPage } from "@/components/admin/list-page"
 import { AdminDataTable } from "@/components/admin/data-table"
-import { Eye, EyeOff, Plus, Pencil, Trash2, Upload, X, FileText } from "lucide-react"
+import { Plus, Pencil, Trash2, Upload, X, FileText } from "lucide-react"
 import { cultureBrands } from "@/lib/mock-data"
-import { CULTURE_TYPE_LABELS, BRAND_STATUS_LABELS } from "@/lib/types"
-import type { CultureBrand, BrandStatus } from "@/lib/types"
+import { CULTURE_TYPE_LABELS } from "@/lib/types"
+import type { CultureBrand } from "@/lib/types"
+import { Switch } from "@/components/ui/switch"
+import { PublicDisplaySwitch } from "@/components/shared/public-display-switch"
 
 function generateId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
@@ -39,7 +41,7 @@ const emptyForm = {
   description: "",
   relatedMajor: "",
   relatedLink: "",
-  status: "draft" as BrandStatus,
+  isPublicDisplay: true,
   coverImage: "",
   attachments: [] as string[],
 }
@@ -119,7 +121,7 @@ export default function CultureBrandPage() {
       description: culture.description,
       relatedMajor: culture.relatedMajor || "",
       relatedLink: culture.relatedLink || "",
-      status: culture.status,
+      isPublicDisplay: culture.isPublicDisplay ?? culture.status === "published",
       coverImage: culture.coverImage || "",
       attachments: culture.attachments || [],
     })
@@ -138,6 +140,7 @@ export default function CultureBrandPage() {
                 relatedLink: form.relatedLink || undefined,
                 coverImage: form.coverImage || c.coverImage,
                 attachments: form.attachments.length > 0 ? form.attachments : undefined,
+                status: form.isPublicDisplay ? "published" : "draft",
                 updatedAt: new Date(),
               }
             : c
@@ -154,7 +157,8 @@ export default function CultureBrandPage() {
         relatedLink: form.relatedLink || undefined,
         coverImage: form.coverImage || "/placeholder.svg?height=200&width=300",
         attachments: form.attachments.length > 0 ? form.attachments : undefined,
-        status: form.status,
+        isPublicDisplay: form.isPublicDisplay,
+        status: form.isPublicDisplay ? "published" : "draft",
         viewCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -168,15 +172,6 @@ export default function CultureBrandPage() {
     if (confirm("确定要删除该内容吗？")) {
       setCultures((prev) => prev.filter((c) => c.id !== id))
     }
-  }
-
-  function toggleStatus(culture: CultureBrand) {
-    const nextStatus = culture.status === "published" ? "draft" : "published"
-    setCultures((prev) =>
-      prev.map((c) =>
-        c.id === culture.id ? { ...c, status: nextStatus, updatedAt: new Date() } : c
-      )
-    )
   }
 
   const handleFilterChange = (key: string, value: string) => {
@@ -215,6 +210,24 @@ export default function CultureBrandPage() {
     },
     { key: "name", title: "名称", render: (culture: CultureBrand) => <span className="font-medium">{culture.name}</span> },
     {
+      key: "isPublicDisplay",
+      title: "前台展示",
+      render: (culture: CultureBrand) => (
+        <PublicDisplaySwitch
+          checked={culture.isPublicDisplay ?? culture.status === "published"}
+          onChange={(checked) => {
+            setCultures((prev) =>
+              prev.map((c) =>
+                c.id === culture.id
+                  ? { ...c, isPublicDisplay: checked, status: checked ? "published" : "draft", updatedAt: new Date() }
+                  : c
+              )
+            )
+          }}
+        />
+      ),
+    },
+    {
       key: "type",
       title: "类型",
       render: (culture: CultureBrand) => (
@@ -223,25 +236,6 @@ export default function CultureBrandPage() {
     },
     { key: "description", title: "描述", render: (culture: CultureBrand) => <span className="max-w-xs truncate">{culture.description}</span> },
     { key: "relatedMajor", title: "面向专业", render: (culture: CultureBrand) => culture.relatedMajor || "-" },
-    {
-      key: "status",
-      title: "状态",
-      render: (culture: CultureBrand) => (
-        <Badge variant={culture.status === "published" ? "default" : "secondary"}>
-          {BRAND_STATUS_LABELS[culture.status]}
-        </Badge>
-      ),
-    },
-    {
-      key: "views",
-      title: "浏览量",
-      render: (culture: CultureBrand) => (
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Eye className="h-4 w-4" />
-          <span>{culture.viewCount}</span>
-        </div>
-      ),
-    },
     {
       key: "updatedAt",
       title: "更新时间",
@@ -257,19 +251,6 @@ export default function CultureBrandPage() {
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEditDialog(culture)}>
             <Pencil className="mr-1 h-3 w-3" />
             编辑
-          </Button>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => toggleStatus(culture)}>
-            {culture.status === "published" ? (
-              <>
-                <EyeOff className="mr-1 h-3 w-3" />
-                下架
-              </>
-            ) : (
-              <>
-                <Eye className="mr-1 h-3 w-3" />
-                发布
-              </>
-            )}
           </Button>
           <Button
             variant="ghost"
@@ -452,22 +433,13 @@ export default function CultureBrandPage() {
                 placeholder="请输入面向专业（选填）"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="c-status">状态</Label>
-              <Select
-                value={form.status}
-                onValueChange={(v) => setForm({ ...form, status: v as BrandStatus })}
-              >
-                <SelectTrigger id="c-status">
-                  <SelectValue placeholder="选择状态" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">草稿</SelectItem>
-                  <SelectItem value="pending">待审核</SelectItem>
-                  <SelectItem value="published">已发布</SelectItem>
-                  <SelectItem value="archived">已归档</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="c-isPublicDisplay" className="flex-1">前台展示</Label>
+              <Switch
+                id="c-isPublicDisplay"
+                checked={form.isPublicDisplay}
+                onCheckedChange={(checked) => setForm({ ...form, isPublicDisplay: checked })}
+              />
             </div>
           </div>
           <DialogFooter>

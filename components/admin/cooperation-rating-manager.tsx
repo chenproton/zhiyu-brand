@@ -136,7 +136,6 @@ export default function CooperationRatingManager() {
                 <TableHead className="w-12 text-center">序号</TableHead>
                 <TableHead>排序</TableHead>
                 <TableHead>评级名称</TableHead>
-                <TableHead>评级标识</TableHead>
                 <TableHead>说明</TableHead>
                 <TableHead>评定条件</TableHead>
                 <TableHead className="text-right">操作</TableHead>
@@ -149,9 +148,6 @@ export default function CooperationRatingManager() {
                   <TableCell>{item.sortOrder}</TableCell>
                   <TableCell>
                     <Badge className={ratingColors[item.rating]}>{item.label}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <code className="text-xs bg-gray-100 px-2 py-1 rounded">{item.rating}</code>
                   </TableCell>
                   <TableCell className="max-w-xs text-sm">{item.description}</TableCell>
                   <TableCell className="max-w-xs text-sm">{item.criteria}</TableCell>
@@ -185,10 +181,6 @@ export default function CooperationRatingManager() {
             <div className="space-y-2">
               <Label>评级名称</Label>
               <Input value={formData.label} onChange={(e) => setFormData({ ...formData, label: e.target.value })} placeholder="如：战略合作" />
-            </div>
-            <div className="space-y-2">
-              <Label>评级标识</Label>
-              <Input value={formData.rating} onChange={(e) => setFormData({ ...formData, rating: e.target.value as CooperationRating })} placeholder="如：strategic" />
             </div>
             <div className="space-y-2">
               <Label>说明</Label>

@@ -155,19 +155,13 @@ export default function JobsPage() {
       ),
     },
     {
-      key: "views",
-      title: "浏览/推荐",
+      key: "recommendations",
+      title: "推荐",
       align: "center" as const,
       render: (job: typeof jobs[0]) => (
-        <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Eye className="h-3 w-3" />
-            {job.viewCount}
-          </span>
-          <span className="flex items-center gap-1">
-            <Sparkles className="h-3 w-3" />
-            {getRecommendationCount(job.id)}
-          </span>
+        <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
+          <Sparkles className="h-3 w-3" />
+          {getRecommendationCount(job.id)}
         </div>
       ),
     },

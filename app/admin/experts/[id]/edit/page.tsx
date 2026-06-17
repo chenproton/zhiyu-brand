@@ -37,7 +37,6 @@ export default function EditExpertPage() {
   const [city, setCity] = useState('')
   const [title, setTitle] = useState('')
   const [position, setPosition] = useState('')
-  const [organization, setOrganization] = useState('')
   const [experience, setExperience] = useState('')
   const [education, setEducation] = useState('')
   const [industryDirection, setIndustryDirection] = useState('')
@@ -72,7 +71,6 @@ export default function EditExpertPage() {
     setCity(expert.city || '')
     setTitle(expert.title || '')
     setPosition(expert.position || '')
-    setOrganization(expert.organization || '')
     setExperience(expert.experience ? String(expert.experience) : '')
     setEducation(expert.education || '')
     setIndustryDirection(expert.industryDirection || '')
@@ -157,7 +155,6 @@ export default function EditExpertPage() {
       expert.city = city || undefined
       expert.title = title || undefined
       expert.position = position || undefined
-      expert.organization = organization || undefined
       expert.experience = experience ? parseInt(experience) : undefined
       expert.education = education || undefined
       expert.industryDirection = industryDirection || undefined
@@ -279,22 +276,12 @@ export default function EditExpertPage() {
                       onChange={(e) => setPosition(e.target.value)}
                       placeholder="如：产业咨询与企业服务负责人"
                     />
-                  </div>
                 </div>
+              </div>
 
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="organization">所属机构</Label>
-                  <Input
-                    id="organization"
-                    value={organization}
-                    onChange={(e) => setOrganization(e.target.value)}
-                    placeholder="如：上海智能制造产业研究院"
-                  />
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="experience">从业年限（年）</Label>
+                  <Label htmlFor="experience">从业年限（年）</Label>
                     <Input
                       id="experience"
                       type="number"

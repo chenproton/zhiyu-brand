@@ -200,10 +200,6 @@ export default function BrandTopicsPage() {
                   <LayoutTemplate className="h-4 w-4" />
                   {layoutLabels[topic.layout]}
                 </div>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Eye className="h-4 w-4" />
-                  {topic.viewCount} 次浏览
-                </div>
               </div>
 
               <div className="flex flex-wrap gap-2">

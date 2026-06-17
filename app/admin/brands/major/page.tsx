@@ -24,9 +24,7 @@ import type { MajorBrand } from "@/lib/types"
 export default function MajorBrandPage() {
   const [data, setData] = useState<MajorBrand[]>(majorBrands)
   const [search, setSearch] = useState("")
-  const [filters, setFilters] = useState<Record<string, string>>({
-    level: "all",
-  })
+  const [filters, setFilters] = useState<Record<string, string>>({})
   const [configDialogOpen, setConfigDialogOpen] = useState(false)
   const [enabledMajors, setEnabledMajors] = useState<Record<string, boolean>>(
     Object.fromEntries(majorBrands.map((item) => [item.id, item.status !== "archived"]))
@@ -34,8 +32,7 @@ export default function MajorBrandPage() {
 
   const filteredMajors = data.filter((major) => {
     const matchesSearch = major.name.toLowerCase().includes(search.toLowerCase())
-    const matchesLevel = filters.level === "all" || major.level === filters.level
-    return matchesSearch && matchesLevel && enabledMajors[major.id] !== false
+    return matchesSearch && enabledMajors[major.id] !== false
   })
 
   const enabledCount = useMemo(() => Object.values(enabledMajors).filter(Boolean).length, [enabledMajors])
@@ -50,20 +47,10 @@ export default function MajorBrandPage() {
 
   const handleClearFilters = () => {
     setSearch("")
-    setFilters({ level: "all" })
+    setFilters({})
   }
 
-  const filterConfigs = [
-    {
-      key: "level",
-      label: "全部品牌",
-      options: [
-        { value: "recommended", label: "推荐品牌" },
-        { value: "key", label: "重点品牌" },
-        { value: "standard", label: "标准品牌" },
-      ],
-    },
-  ]
+  const filterConfigs: { key: string; label: string; options: { value: string; label: string }[] }[] = []
 
   const columns = [
     { key: "name", title: "专业名称", render: (major: MajorBrand) => <span className="font-medium">{major.name}</span> },
@@ -84,20 +71,6 @@ export default function MajorBrandPage() {
     },
     { key: "studentCount", title: "在校生", render: (major: MajorBrand) => major.studentCount },
     { key: "employmentRate", title: "就业率", render: (major: MajorBrand) => `${major.employmentRate}%` },
-    { key: "viewCount", title: "浏览量", render: (major: MajorBrand) => major.viewCount },
-    {
-      key: "coreCourses",
-      title: "核心课程",
-      render: (major: MajorBrand) => (
-        <div className="flex flex-wrap gap-1">
-          {major.coreCourses.slice(0, 3).map((course) => (
-            <Badge key={typeof course === "string" ? course : course.name} variant="outline" className="text-xs font-normal">
-              {typeof course === "string" ? course : course.name}
-            </Badge>
-          ))}
-        </div>
-      ),
-    },
     {
       key: "actions",
       title: "",

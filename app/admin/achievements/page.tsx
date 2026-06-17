@@ -19,6 +19,7 @@ import { Plus, Eye, Edit, Trash2, Award } from 'lucide-react'
 import { achievements } from '@/lib/mock-data'
 import { SECONDARY_COLLEGES } from '@/lib/types'
 import type { Achievement } from '@/lib/types'
+import { PublicDisplaySwitch } from '@/components/shared/public-display-switch'
 
 export default function AchievementsPage() {
   const [search, setSearch] = useState('')
@@ -90,23 +91,6 @@ export default function AchievementsPage() {
 
   const columns = [
     {
-      key: 'display',
-      title: '前台展示',
-      render: (achievement: Achievement) => (
-        <div className="flex items-center gap-2">
-          <Switch
-            checked={achievement.isPublicDisplay ?? true}
-            onCheckedChange={() => handleTogglePublicDisplay(achievement)}
-          />
-          <span
-            className={`text-sm ${(achievement.isPublicDisplay ?? true) ? 'text-green-600' : 'text-gray-400'}`}
-          >
-            {(achievement.isPublicDisplay ?? true) ? '展示' : '隐藏'}
-          </span>
-        </div>
-      ),
-    },
-    {
       key: 'name',
       title: '成果名称',
       render: (achievement: Achievement) => (
@@ -118,9 +102,18 @@ export default function AchievementsPage() {
         </div>
       ),
     },
+    {
+      key: 'display',
+      title: '前台展示',
+      render: (achievement: Achievement) => (
+        <PublicDisplaySwitch
+          checked={achievement.isPublicDisplay ?? true}
+          onChange={() => handleTogglePublicDisplay(achievement)}
+        />
+      ),
+    },
     { key: 'partner', title: '关联主体', render: (a: Achievement) => <span className="text-sm">{a.partnerName || '-'}</span> },
     { key: 'project', title: '关联项目', render: (a: Achievement) => <span className="text-sm">{a.projectName || '-'}</span> },
-    { key: 'views', title: '浏览量', render: (a: Achievement) => <span className="text-sm">{a.viewCount}</span> },
     { key: 'createdBy', title: '创建人', render: (a: Achievement) => <span className="text-sm">{a.createdBy || '-'}</span> },
     {
       key: 'publishDate',

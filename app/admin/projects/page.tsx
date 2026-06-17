@@ -15,6 +15,7 @@ import { projects, enterprises } from '@/lib/mock-data'
 import { PROJECT_PHASE_LABELS, SECONDARY_COLLEGES } from '@/lib/types'
 import type { ProjectPhase } from '@/lib/types'
 import CooperationTypeManager from '@/components/admin/cooperation-type-manager'
+import { PublicDisplaySwitch } from '@/components/shared/public-display-switch'
 
 const PROJECT_TYPES = [
   '人才培养项目',
@@ -107,14 +108,6 @@ export default function ProjectsListPage() {
       label: '全部类型',
       options: PROJECT_TYPES.map((type) => ({ value: type, label: type })),
     },
-    {
-      key: 'publishStatus',
-      label: '全部状态',
-      options: [
-        { value: 'draft', label: '草稿' },
-        { value: 'published', label: '已发布' },
-      ],
-    },
   ]
 
   const stats = [
@@ -128,24 +121,6 @@ export default function ProjectsListPage() {
 
   const columns = [
     {
-      key: 'display',
-      title: '前台展示',
-      render: (project: typeof projects[0]) => {
-        const enterprise = enterprises.find((e) => e.id === project.partnerId)
-        return (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={enterprise?.isPublicDisplay ?? true}
-              onCheckedChange={() => handleTogglePublicDisplay(project)}
-            />
-            <span className={`text-sm ${(enterprise?.isPublicDisplay ?? true) ? 'text-green-600' : 'text-gray-400'}`}>
-              {(enterprise?.isPublicDisplay ?? true) ? '展示' : '隐藏'}
-            </span>
-          </div>
-        )
-      },
-    },
-    {
       key: 'name',
       title: '项目名称',
       render: (project: typeof projects[0]) => (
@@ -156,6 +131,19 @@ export default function ProjectsListPage() {
           </Link>
         </div>
       ),
+    },
+    {
+      key: 'display',
+      title: '前台展示',
+      render: (project: typeof projects[0]) => {
+        const enterprise = enterprises.find((e) => e.id === project.partnerId)
+        return (
+          <PublicDisplaySwitch
+            checked={enterprise?.isPublicDisplay ?? true}
+            onChange={() => handleTogglePublicDisplay(project)}
+          />
+        )
+      },
     },
     {
       key: 'partner',

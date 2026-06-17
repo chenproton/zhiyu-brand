@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -32,10 +31,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Switch } from "@/components/ui/switch"
 import { TableRowActions } from "@/components/admin/table-row-actions"
 import { AdminListPage } from "@/components/admin/list-page"
 import { AdminDataTable } from "@/components/admin/data-table"
-import { ArrowLeft, Search, Plus, Pencil, Trash2, Upload, X, Eye } from "lucide-react"
+import { Search, Plus, Pencil, Trash2, Upload, X, Eye } from "lucide-react"
 import { jobs, partners } from "@/lib/mock-data"
 import { JobActionButtons, NonTeachingJobDialog, TeachingJobDialog } from "@/components/admin/job-brand-tools"
 import {
@@ -43,25 +43,57 @@ import {
   SECONDARY_COLLEGES,
   PARTNER_TYPE_LABELS,
   COOPERATION_STATUS_LABELS,
+  COOPERATION_RATING_LABELS,
+  ENTERPRISE_TYPE_LABELS,
 } from "@/lib/types"
-import type { Job, NamedPhoto, Partner, PartnerType } from "@/lib/types"
+import type { Job, NamedPhoto, Partner, PartnerType, CooperationStatus, CooperationRating, EnterpriseType } from "@/lib/types"
+import { PublicDisplaySwitch } from "@/components/shared/public-display-switch"
 
-const emptyPartner: Omit<Partner, "id" | "createdAt" | "updatedAt"> = {
-  type: "enterprise",
-  name: "",
-  industry: INDUSTRIES[0],
-  region: "",
-  description: "",
-  logo: undefined,
-  status: "active",
-  rating: "general",
-  cooperationTypes: [],
-  contactPerson: undefined,
-  contactPhone: undefined,
-  contactEmail: undefined,
-  address: undefined,
-  establishedYear: undefined,
-  employeeCount: undefined,
+type PartnerFormState = {
+  name: string
+  enterpriseType: EnterpriseType
+  isPublicDisplay: boolean
+  industry: string
+  status: CooperationStatus
+  rating: CooperationRating
+  description: string
+  unifiedSocialCreditCode: string
+  logo: string
+  coverImage: string
+  businessLicensePhotos: string[]
+  intellectualPropertyPhotos: NamedPhoto[]
+  qualificationPhotos: NamedPhoto[]
+  coverPhotos: string[]
+  contactPerson: string
+  contactPhone: string
+  contactEmail: string
+  address: string
+  establishedYear: string
+  employeeCount: string
+  secondaryColleges: string[]
+}
+
+const emptyPartnerForm: PartnerFormState = {
+  name: '',
+  enterpriseType: 'school-based',
+  isPublicDisplay: true,
+  industry: '',
+  status: 'negotiating',
+  rating: 'general',
+  description: '',
+  unifiedSocialCreditCode: '',
+  logo: '',
+  coverImage: '',
+  businessLicensePhotos: [],
+  intellectualPropertyPhotos: [],
+  qualificationPhotos: [],
+  coverPhotos: [],
+  contactPerson: '',
+  contactPhone: '',
+  contactEmail: '',
+  address: '',
+  establishedYear: '',
+  employeeCount: '',
   secondaryColleges: [],
 }
 
@@ -107,67 +139,77 @@ export default function PartnerBrandPage() {
   const [nonTeachingJobOpen, setNonTeachingJobOpen] = useState(false)
   const [teachingJobOpen, setTeachingJobOpen] = useState(false)
 
-  // Edit form states
-  const [formDescription, setFormDescription] = useState("")
-  const [formCooperationTypes, setFormCooperationTypes] = useState("")
-  const [formContactPerson, setFormContactPerson] = useState("")
-  const [formContactPhone, setFormContactPhone] = useState("")
-  const [formIndustry, setFormIndustry] = useState("")
-  const [formRegion, setFormRegion] = useState("")
-  const [formStatus, setFormStatus] = useState<Partner["status"]>('active')
-
-  // Create form states
-  const [createForm, setCreateForm] = useState({ ...emptyPartner })
+  // 编辑/新增共用表单状态
+  const [partnerForm, setPartnerForm] = useState<PartnerFormState>({ ...emptyPartnerForm })
 
   // Photo upload refs & state
   const licenseFileRef = useRef<HTMLInputElement>(null)
   const ipFileRef = useRef<HTMLInputElement>(null)
   const qualFileRef = useRef<HTMLInputElement>(null)
   const coverFileRef = useRef<HTMLInputElement>(null)
-  const [licensePhotos, setLicensePhotos] = useState<string[]>([])
-  const [ipPhotos, setIpPhotos] = useState<NamedPhoto[]>([])
-  const [qualPhotos, setQualPhotos] = useState<NamedPhoto[]>([])
-  const [coverPhotos, setCoverPhotos] = useState<string[]>([])
+  const logoFileRef = useRef<HTMLInputElement>(null)
+  const coverImageFileRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = (setter: React.Dispatch<React.SetStateAction<string[]>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const resetPartnerForm = () => {
+    setPartnerForm({ ...emptyPartnerForm })
+  }
+
+  const handleFileChange = (field: 'businessLicensePhotos' | 'coverPhotos') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
       const newPhotos = Array.from(files).map((file) => URL.createObjectURL(file))
-      setter((prev) => [...prev, ...newPhotos])
+      setPartnerForm((prev) => ({ ...prev, [field]: [...prev[field], ...newPhotos] }))
     }
     e.target.value = ''
   }
 
-  const removePhoto = (setter: React.Dispatch<React.SetStateAction<string[]>>, index: number) => {
-    setter((prev) => prev.filter((_, i) => i !== index))
+  const removePhoto = (field: 'businessLicensePhotos' | 'coverPhotos', index: number) => {
+    setPartnerForm((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }))
   }
 
-  const handleNamedFileChange = (setter: React.Dispatch<React.SetStateAction<NamedPhoto[]>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSingleImageChange = (field: 'logo' | 'coverImage') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setPartnerForm((prev) => ({ ...prev, [field]: URL.createObjectURL(file) }))
+    }
+    e.target.value = ''
+  }
+
+  const removeSingleImage = (field: 'logo' | 'coverImage') => {
+    setPartnerForm((prev) => ({ ...prev, [field]: '' }))
+  }
+
+  const handleNamedFileChange = (field: 'intellectualPropertyPhotos' | 'qualificationPhotos') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
       const newPhotos: NamedPhoto[] = Array.from(files).map((file) => ({ name: '', url: URL.createObjectURL(file) }))
-      setter((prev) => [...prev, ...newPhotos])
+      setPartnerForm((prev) => ({ ...prev, [field]: [...prev[field], ...newPhotos] }))
     }
     e.target.value = ''
   }
 
   const updateNamedPhotoName = (
-    setter: React.Dispatch<React.SetStateAction<NamedPhoto[]>>,
+    field: 'intellectualPropertyPhotos' | 'qualificationPhotos',
     index: number,
     name: string
   ) => {
-    setter((prev) => prev.map((item, i) => (i === index ? { ...item, name } : item)))
+    setPartnerForm((prev) => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => (i === index ? { ...item, name } : item)),
+    }))
   }
 
-  const removeNamedPhoto = (setter: React.Dispatch<React.SetStateAction<NamedPhoto[]>>, index: number) => {
-    setter((prev) => prev.filter((_, i) => i !== index))
+  const removeNamedPhoto = (field: 'intellectualPropertyPhotos' | 'qualificationPhotos', index: number) => {
+    setPartnerForm((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }))
   }
 
-  const resetCreatePhotos = () => {
-    setLicensePhotos([])
-    setIpPhotos([])
-    setQualPhotos([])
-    setCoverPhotos([])
+  const toggleSecondaryCollege = (college: string) => {
+    setPartnerForm((prev) => ({
+      ...prev,
+      secondaryColleges: prev.secondaryColleges.includes(college)
+        ? prev.secondaryColleges.filter((c) => c !== college)
+        : [...prev.secondaryColleges, college],
+    }))
   }
 
   const filteredPartners = displayedPartners.filter((partner) => {
@@ -216,6 +258,22 @@ export default function PartnerBrandPage() {
 
   const columns = [
     { key: "name", title: "主体名称", render: (partner: Partner) => <span className="font-medium">{partner.name}</span> },
+    {
+      key: "isPublicDisplay",
+      title: "前台展示",
+      render: (partner: Partner) => (
+        <PublicDisplaySwitch
+          checked={partner.isPublicDisplay ?? true}
+          onChange={(checked) => {
+            setDisplayedPartners((prev) =>
+              prev.map((p) =>
+                p.id === partner.id ? { ...p, isPublicDisplay: checked, updatedAt: new Date() } : p
+              )
+            )
+          }}
+        />
+      ),
+    },
     { key: "type", title: "类型", render: (partner: Partner) => PARTNER_TYPE_LABELS[partner.type] },
     { key: "industry", title: "行业", render: (partner: Partner) => partner.industry },
     { key: "region", title: "地区", render: (partner: Partner) => partner.region },
@@ -272,19 +330,34 @@ export default function PartnerBrandPage() {
 
   const openEdit = (partner: Partner) => {
     setEditingPartner(partner)
-    setFormDescription(partner.description)
-    setFormCooperationTypes(partner.cooperationTypes.join(", "))
-    setFormContactPerson(partner.contactPerson || "")
-    setFormContactPhone(partner.contactPhone || "")
-    setFormIndustry(partner.industry)
-    setFormRegion(partner.region)
-    setFormStatus(partner.status)
+    setPartnerForm({
+      name: partner.name || '',
+      enterpriseType: (partner as unknown as { enterpriseType?: EnterpriseType }).enterpriseType || 'school-based',
+      isPublicDisplay: (partner as unknown as { isPublicDisplay?: boolean }).isPublicDisplay ?? true,
+      industry: partner.industry || '',
+      status: partner.status || 'negotiating',
+      rating: partner.rating || 'general',
+      description: partner.description || '',
+      unifiedSocialCreditCode: (partner as unknown as { unifiedSocialCreditCode?: string }).unifiedSocialCreditCode || '',
+      logo: partner.logo || '',
+      coverImage: partner.coverImage || '',
+      businessLicensePhotos: partner.businessLicensePhotos || [],
+      intellectualPropertyPhotos: partner.intellectualPropertyPhotos || [],
+      qualificationPhotos: partner.qualificationPhotos || [],
+      coverPhotos: partner.coverPhotos || [],
+      contactPerson: partner.contactPerson || '',
+      contactPhone: partner.contactPhone || '',
+      contactEmail: partner.contactEmail || '',
+      address: partner.address || '',
+      establishedYear: partner.establishedYear?.toString() || '',
+      employeeCount: partner.employeeCount?.toString() || '',
+      secondaryColleges: partner.secondaryColleges || [],
+    })
     setEditDialogOpen(true)
   }
 
   const openCreate = () => {
-    setCreateForm({ ...emptyPartner })
-    resetCreatePhotos()
+    resetPartnerForm()
     setCreateDialogOpen(true)
   }
 
@@ -293,20 +366,30 @@ export default function PartnerBrandPage() {
     setDisplayedPartners((prev) =>
       prev.map((p) =>
         p.id === editingPartner.id
-          ? {
+          ? ({
               ...p,
-              description: formDescription,
-              cooperationTypes: formCooperationTypes
-                .split(/,|，/)
-                .map((s) => s.trim())
-                .filter(Boolean),
-              contactPerson: formContactPerson || undefined,
-              contactPhone: formContactPhone || undefined,
-              industry: formIndustry,
-              region: formRegion,
-              status: formStatus,
+              name: partnerForm.name,
+              industry: partnerForm.industry,
+              status: partnerForm.status,
+              rating: partnerForm.rating,
+              isPublicDisplay: partnerForm.isPublicDisplay,
+              description: partnerForm.description,
+              unifiedSocialCreditCode: partnerForm.unifiedSocialCreditCode,
+              logo: partnerForm.logo || undefined,
+              coverImage: partnerForm.coverImage || undefined,
+              businessLicensePhotos: partnerForm.businessLicensePhotos.length > 0 ? partnerForm.businessLicensePhotos : undefined,
+              intellectualPropertyPhotos: partnerForm.intellectualPropertyPhotos.length > 0 ? partnerForm.intellectualPropertyPhotos : undefined,
+              qualificationPhotos: partnerForm.qualificationPhotos.length > 0 ? partnerForm.qualificationPhotos : undefined,
+              coverPhotos: partnerForm.coverPhotos.length > 0 ? partnerForm.coverPhotos : undefined,
+              contactPerson: partnerForm.contactPerson || undefined,
+              contactPhone: partnerForm.contactPhone || undefined,
+              contactEmail: partnerForm.contactEmail || undefined,
+              address: partnerForm.address || undefined,
+              establishedYear: partnerForm.establishedYear ? Number(partnerForm.establishedYear) : undefined,
+              employeeCount: partnerForm.employeeCount ? Number(partnerForm.employeeCount) : undefined,
+              secondaryColleges: partnerForm.secondaryColleges,
               updatedAt: new Date(),
-            }
+            } as unknown as Partner)
           : p
       )
     )
@@ -315,23 +398,28 @@ export default function PartnerBrandPage() {
   }
 
   const handleCreate = () => {
-    const newPartner: Partner = {
-      ...createForm,
+    const newPartner = {
+      ...partnerForm,
       id: `custom-${Date.now()}`,
-      cooperationTypes: [],
-      contactPerson: createForm.contactPerson || undefined,
-      contactPhone: createForm.contactPhone || undefined,
-      contactEmail: createForm.contactEmail || undefined,
-      address: createForm.address || undefined,
-      establishedYear: createForm.establishedYear || undefined,
-      employeeCount: createForm.employeeCount || undefined,
-      businessLicensePhotos: licensePhotos.length > 0 ? licensePhotos : undefined,
-      intellectualPropertyPhotos: ipPhotos.length > 0 ? ipPhotos : undefined,
-      qualificationPhotos: qualPhotos.length > 0 ? qualPhotos : undefined,
-      coverPhotos: coverPhotos.length > 0 ? coverPhotos : undefined,
+      type: 'enterprise' as const,
+      region: '',
+      cooperationTypes: [] as string[],
+      logo: partnerForm.logo || undefined,
+      coverImage: partnerForm.coverImage || undefined,
+      businessLicensePhotos: partnerForm.businessLicensePhotos.length > 0 ? partnerForm.businessLicensePhotos : undefined,
+      intellectualPropertyPhotos: partnerForm.intellectualPropertyPhotos.length > 0 ? partnerForm.intellectualPropertyPhotos : undefined,
+      qualificationPhotos: partnerForm.qualificationPhotos.length > 0 ? partnerForm.qualificationPhotos : undefined,
+      coverPhotos: partnerForm.coverPhotos.length > 0 ? partnerForm.coverPhotos : undefined,
+      contactPerson: partnerForm.contactPerson || undefined,
+      contactPhone: partnerForm.contactPhone || undefined,
+      contactEmail: partnerForm.contactEmail || undefined,
+      address: partnerForm.address || undefined,
+      establishedYear: partnerForm.establishedYear ? Number(partnerForm.establishedYear) : undefined,
+      employeeCount: partnerForm.employeeCount ? Number(partnerForm.employeeCount) : undefined,
+      secondaryColleges: partnerForm.secondaryColleges,
       createdAt: new Date(),
       updatedAt: new Date(),
-    }
+    } as unknown as Partner
     setDisplayedPartners((prev) => {
       const next = [...prev, newPartner]
       const customOnly = next.filter((p) => p.id.startsWith("custom-"))
@@ -483,108 +571,10 @@ export default function PartnerBrandPage() {
 
       {/* 编辑 Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>编辑雇主品牌</DialogTitle>
             <DialogDescription>修改合作主体的品牌展示信息</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>主体名称</Label>
-              <Input value={editingPartner?.name || ""} disabled />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>所属行业</Label>
-                <Select value={formIndustry} onValueChange={setFormIndustry}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INDUSTRIES.map((ind) => (
-                      <SelectItem key={ind} value={ind}>
-                        {ind}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {!editingPartner?.id.startsWith('custom-') && (
-                <div className="space-y-2">
-                  <Label>合作状态</Label>
-                  <Select value={formStatus} onValueChange={(v) => setFormStatus(v as Partner["status"])}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">合作中</SelectItem>
-                      <SelectItem value="negotiating">洽谈中</SelectItem>
-                      <SelectItem value="paused">已暂停</SelectItem>
-                      <SelectItem value="terminated">已终止</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label>地区</Label>
-              <Input
-                value={formRegion}
-                onChange={(e) => setFormRegion(e.target.value)}
-                placeholder="如 江苏省苏州市"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>联系人</Label>
-              <Input
-                value={formContactPerson}
-                onChange={(e) => setFormContactPerson(e.target.value)}
-                placeholder="请输入联系人姓名"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>联系电话</Label>
-              <Input
-                value={formContactPhone}
-                onChange={(e) => setFormContactPhone(e.target.value)}
-                placeholder="请输入联系电话"
-              />
-            </div>
-            {!editingPartner?.id.startsWith('custom-') && (
-              <div className="space-y-2">
-                <Label>合作类型（逗号分隔）</Label>
-                <Input
-                  value={formCooperationTypes}
-                  onChange={(e) => setFormCooperationTypes(e.target.value)}
-                  placeholder="如 人才培养, 实习实训, 技术研发"
-                />
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label>品牌描述</Label>
-              <FakeRichTextEditor
-                value={formDescription}
-                onChange={setFormDescription}
-                placeholder="请输入品牌描述..."
-                minHeight="120px"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              取消
-            </Button>
-            <Button onClick={handleUpdate}>保存修改</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 新增独立雇主企业 Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>新增独立雇主企业</DialogTitle>
-            <DialogDescription>从零创建一个新的独立雇主企业档案</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <Card>
@@ -595,62 +585,205 @@ export default function PartnerBrandPage() {
                 <div className="space-y-2 md:col-span-2">
                   <Label>企业名称 *</Label>
                   <Input
-                    value={createForm.name}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
+                    value={partnerForm.name}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder="请输入企业全称"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>主体类型</Label>
-                  <Select
-                    value={createForm.type}
-                    onValueChange={(v) => setCreateForm((prev) => ({ ...prev, type: v as PartnerType }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="enterprise">企业</SelectItem>
-                      <SelectItem value="association">行业协会</SelectItem>
-                      <SelectItem value="park">产业园区</SelectItem>
-                      <SelectItem value="institution">机构</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>统一社会信用代码 *</Label>
+                  <Input
+                    value={partnerForm.unifiedSocialCreditCode}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, unifiedSocialCreditCode: e.target.value }))}
+                    placeholder="如：91320594MA1P7XXXX1"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>所属行业</Label>
-                  <Select
-                    value={createForm.industry}
-                    onValueChange={(v) => setCreateForm((prev) => ({ ...prev, industry: v }))}
-                  >
+                  <Select value={partnerForm.industry} onValueChange={(v) => setPartnerForm((prev) => ({ ...prev, industry: v }))}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="选择行业" />
                     </SelectTrigger>
                     <SelectContent>
                       {INDUSTRIES.map((ind) => (
-                        <SelectItem key={ind} value={ind}>
-                          {ind}
-                        </SelectItem>
+                        <SelectItem key={ind} value={ind}>{ind}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>地区</Label>
-                  <Input
-                    value={createForm.region}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, region: e.target.value }))}
-                    placeholder="如 江苏省苏州市"
-                  />
+                <div className="space-y-2">
+                  <Label>合作状态</Label>
+                  <Select value={partnerForm.status} onValueChange={(v) => setPartnerForm((prev) => ({ ...prev, status: v as CooperationStatus }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(COOPERATION_STATUS_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>合作评级</Label>
+                  <Select value={partnerForm.rating} onValueChange={(v) => setPartnerForm((prev) => ({ ...prev, rating: v as CooperationRating }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(COOPERATION_RATING_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>前台展示</Label>
+                  <div className="flex items-center gap-2 h-10">
+                    <Switch
+                      checked={partnerForm.isPublicDisplay}
+                      onCheckedChange={(checked) => setPartnerForm((prev) => ({ ...prev, isPublicDisplay: checked }))}
+                    />
+                    <span className={`text-sm ${partnerForm.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
+                      {partnerForm.isPublicDisplay ? '展示' : '隐藏'}
+                    </span>
+                  </div>
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label>品牌描述</Label>
+                  <Label>企业简介</Label>
                   <FakeRichTextEditor
-                    value={createForm.description}
-                    onChange={(value) => setCreateForm((prev) => ({ ...prev, description: value }))}
-                    placeholder="请输入品牌描述..."
+                    value={partnerForm.description}
+                    onChange={(value) => setPartnerForm((prev) => ({ ...prev, description: value }))}
+                    placeholder="请输入企业简介..."
                     minHeight="120px"
                   />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">企业形象</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label>企业 Logo</Label>
+                  <input ref={logoFileRef} type="file" accept="image/*" className="hidden" onChange={handleSingleImageChange('logo')} />
+                  {partnerForm.logo ? (
+                    <div className="relative inline-block">
+                      <img src={partnerForm.logo} alt="企业 Logo" className="w-24 h-24 object-cover rounded-xl border" />
+                      <button type="button" onClick={() => removeSingleImage('logo')} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => logoFileRef.current?.click()}>
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">上传 Logo</span>
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>企业主页封面</Label>
+                  <input ref={coverImageFileRef} type="file" accept="image/*" className="hidden" onChange={handleSingleImageChange('coverImage')} />
+                  {partnerForm.coverImage ? (
+                    <div className="relative inline-block">
+                      <img src={partnerForm.coverImage} alt="企业主页封面" className="w-full max-w-md h-40 object-cover rounded-lg border" />
+                      <button type="button" onClick={() => removeSingleImage('coverImage')} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button type="button" variant="outline" className="w-full max-w-md h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => coverImageFileRef.current?.click()}>
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">上传主页封面</span>
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">企业营业执照</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input ref={licenseFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange('businessLicensePhotos')} />
+                <div className="flex flex-wrap gap-3">
+                  {partnerForm.businessLicensePhotos.map((photo, idx) => (
+                    <div key={idx} className="relative">
+                      <img src={photo} alt={`营业执照 ${idx + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
+                      <button type="button" onClick={() => removePhoto('businessLicensePhotos', idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" className="w-32 h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => licenseFileRef.current?.click()}>
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">上传照片</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">企业知识产权</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input ref={ipFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange('intellectualPropertyPhotos')} />
+                <div className="flex flex-wrap gap-3">
+                  {partnerForm.intellectualPropertyPhotos.map((photo, idx) => (
+                    <div key={idx} className="relative flex flex-col gap-2 w-32">
+                      <div className="relative">
+                        <img src={photo.url} alt={photo.name || `知识产权 ${idx + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
+                        <button type="button" onClick={() => removeNamedPhoto('intellectualPropertyPhotos', idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <Input
+                        value={photo.name}
+                        onChange={(e) => updateNamedPhotoName('intellectualPropertyPhotos', idx, e.target.value)}
+                        placeholder="名称"
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" className="w-32 h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => ipFileRef.current?.click()}>
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">上传照片</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">企业荣誉资质</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input ref={qualFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange('qualificationPhotos')} />
+                <div className="flex flex-wrap gap-3">
+                  {partnerForm.qualificationPhotos.map((photo, idx) => (
+                    <div key={idx} className="relative flex flex-col gap-2 w-32">
+                      <div className="relative">
+                        <img src={photo.url} alt={photo.name || `资质证明 ${idx + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
+                        <button type="button" onClick={() => removeNamedPhoto('qualificationPhotos', idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <Input
+                        value={photo.name}
+                        onChange={(e) => updateNamedPhotoName('qualificationPhotos', idx, e.target.value)}
+                        placeholder="名称"
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" className="w-32 h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => qualFileRef.current?.click()}>
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">上传照片</span>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -661,35 +794,35 @@ export default function PartnerBrandPage() {
               </CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>联系人</Label>
+                  <Label>企业联系人</Label>
                   <Input
-                    value={createForm.contactPerson || ""}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, contactPerson: e.target.value }))}
-                    placeholder="请输入联系人姓名"
+                    value={partnerForm.contactPerson}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, contactPerson: e.target.value }))}
+                    placeholder="请输入企业联系人姓名"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>联系电话</Label>
                   <Input
-                    value={createForm.contactPhone || ""}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, contactPhone: e.target.value }))}
+                    value={partnerForm.contactPhone}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, contactPhone: e.target.value }))}
                     placeholder="请输入联系电话"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>联系邮箱</Label>
                   <Input
-                    value={createForm.contactEmail || ""}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, contactEmail: e.target.value }))}
+                    value={partnerForm.contactEmail}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, contactEmail: e.target.value }))}
                     placeholder="请输入联系邮箱"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>详细地址</Label>
                   <Input
-                    value={createForm.address || ""}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, address: e.target.value }))}
-                    placeholder="请输入详细地址"
+                    value={partnerForm.address}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, address: e.target.value }))}
+                    placeholder="请输入企业地址"
                   />
                 </div>
               </CardContent>
@@ -704,18 +837,18 @@ export default function PartnerBrandPage() {
                   <Label>成立年份</Label>
                   <Input
                     type="number"
-                    value={createForm.establishedYear || ""}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, establishedYear: e.target.value ? Number(e.target.value) : undefined }))}
-                    placeholder="如 2010"
+                    value={partnerForm.establishedYear}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, establishedYear: e.target.value }))}
+                    placeholder="如：2010"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>员工人数</Label>
+                  <Label>企业规模</Label>
                   <Input
                     type="number"
-                    value={createForm.employeeCount || ""}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, employeeCount: e.target.value ? Number(e.target.value) : undefined }))}
-                    placeholder="如 500"
+                    value={partnerForm.employeeCount}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, employeeCount: e.target.value }))}
+                    placeholder="如：500"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -724,16 +857,9 @@ export default function PartnerBrandPage() {
                     {SECONDARY_COLLEGES.map((college) => (
                       <Badge
                         key={college}
-                        variant={(createForm.secondaryColleges || []).includes(college) ? 'default' : 'outline'}
+                        variant={partnerForm.secondaryColleges.includes(college) ? 'default' : 'outline'}
                         className="cursor-pointer"
-                        onClick={() =>
-                          setCreateForm((prev) => ({
-                            ...prev,
-                            secondaryColleges: (prev.secondaryColleges || []).includes(college)
-                              ? (prev.secondaryColleges || []).filter((c) => c !== college)
-                              : [...(prev.secondaryColleges || []), college],
-                          }))
-                        }
+                        onClick={() => toggleSecondaryCollege(college)}
                       >
                         {college}
                       </Badge>
@@ -743,103 +869,313 @@ export default function PartnerBrandPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleUpdate}>保存修改</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 新增独立雇主企业 Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>新增独立雇主企业</DialogTitle>
+            <DialogDescription>从零创建一个新的独立雇主企业档案</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">基本信息</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2 md:col-span-2">
+                  <Label>企业名称 *</Label>
+                  <Input
+                    value={partnerForm.name}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="请输入企业全称"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>统一社会信用代码 *</Label>
+                  <Input
+                    value={partnerForm.unifiedSocialCreditCode}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, unifiedSocialCreditCode: e.target.value }))}
+                    placeholder="如：91320594MA1P7XXXX1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>所属行业</Label>
+                  <Select value={partnerForm.industry} onValueChange={(v) => setPartnerForm((prev) => ({ ...prev, industry: v }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择行业" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDUSTRIES.map((ind) => (
+                        <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>合作状态</Label>
+                  <Select value={partnerForm.status} onValueChange={(v) => setPartnerForm((prev) => ({ ...prev, status: v as CooperationStatus }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(COOPERATION_STATUS_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>合作评级</Label>
+                  <Select value={partnerForm.rating} onValueChange={(v) => setPartnerForm((prev) => ({ ...prev, rating: v as CooperationRating }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(COOPERATION_RATING_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>前台展示</Label>
+                  <div className="flex items-center gap-2 h-10">
+                    <Switch
+                      checked={partnerForm.isPublicDisplay}
+                      onCheckedChange={(checked) => setPartnerForm((prev) => ({ ...prev, isPublicDisplay: checked }))}
+                    />
+                    <span className={`text-sm ${partnerForm.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
+                      {partnerForm.isPublicDisplay ? '展示' : '隐藏'}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>企业简介</Label>
+                  <FakeRichTextEditor
+                    value={partnerForm.description}
+                    onChange={(value) => setPartnerForm((prev) => ({ ...prev, description: value }))}
+                    placeholder="请输入企业简介..."
+                    minHeight="120px"
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">资质材料</CardTitle>
+                <CardTitle className="text-base">企业形象</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* 营业执照 */}
                 <div className="space-y-2">
-                  <Label>营业执照照片</Label>
-                  <input ref={licenseFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange(setLicensePhotos)} />
-                  <div className="flex flex-wrap gap-3">
-                    {licensePhotos.map((photo, idx) => (
-                      <div key={idx} className="relative">
-                        <img src={photo} alt={`营业执照 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
-                        <button type="button" onClick={() => removePhoto(setLicensePhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                  <Label>企业 Logo</Label>
+                  <input ref={logoFileRef} type="file" accept="image/*" className="hidden" onChange={handleSingleImageChange('logo')} />
+                  {partnerForm.logo ? (
+                    <div className="relative inline-block">
+                      <img src={partnerForm.logo} alt="企业 Logo" className="w-24 h-24 object-cover rounded-xl border" />
+                      <button type="button" onClick={() => removeSingleImage('logo')} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => logoFileRef.current?.click()}>
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">上传 Logo</span>
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>企业主页封面</Label>
+                  <input ref={coverImageFileRef} type="file" accept="image/*" className="hidden" onChange={handleSingleImageChange('coverImage')} />
+                  {partnerForm.coverImage ? (
+                    <div className="relative inline-block">
+                      <img src={partnerForm.coverImage} alt="企业主页封面" className="w-full max-w-md h-40 object-cover rounded-lg border" />
+                      <button type="button" onClick={() => removeSingleImage('coverImage')} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button type="button" variant="outline" className="w-full max-w-md h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => coverImageFileRef.current?.click()}>
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">上传主页封面</span>
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">企业营业执照</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input ref={licenseFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange('businessLicensePhotos')} />
+                <div className="flex flex-wrap gap-3">
+                  {partnerForm.businessLicensePhotos.map((photo, idx) => (
+                    <div key={idx} className="relative">
+                      <img src={photo} alt={`营业执照 ${idx + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
+                      <button type="button" onClick={() => removePhoto('businessLicensePhotos', idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" className="w-32 h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => licenseFileRef.current?.click()}>
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">上传照片</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">企业知识产权</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input ref={ipFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange('intellectualPropertyPhotos')} />
+                <div className="flex flex-wrap gap-3">
+                  {partnerForm.intellectualPropertyPhotos.map((photo, idx) => (
+                    <div key={idx} className="relative flex flex-col gap-2 w-32">
+                      <div className="relative">
+                        <img src={photo.url} alt={photo.name || `知识产权 ${idx + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
+                        <button type="button" onClick={() => removeNamedPhoto('intellectualPropertyPhotos', idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
                           <X className="h-3 w-3" />
                         </button>
                       </div>
-                    ))}
-                    <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-1 border-dashed" onClick={() => licenseFileRef.current?.click()}>
-                      <Upload className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground">上传</span>
-                    </Button>
-                  </div>
+                      <Input
+                        value={photo.name}
+                        onChange={(e) => updateNamedPhotoName('intellectualPropertyPhotos', idx, e.target.value)}
+                        placeholder="名称"
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" className="w-32 h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => ipFileRef.current?.click()}>
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">上传照片</span>
+                  </Button>
                 </div>
-                {/* 知识产权 */}
-                <div className="space-y-2">
-                  <Label>知识产权照片</Label>
-                  <input ref={ipFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange(setIpPhotos)} />
-                  <div className="flex flex-wrap gap-3">
-                    {ipPhotos.map((photo, idx) => (
-                      <div key={idx} className="flex flex-col gap-1.5 w-24">
-                        <div className="relative">
-                          <img src={photo.url} alt={photo.name || `知识产权 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
-                          <button type="button" onClick={() => removeNamedPhoto(setIpPhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                        <Input
-                          value={photo.name}
-                          onChange={(e) => updateNamedPhotoName(setIpPhotos, idx, e.target.value)}
-                          placeholder="名称"
-                          className="h-7 text-[10px]"
-                        />
-                      </div>
-                    ))}
-                    <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-1 border-dashed" onClick={() => ipFileRef.current?.click()}>
-                      <Upload className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground">上传</span>
-                    </Button>
-                  </div>
-                </div>
-                {/* 企业资质 */}
-                <div className="space-y-2">
-                  <Label>企业荣誉资质</Label>
-                  <input ref={qualFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange(setQualPhotos)} />
-                  <div className="flex flex-wrap gap-3">
-                    {qualPhotos.map((photo, idx) => (
-                      <div key={idx} className="flex flex-col gap-1.5 w-24">
-                        <div className="relative">
-                          <img src={photo.url} alt={photo.name || `资质 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
-                          <button type="button" onClick={() => removeNamedPhoto(setQualPhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                        <Input
-                          value={photo.name}
-                          onChange={(e) => updateNamedPhotoName(setQualPhotos, idx, e.target.value)}
-                          placeholder="名称"
-                          className="h-7 text-[10px]"
-                        />
-                      </div>
-                    ))}
-                    <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-1 border-dashed" onClick={() => qualFileRef.current?.click()}>
-                      <Upload className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground">上传</span>
-                    </Button>
-                  </div>
-                </div>
-                {/* 封面 */}
-                <div className="space-y-2">
-                  <Label>封面照片</Label>
-                  <input ref={coverFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange(setCoverPhotos)} />
-                  <div className="flex flex-wrap gap-3">
-                    {coverPhotos.map((photo, idx) => (
-                      <div key={idx} className="relative">
-                        <img src={photo} alt={`封面 ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
-                        <button type="button" onClick={() => removePhoto(setCoverPhotos, idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">企业荣誉资质</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <input ref={qualFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNamedFileChange('qualificationPhotos')} />
+                <div className="flex flex-wrap gap-3">
+                  {partnerForm.qualificationPhotos.map((photo, idx) => (
+                    <div key={idx} className="relative flex flex-col gap-2 w-32">
+                      <div className="relative">
+                        <img src={photo.url} alt={photo.name || `资质证明 ${idx + 1}`} className="w-32 h-40 object-cover rounded-lg border" />
+                        <button type="button" onClick={() => removeNamedPhoto('qualificationPhotos', idx)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200">
                           <X className="h-3 w-3" />
                         </button>
                       </div>
+                      <Input
+                        value={photo.name}
+                        onChange={(e) => updateNamedPhotoName('qualificationPhotos', idx, e.target.value)}
+                        placeholder="名称"
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" className="w-32 h-40 flex flex-col items-center justify-center gap-2 border-dashed" onClick={() => qualFileRef.current?.click()}>
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">上传照片</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">联系信息</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>企业联系人</Label>
+                  <Input
+                    value={partnerForm.contactPerson}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, contactPerson: e.target.value }))}
+                    placeholder="请输入企业联系人姓名"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>联系电话</Label>
+                  <Input
+                    value={partnerForm.contactPhone}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, contactPhone: e.target.value }))}
+                    placeholder="请输入联系电话"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>联系邮箱</Label>
+                  <Input
+                    value={partnerForm.contactEmail}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, contactEmail: e.target.value }))}
+                    placeholder="请输入联系邮箱"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>详细地址</Label>
+                  <Input
+                    value={partnerForm.address}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, address: e.target.value }))}
+                    placeholder="请输入企业地址"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">其他信息</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>成立年份</Label>
+                  <Input
+                    type="number"
+                    value={partnerForm.establishedYear}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, establishedYear: e.target.value }))}
+                    placeholder="如：2010"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>企业规模</Label>
+                  <Input
+                    type="number"
+                    value={partnerForm.employeeCount}
+                    onChange={(e) => setPartnerForm((prev) => ({ ...prev, employeeCount: e.target.value }))}
+                    placeholder="如：500"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>关联二级学院</Label>
+                  <div className="flex flex-wrap gap-2 p-3 border rounded-md">
+                    {SECONDARY_COLLEGES.map((college) => (
+                      <Badge
+                        key={college}
+                        variant={partnerForm.secondaryColleges.includes(college) ? 'default' : 'outline'}
+                        className="cursor-pointer"
+                        onClick={() => toggleSecondaryCollege(college)}
+                      >
+                        {college}
+                      </Badge>
                     ))}
-                    <Button type="button" variant="outline" className="w-24 h-24 flex flex-col items-center justify-center gap-1 border-dashed" onClick={() => coverFileRef.current?.click()}>
-                      <Upload className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground">上传</span>
-                    </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground">点击标签进行选择，支持多选</p>
                 </div>
               </CardContent>
             </Card>

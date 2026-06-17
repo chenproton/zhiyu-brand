@@ -12,7 +12,6 @@ import {
   Heart,
   FileText,
   TrendingUp,
-  Eye,
 } from "lucide-react"
 import {
   talentProfiles,
@@ -100,15 +99,6 @@ const brandModules = [
   },
 ]
 
-// 计算总浏览量
-const totalViews =
-  employmentCases.reduce((sum, e) => sum + e.viewCount, 0) +
-  jobBrands.reduce((sum, j) => sum + j.viewCount, 0) +
-  majorBrands.reduce((sum, m) => sum + m.viewCount, 0) +
-  teacherBrands.reduce((sum, t) => sum + t.viewCount, 0) +
-  cultureBrands.reduce((sum, c) => sum + c.viewCount, 0) +
-  0
-
 export default function BrandsPage() {
   return (
     <div className="space-y-6">
@@ -137,19 +127,6 @@ export default function BrandsPage() {
                     teacherBrands.length +
                     cultureBrands.length}
                 </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-emerald-100 text-emerald-600">
-                <Eye className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">总浏览量</p>
-                <p className="text-2xl font-semibold">{totalViews.toLocaleString()}</p>
               </div>
             </div>
           </CardContent>

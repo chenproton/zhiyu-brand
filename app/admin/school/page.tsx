@@ -168,7 +168,7 @@ function SchoolEditForm() {
                 <GraduationCap className="h-4 w-4" />
                 基本信息
               </CardTitle>
-              <CardDescription>学校名称、类型、办学层次等核心信息</CardDescription>
+              <CardDescription>学校名称、办学层次等核心信息</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -178,10 +178,6 @@ function SchoolEditForm() {
               <div className="space-y-2">
                 <Label>学校代码</Label>
                 <Input defaultValue={schoolInfo.code} />
-              </div>
-              <div className="space-y-2">
-                <Label>院校类型</Label>
-                <Input defaultValue={schoolInfo.type} />
               </div>
               <div className="space-y-2">
                 <Label>建校年份</Label>

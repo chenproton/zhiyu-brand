@@ -27,6 +27,7 @@ import {
   Users,
 } from 'lucide-react'
 import { enterprises, projects, achievements } from '@/lib/mock-data'
+import { PublicDisplaySwitch } from '@/components/shared/public-display-switch'
 import {
   ENTERPRISE_TYPE_LABELS,
   COOPERATION_STATUS_LABELS,
@@ -73,7 +74,7 @@ export default function EnterprisesListPage() {
         const matchesSearch =
           enterprise.name.toLowerCase().includes(searchLower) ||
           enterprise.industry.toLowerCase().includes(searchLower) ||
-          enterprise.region.toLowerCase().includes(searchLower)
+          (enterprise.address || '').toLowerCase().includes(searchLower)
         if (!matchesSearch) return false
       }
 
@@ -158,21 +159,6 @@ export default function EnterprisesListPage() {
 
   const columns = [
     {
-      key: 'display',
-      title: '前台展示',
-      render: (enterprise: typeof enterprises[0]) => (
-        <div className="flex items-center gap-2">
-          <Switch
-            checked={enterprise.isPublicDisplay}
-            onCheckedChange={() => handleTogglePublicDisplay(enterprise)}
-          />
-          <span className={`text-sm ${enterprise.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
-            {enterprise.isPublicDisplay ? '展示' : '隐藏'}
-          </span>
-        </div>
-      ),
-    },
-    {
       key: 'name',
       title: '企业名称',
       render: (enterprise: typeof enterprises[0]) => (
@@ -183,6 +169,16 @@ export default function EnterprisesListPage() {
           <Building2 className="h-4 w-4 text-muted-foreground" />
           {enterprise.name}
         </Link>
+      ),
+    },
+    {
+      key: 'display',
+      title: '前台展示',
+      render: (enterprise: typeof enterprises[0]) => (
+        <PublicDisplaySwitch
+          checked={enterprise.isPublicDisplay}
+          onChange={() => handleTogglePublicDisplay(enterprise)}
+        />
       ),
     },
     {
@@ -201,7 +197,7 @@ export default function EnterprisesListPage() {
       ),
     },
     { key: 'industry', title: '行业', render: (e: typeof enterprises[0]) => e.industry },
-    { key: 'region', title: '地区', render: (e: typeof enterprises[0]) => e.region },
+    { key: 'address', title: '地址', render: (e: typeof enterprises[0]) => e.address || '-' },
     {
       key: 'status',
       title: '合作状态',
@@ -306,7 +302,7 @@ export default function EnterprisesListPage() {
       statsColumns={5}
       activeFilters={filters}
       onFilterChange={handleFilterChange}
-      searchPlaceholder="搜索企业名称、行业、地区..."
+      searchPlaceholder="搜索企业名称、行业、地址..."
       searchValue={search}
       onSearchChange={setSearch}
       filters={filterConfigs}
@@ -403,7 +399,7 @@ export default function EnterprisesListPage() {
               <div className="bg-muted/50 rounded-lg p-4 text-sm space-y-2">
                 <p className="font-medium">导入说明：</p>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                  <li>文件需包含企业基本信息（名称、行业、地区等）</li>
+                  <li>文件需包含企业基本信息（名称、行业、地址等）</li>
                   <li>如包含专家信息，将同时导入到专家资源库</li>
                   <li>重复的企业将根据统一社会信用代码去重</li>
                 </ul>

@@ -14,12 +14,11 @@ import {
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { jobBrands } from "@/lib/mock-data"
-import { BRAND_LEVEL_LABELS, INDUSTRIES, JOB_CATEGORY_LABELS } from "@/lib/types"
+import { INDUSTRIES, JOB_CATEGORY_LABELS } from "@/lib/types"
 
 export default function JobBrandPage() {
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState<Record<string, string>>({
-    level: "all",
     industry: "all",
     category: "all",
   })
@@ -37,7 +36,6 @@ export default function JobBrandPage() {
           job.suitableMajors.some((m) => m.toLowerCase().includes(term))
         if (!matchesSearch) return false
       }
-      if (filters.level !== "all" && job.level !== filters.level) return false
       if (filters.industry !== "all" && job.industry !== filters.industry) return false
       if (filters.category !== "all" && job.jobCategory !== filters.category) return false
       return true
@@ -50,7 +48,7 @@ export default function JobBrandPage() {
 
   const handleClearFilters = () => {
     setSearch("")
-    setFilters({ level: "all", industry: "all", category: "all" })
+    setFilters({ industry: "all", category: "all" })
   }
 
   const hasActiveFilters = search || Object.values(filters).some((v) => v !== "all")
@@ -86,17 +84,6 @@ export default function JobBrandPage() {
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Select value={filters.level} onValueChange={(v) => handleFilterChange("level", v)}>
-                    <SelectTrigger className="w-[150px] rounded-xl">
-                      <SelectValue placeholder="全部等级" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">全部等级</SelectItem>
-                      {Object.entries(BRAND_LEVEL_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <Select value={filters.industry} onValueChange={(v) => handleFilterChange("industry", v)}>
                     <SelectTrigger className="w-[150px] rounded-xl">
                       <SelectValue placeholder="全部行业" />

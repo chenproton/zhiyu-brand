@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { permissionGrants, cooperationAccounts, enterprises, experts } from '@/lib/mock-data'
+import { RolePermissionConfigDialog } from './_components/role-permission-config-dialog'
 import {
   COOPERATION_ACCOUNT_TYPE_LABELS,
   RESOURCE_TYPE_LABELS,
@@ -121,6 +122,7 @@ export default function PermissionsPage() {
   const [shareGrant, setShareGrant] = useState<PermissionGrant | null>(null)
   const [shareAdminContact, setShareAdminContact] = useState('13800138000')
   const [adminContactDialogOpen, setAdminContactDialogOpen] = useState(false)
+  const [rolePermissionDialogOpen, setRolePermissionDialogOpen] = useState(false)
   const [adminContact, setAdminContact] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('admin_contact') || ''
@@ -428,7 +430,7 @@ export default function PermissionsPage() {
         subtitle="为企业/专家创建账号并分配资源权限与测评权限"
         actions={
           <>
-            <Button variant="outline" onClick={() => alert('功能与管理后台角色权限配置一致，本处不演示')}>
+            <Button variant="outline" onClick={() => setRolePermissionDialogOpen(true)}>
               角色权限配置
             </Button>
             <Button variant="outline" onClick={() => setAdminContactDialogOpen(true)}>
@@ -935,6 +937,10 @@ export default function PermissionsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <RolePermissionConfigDialog
+        open={rolePermissionDialogOpen}
+        onOpenChange={setRolePermissionDialogOpen}
+      />
     </div>
   )
 }

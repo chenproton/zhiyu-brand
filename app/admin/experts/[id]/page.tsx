@@ -11,14 +11,13 @@ import {
   School,
   GraduationCap,
   Clock,
-  Building2,
   MapPin,
   Briefcase,
   Tag,
   FileText,
   Award,
 } from 'lucide-react'
-import { getExpertById, getEnterpriseById } from '@/lib/mock-data'
+import { getExpertById } from '@/lib/mock-data'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -31,9 +30,6 @@ export default async function ExpertDetailPage({ params }: PageProps) {
   if (!expert) {
     notFound()
   }
-
-  const enterprise = expert.partnerId ? getEnterpriseById(expert.partnerId) : null
-  const organization = expert.organization || expert.partnerName
 
   return (
     <div>
@@ -95,37 +91,6 @@ export default async function ExpertDetailPage({ params }: PageProps) {
 
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Briefcase className="h-4 w-4" />
-                所属机构
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {enterprise ? (
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Building2 className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <div>
-                    <Link
-                      href={`/admin/enterprises/${enterprise.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      {enterprise.name}
-                    </Link>
-                    <p className="text-sm text-muted-foreground">{enterprise.industry}</p>
-                  </div>
-                </div>
-              ) : organization ? (
-                <span className="text-sm text-gray-600">{organization}</span>
-              ) : (
-                <span className="text-sm text-muted-foreground">-</span>
-              )}
-            </CardContent>
-          </Card>
-
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">

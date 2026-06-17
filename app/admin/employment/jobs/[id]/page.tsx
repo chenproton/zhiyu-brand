@@ -146,14 +146,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
                 <div className="text-center">
                   <p className="text-2xl font-bold">{job.headcount}</p>
                   <p className="text-sm text-muted-foreground">招聘人数</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold">{job.viewCount}</p>
-                  <p className="text-sm text-muted-foreground">浏览次数</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold">{recommendations.length}</p>

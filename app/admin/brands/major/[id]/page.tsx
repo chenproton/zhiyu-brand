@@ -48,7 +48,6 @@ import {
   Upload,
   X,
   Pencil,
-  Award,
 } from "lucide-react"
 import { getMajorBrandById, majorBrands, partners, jobs as mockJobs, achievements } from "@/lib/mock-data"
 import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS, INDUSTRIES, JOB_CATEGORY_LABELS } from "@/lib/types"
@@ -60,7 +59,6 @@ import {
   TeachingJobDialog,
 } from "@/components/admin/job-brand-tools"
 import { TableRowActions } from "@/components/admin/table-row-actions"
-import { ItemPublicDisplaySwitch } from "@/app/admin/enterprises/[id]/item-public-display-switch"
 
 const departments = ["智能制造学院", "信息工程学院", "数字商务学院", "现代服务学院", "设计艺术学院"]
 
@@ -928,11 +926,8 @@ export default function MajorBrandDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Award className="h-4 w-4" />
-                  合作成果
-                </CardTitle>
-                <CardDescription>与本专业合作企业相关的合作成果</CardDescription>
+                <CardTitle className="text-base">专业特色成果</CardTitle>
+                <CardDescription>管理本专业产生的特色成果</CardDescription>
               </div>
               <Button asChild size="sm">
                 <Link href="/admin/achievements/new">
@@ -942,50 +937,38 @@ export default function MajorBrandDetailPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              {(() => {
-                const majorAchievements = achievements.filter((a) =>
-                  major.cooperationPartners.includes(a.partnerName || "")
-                )
-                return majorAchievements.length > 0 ? (
-                  <div className="space-y-4">
-                    {majorAchievements.map((achievement) => (
-                      <div
-                        key={achievement.id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium">{achievement.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {achievement.publishDate.toLocaleDateString("zh-CN")} 发布
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary">{achievement.type}</Badge>
-                          <ItemPublicDisplaySwitch
-                            defaultChecked={achievement.isPublicDisplay ?? true}
-                            onChange={undefined}
-                          />
-                          <Link href={`/admin/achievements/${achievement.id}`}>
-                            <Button variant="outline" size="sm">
-                              查看详情
-                            </Button>
-                          </Link>
-                          <Link href={`/admin/achievements/${achievement.id}/edit`}>
-                            <Button variant="outline" size="sm">
-                              <Pencil className="h-3 w-3 mr-1" />
-                              编辑
-                            </Button>
-                          </Link>
-                        </div>
+              {majorAchievements.length > 0 ? (
+                <div className="space-y-4">
+                  {majorAchievements.map((achievement) => (
+                    <div
+                      key={achievement.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">{achievement.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {achievement.publishDate.toLocaleDateString('zh-CN')} 发布
+                        </p>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    暂无合作成果
-                  </div>
-                )
-              })()}
+                      <div className="flex items-center gap-2">
+                        <Link href={`/admin/achievements/${achievement.id}`}>
+                          <Button variant="outline" size="sm">
+                            查看详情
+                          </Button>
+                        </Link>
+                        <Link href={`/admin/achievements/${achievement.id}/edit`}>
+                          <Button variant="outline" size="sm">
+                            <Pencil className="h-3 w-3 mr-1" />
+                            编辑
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">暂无专业特色成果</div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
