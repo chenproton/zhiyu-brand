@@ -834,6 +834,71 @@ function MajorTabs({
   )
 }
 
+const ANCHOR_SECTIONS = [
+  { id: "achievement-library", label: "产教融合成果库" },
+  { id: "brand-library", label: "产教品牌库" },
+  { id: "talent-job-hall", label: "人才与岗位供需服务大厅" },
+]
+
+function SectionAnchorNav() {
+  const [activeId, setActiveId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id)
+          }
+        })
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
+    )
+
+    ANCHOR_SECTIONS.forEach(({ id }) => {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
+  const handleClick = (id: string) => {
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+  }
+
+  return (
+    <nav className="fixed right-5 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col items-end gap-4">
+      {ANCHOR_SECTIONS.map(({ id, label }) => {
+        const active = activeId === id
+        return (
+          <button
+            key={id}
+            onClick={() => handleClick(id)}
+            className="group flex items-center gap-3 text-right"
+          >
+            <span
+              className="text-sm font-medium transition-all duration-300 text-slate-500 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+            >
+              {label}
+            </span>
+            <span
+              className={`block w-3 h-3 rounded-full border-2 transition-all duration-300 ${
+                active
+                  ? "bg-blue-600 border-blue-600 scale-125"
+                  : "bg-white border-slate-300 group-hover:border-blue-400"
+              }`}
+            />
+          </button>
+        )
+      })}
+    </nav>
+  )
+}
+
 export default function LandingPage() {
   const [selectedCollege, handleCollegeChange] = useSelectedCollege()
   const [partnerCollege, setPartnerCollege] = useLocalCollege()
@@ -871,6 +936,8 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SectionAnchorNav />
+
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
@@ -977,7 +1044,7 @@ export default function LandingPage() {
       </section>
 
       {/* 产教融合 */}
-      <section className="py-24 bg-gradient-to-b from-slate-50/80 via-white to-blue-50/30">
+      <section id="achievement-library" className="py-24 bg-gradient-to-b from-slate-50/80 via-white to-blue-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="产教融合成果库" subtitle="多元主体协同，以产业需求为牵引，以学生能力为中心，以场景实践为载体，以跨专业融合为特征" />
 
@@ -1018,7 +1085,7 @@ export default function LandingPage() {
       </section>
 
       {/* 品牌展示 */}
-      <section className="py-24 bg-gradient-to-b from-white via-slate-50/40 to-white">
+      <section id="brand-library" className="py-24 bg-gradient-to-b from-white via-slate-50/40 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="产教品牌库" subtitle="人才培养、校企合作、专业建设等各领域品牌成果" />
 
@@ -1190,7 +1257,7 @@ export default function LandingPage() {
       </section>
 
       {/* 人才与岗位供需服务大厅 */}
-      <section className="py-24 bg-gradient-to-b from-blue-50/50 via-indigo-50/30 to-violet-50/40">
+      <section id="talent-job-hall" className="py-24 bg-gradient-to-b from-blue-50/50 via-indigo-50/30 to-violet-50/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="人才与岗位供需服务大厅" subtitle="校企合作就业项目，汇聚优质岗位资源" />
 
@@ -1218,22 +1285,15 @@ export default function LandingPage() {
               <EmploymentCard key={project.id} project={project} img={getImage(i + 6)} />
             ))}
           </div>
+
+          <div className="mt-14 text-center">
+            <Button asChild className="rounded-full px-8 py-6 text-base font-bold bg-gradient-to-r from-blue-600 via-violet-600 to-indigo-600 hover:from-blue-700 hover:via-violet-700 hover:to-indigo-700 text-white shadow-xl shadow-violet-200 transition-all hover:shadow-2xl hover:-translate-y-1">
+              <Link href="/jobs">查看全部</Link>
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 bg-slate-950 h-12 px-8 shrink-0">
-        <div className="max-w-7xl mx-auto h-full flex items-center justify-between text-xs text-slate-400">
-          <div className="flex items-center gap-6">
-            <span className="hover:text-white cursor-pointer transition-colors">关于平台</span>
-            <span className="hover:text-white cursor-pointer transition-colors">使用帮助</span>
-            <span className="hover:text-white cursor-pointer transition-colors">留言反馈</span>
-          </div>
-          <div>
-            <span>杭州知与未来科技有限公司 · 浙ICP xxxxxxxx</span>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

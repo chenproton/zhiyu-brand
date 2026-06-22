@@ -40,24 +40,13 @@ import {
 } from 'lucide-react'
 import { jobs, jobBrands, employmentProjects } from '@/lib/mock-data'
 import {
-  JOB_STATUS_LABELS,
   JOB_CATEGORY_LABELS,
-  type JobStatus,
 } from '@/lib/types'
 import { usePartner } from '../partner-context'
-
-const statusColors: Record<JobStatus, string> = {
-  draft: 'bg-gray-100 text-gray-800',
-  published: 'bg-green-100 text-green-800',
-  paused: 'bg-yellow-100 text-yellow-800',
-  closed: 'bg-red-100 text-red-800',
-  filled: 'bg-blue-100 text-blue-800',
-}
 
 export default function PartnerJobsPage() {
   const { selectedEnterpriseId } = usePartner()
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [projectFilter, setProjectFilter] = useState<string>('all')
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -75,7 +64,6 @@ export default function PartnerJobsPage() {
       const matchesSearch =
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.partnerName.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesStatus = statusFilter === 'all' || job.status === statusFilter
       const matchesCategory =
         categoryFilter === 'all' || job.jobCategory === categoryFilter
       const matchesProject =
@@ -83,7 +71,6 @@ export default function PartnerJobsPage() {
       const matchesPartner = job.partnerId === selectedEnterpriseId
       return (
         matchesSearch &&
-        matchesStatus &&
         matchesCategory &&
         matchesProject &&
         matchesPartner
@@ -91,7 +78,6 @@ export default function PartnerJobsPage() {
     })
   }, [
     searchTerm,
-    statusFilter,
     categoryFilter,
     projectFilter,
     selectedEnterpriseId,
@@ -139,32 +125,6 @@ export default function PartnerJobsPage() {
         </Button>
       </div>
 
-      {/* 统计卡片 */}
-      <div className="grid gap-4 md:grid-cols-5">
-        {Object.entries(JOB_STATUS_LABELS).map(([status, label]) => {
-          const count = jobs.filter(
-            (j) => j.status === status && j.partnerId === selectedEnterpriseId
-          ).length
-          return (
-            <Card
-              key={status}
-              className={statusFilter === status ? 'ring-2 ring-primary' : ''}
-              onClick={() =>
-                setStatusFilter(statusFilter === status ? 'all' : status)
-              }
-              style={{ cursor: 'pointer' }}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">{label}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{count}</div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
       {/* 筛选栏 */}
       <Card>
         <CardContent className="pt-6">
@@ -178,19 +138,6 @@ export default function PartnerJobsPage() {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue placeholder="岗位状态" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部状态</SelectItem>
-                {Object.entries(JOB_STATUS_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="岗位类型" />
@@ -230,7 +177,6 @@ export default function PartnerJobsPage() {
                 <TableHead>岗位介绍</TableHead>
                 <TableHead>面向专业</TableHead>
                 <TableHead>所属行业</TableHead>
-                <TableHead>状态</TableHead>
                 <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
@@ -238,7 +184,7 @@ export default function PartnerJobsPage() {
               {filteredJobs.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={9}
+                    colSpan={8}
                     className="text-center py-12 text-muted-foreground"
                   >
                     没有找到符合条件的岗位
@@ -282,11 +228,6 @@ export default function PartnerJobsPage() {
                       </p>
                     </TableCell>
                     <TableCell>{getIndustry(job)}</TableCell>
-                    <TableCell>
-                      <Badge className={statusColors[job.status]}>
-                        {JOB_STATUS_LABELS[job.status]}
-                      </Badge>
-                    </TableCell>
                     <TableCell className="text-right relative">
                       <TableRowActions>
                         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>

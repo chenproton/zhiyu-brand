@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, Calendar, Briefcase, Users } from "lucide-react"
+import { Search, Calendar, Briefcase } from "lucide-react"
 import { employmentProjects } from "@/lib/mock-data"
 import { EMPLOYMENT_PROJECT_TYPE_LABELS, EMPLOYMENT_PROJECT_STATUS_LABELS } from "@/lib/types"
 
@@ -99,7 +99,7 @@ export default function EmploymentProjectsPortalPage() {
               <p className="text-3xl font-bold text-primary">
                 {employmentProjects.reduce((sum, p) => sum + p.applicationCount, 0)}
               </p>
-              <p className="text-sm text-muted-foreground">报名人数</p>
+              <p className="text-sm text-muted-foreground">在招岗位</p>
             </CardContent>
           </Card>
         </div>
@@ -145,15 +145,14 @@ export default function EmploymentProjectsPortalPage() {
                   <TableHead>起止时间</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>岗位数</TableHead>
-                  <TableHead>报名人数</TableHead>
                   <TableHead>创建人</TableHead>
                   <TableHead>创建时间</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredProjects.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="text-center text-muted-foreground py-16">
+                    <TableRow>
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-16">
                       没有找到符合条件的就业项目
                     </TableCell>
                   </TableRow>
@@ -182,12 +181,6 @@ export default function EmploymentProjectsPortalPage() {
                         <div className="flex items-center gap-1 text-sm">
                           <Briefcase className="h-3.5 w-3.5" />
                           {project.jobCount}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Users className="h-3.5 w-3.5" />
-                          {project.applicationCount}
                         </div>
                       </TableCell>
                       <TableCell>{project.createdBy || '—'}</TableCell>

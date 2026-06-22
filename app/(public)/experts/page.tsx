@@ -37,7 +37,7 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
 export default function ExpertsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [collegeFilter, setCollegeFilter] = useState<string>('all')
-  const [sortSeed, setSortSeed] = useState(0)
+  const [sortMode, setSortMode] = useState<'default' | 'name' | 'cooperation'>('default')
 
   const filteredExperts = useMemo(() => {
     return experts.filter((expert) => {
@@ -57,17 +57,23 @@ export default function ExpertsPage() {
     })
   }, [searchTerm, collegeFilter])
 
-  const shuffledExperts = useMemo(() => {
-    if (sortSeed === 0) return filteredExperts
-    return seededShuffle(filteredExperts, sortSeed)
-  }, [filteredExperts, sortSeed])
+  const sortedExperts = useMemo(() => {
+    const arr = [...filteredExperts]
+    if (sortMode === 'name') {
+      return arr.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+    }
+    if (sortMode === 'cooperation') {
+      return arr.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    }
+    return arr
+  }, [filteredExperts, sortMode])
 
   const hasActiveFilters = searchTerm || collegeFilter !== 'all'
 
   const handleClear = () => {
     setSearchTerm('')
     setCollegeFilter('all')
-    setSortSeed(0)
+    setSortMode('default')
   }
 
   return (
@@ -131,27 +137,35 @@ export default function ExpertsPage() {
             </p>
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
+                variant={sortMode === 'name' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setSortSeed((s) => s + 1)}
+                onClick={() => setSortMode('name')}
                 className="rounded-xl"
               >
                 按姓名排序
               </Button>
               <Button
-                variant="outline"
+                variant={sortMode === 'default' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setSortSeed((s) => s + 1)}
+                onClick={() => setSortMode('default')}
                 className="rounded-xl"
               >
                 随机排序
               </Button>
+              <Button
+                variant={sortMode === 'cooperation' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortMode('cooperation')}
+                className="rounded-xl"
+              >
+                按合作时间排序
+              </Button>
             </div>
           </div>
 
-          {shuffledExperts.length > 0 ? (
+          {sortedExperts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {shuffledExperts.map((expert, index) => {
+              {sortedExperts.map((expert, index) => {
                 const avatarSrc = expert.avatar || getAvatar(index)
                 const coverSrc = "/images/landingpage/tech.jpg"
                 const genderLabel = expert.gender === 'male' ? '男' : expert.gender === 'female' ? '女' : '—'

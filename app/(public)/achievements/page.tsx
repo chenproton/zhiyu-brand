@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 import { AchievementTypeBadge } from '@/components/shared/status-badge'
 import { achievements } from '@/lib/mock-data'
-import { ACHIEVEMENT_TYPE_LABELS, BRAND_STATUS_LABELS } from '@/lib/types'
+import { ACHIEVEMENT_TYPE_LABELS } from '@/lib/types'
 
 const IMAGES = [
   "/images/landingpage/agreement.jpg",
@@ -35,7 +35,6 @@ export default function PublicAchievementsPage() {
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<Record<string, string>>({
     type: 'all',
-    status: 'all',
   })
 
   const publishedAchievements = achievements.filter((a) => a.status === 'published')
@@ -51,7 +50,6 @@ export default function PublicAchievementsPage() {
         if (!matchesSearch) return false
       }
       if (filters.type !== 'all' && achievement.type !== filters.type) return false
-      if (filters.status !== 'all' && achievement.status !== filters.status) return false
       return true
     })
   }, [search, filters, publishedAchievements])
@@ -62,7 +60,7 @@ export default function PublicAchievementsPage() {
 
   const handleClearFilters = () => {
     setSearch('')
-    setFilters({ type: 'all', status: 'all' })
+    setFilters({ type: 'all' })
   }
 
   const hasActiveFilters = search || Object.values(filters).some((v) => v !== 'all')
@@ -109,17 +107,6 @@ export default function PublicAchievementsPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={filters.status} onValueChange={(v) => handleFilterChange('status', v)}>
-                    <SelectTrigger className="w-[150px] rounded-xl">
-                      <SelectValue placeholder="全部状态" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">全部状态</SelectItem>
-                      <SelectItem value="draft">草稿</SelectItem>
-                      <SelectItem value="published">已发布</SelectItem>
-                      <SelectItem value="archived">已归档</SelectItem>
-                    </SelectContent>
-                  </Select>
                   {hasActiveFilters && (
                     <Button variant="ghost" size="sm" onClick={handleClearFilters} className="rounded-xl">
                       <X className="h-4 w-4 mr-1" />
@@ -154,11 +141,6 @@ export default function PublicAchievementsPage() {
                       </div>
                     </div>
                     <CardContent className="p-6">
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <Badge variant={achievement.status === 'published' ? 'secondary' : 'outline'} className="text-[10px]">
-                          {BRAND_STATUS_LABELS[achievement.status]}
-                        </Badge>
-                      </div>
                       <h4 className="font-bold text-slate-900 text-lg mb-2 group-hover:text-emerald-600 transition-colors">
                         {achievement.name}
                       </h4>

@@ -18,7 +18,6 @@ import {
 import { ArrowLeft, Save, Upload, X } from 'lucide-react'
 import { FakeRichTextEditor } from '@/components/shared/fake-rich-text-editor'
 import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
 import {
   COOPERATION_STATUS_LABELS,
   COOPERATION_RATING_LABELS,
@@ -39,7 +38,6 @@ export default function NewEnterprisePage() {
   const [formData, setFormData] = useState({
     name: '',
     enterpriseType: 'school-based' as const,
-    isPublicDisplay: true,
     industry: '',
     status: 'negotiating' as CooperationStatus,
     rating: 'general' as CooperationRating,
@@ -221,18 +219,6 @@ export default function NewEnterprisePage() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>前台展示</Label>
-                  <div className="flex items-center gap-2 h-10">
-                    <Switch
-                      checked={formData.isPublicDisplay}
-                      onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isPublicDisplay: checked }))}
-                    />
-                    <span className={`text-sm ${formData.isPublicDisplay ? 'text-green-600' : 'text-gray-400'}`}>
-                      {formData.isPublicDisplay ? '展示' : '隐藏'}
-                    </span>
-                  </div>
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>企业简介</Label>

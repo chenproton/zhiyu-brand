@@ -55,8 +55,10 @@ export default function EditExpertPage() {
 
   const [secondaryColleges, setSecondaryColleges] = useState<string[]>([])
   const [avatar, setAvatar] = useState('')
+  const [coverImage, setCoverImage] = useState('')
   const [attachments, setAttachments] = useState<ExpertAttachment[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
   const attachmentInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -85,6 +87,7 @@ export default function EditExpertPage() {
     setThirdPartyName(expert.partnerSource === 'third-party' ? expert.partnerName || '' : '')
     setSecondaryColleges(expert.secondaryColleges || [])
     setAvatar(expert.avatar || '')
+    setCoverImage(expert.coverImage || '')
     setAttachments(expert.attachments || [])
   }, [id])
 
@@ -118,6 +121,14 @@ export default function EditExpertPage() {
     const files = e.target.files
     if (files && files[0]) {
       setAvatar(URL.createObjectURL(files[0]))
+    }
+    e.target.value = ''
+  }
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files[0]) {
+      setCoverImage(URL.createObjectURL(files[0]))
     }
     e.target.value = ''
   }
@@ -180,6 +191,7 @@ export default function EditExpertPage() {
       }
       expert.secondaryColleges = secondaryColleges.length > 0 ? secondaryColleges : undefined
       expert.avatar = avatar || undefined
+      expert.coverImage = coverImage || undefined
       expert.attachments = attachments.length > 0 ? attachments : undefined
       expert.updatedAt = new Date()
     }
@@ -359,6 +371,45 @@ export default function EditExpertPage() {
                     >
                       <Upload className="h-5 w-5 text-muted-foreground" />
                       <span className="text-xs text-muted-foreground">上传头像</span>
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="coverImage">专家主页封面</Label>
+                  <input
+                    ref={coverInputRef}
+                    id="coverImage"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleCoverChange}
+                  />
+                  <div className="flex items-center gap-3">
+                    {coverImage && (
+                      <div className="relative">
+                        <img
+                          src={coverImage}
+                          alt="专家主页封面"
+                          className="w-48 h-32 object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setCoverImage('')}
+                          className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-48 h-32 flex flex-col items-center justify-center gap-2 border-dashed"
+                      onClick={() => coverInputRef.current?.click()}
+                    >
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">上传封面</span>
                     </Button>
                   </div>
                 </div>

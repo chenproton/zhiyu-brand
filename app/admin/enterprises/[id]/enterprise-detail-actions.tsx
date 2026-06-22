@@ -64,8 +64,6 @@ export function NewProjectButton({ defaultPartnerIds }: { defaultPartnerIds?: st
 const TYPE_TABS: { value: string; label: string }[] = [
   { value: 'all', label: '全部' },
   { value: 'job', label: '岗位' },
-  { value: 'scene', label: '场景' },
-  { value: 'course', label: '课程' },
 ]
 
 const SOURCE_TABS = [

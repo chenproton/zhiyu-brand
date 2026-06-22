@@ -237,6 +237,8 @@ export interface Expert {
   id: string
   // 专家头像
   avatar?: string
+  // 专家主页封面
+  coverImage?: string
   // 姓名
   name: string
   // 性别

@@ -55,10 +55,20 @@ export function MajorDetailView({ major, mode }: MajorDetailViewProps) {
           <CardContent className="pt-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
-                  <BookOpen className="w-8 h-8 text-gray-400" />
+              <div className="flex flex-col gap-3">
+                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                  {major.coverImage ? (
+                    <img
+                      src={major.coverImage}
+                      alt={major.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <BookOpen className="w-8 h-8 text-gray-400" />
+                  )}
                 </div>
-                <div>
+              </div>
+              <div>
                   <h1 className="text-2xl font-bold text-gray-900">{major.name}</h1>
                   <p className="text-muted-foreground mt-1">{major.department}</p>
                   <div className="flex items-center gap-2 mt-2 flex-wrap">

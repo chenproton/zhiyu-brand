@@ -501,56 +501,6 @@ export default function LandingPage3() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-16">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="h-8 w-8 rounded-md bg-black flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-white" />
-                </div>
-                <span className="font-bold text-lg">产教融合平台</span>
-              </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">整合多元主体资源，构建产教深度融合的协同育人新生态。</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-sm">平台服务</h4>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li><Link href="/partners" className="hover:text-foreground transition-colors">合作主体</Link></li>
-                <li><Link href="/projects" className="hover:text-foreground transition-colors">合作项目</Link></li>
-                <li><Link href="/experts" className="hover:text-foreground transition-colors">专家资源</Link></li>
-                <li><Link href="/brands" className="hover:text-foreground transition-colors">品牌展示</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-sm">就业服务</h4>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li><Link href="/jobs" className="hover:text-foreground transition-colors">就业项目</Link></li>
-                <li><Link href="/brands/job" className="hover:text-foreground transition-colors">岗位品牌</Link></li>
-                <li><Link href="/brands/talent" className="hover:text-foreground transition-colors">人才品牌</Link></li>
-                <li><Link href="/brands/major" className="hover:text-foreground transition-colors">专业品牌</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-sm">关于我们</h4>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li><Link href="/about" className="hover:text-foreground transition-colors">平台介绍</Link></li>
-                <li><Link href="/contact" className="hover:text-foreground transition-colors">联系我们</Link></li>
-                <li><Link href="/admin" className="hover:text-foreground transition-colors">管理后台</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} 产教融合平台. All rights reserved.</p>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-foreground transition-colors">隐私政策</Link>
-              <Link href="/terms" className="hover:text-foreground transition-colors">服务条款</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

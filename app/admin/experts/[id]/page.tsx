@@ -44,11 +44,23 @@ export default async function ExpertDetailPage({ params }: PageProps) {
 
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-start gap-4">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
-            {expert.avatar ? (
-              <img src={expert.avatar} alt={expert.name} className="w-full h-full object-cover" />
-            ) : (
-              <Users className="w-10 h-10 text-gray-400" />
+          <div className="flex flex-col gap-3">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
+              {expert.avatar ? (
+                <img src={expert.avatar} alt={expert.name} className="w-full h-full object-cover" />
+              ) : (
+                <Users className="w-10 h-10 text-gray-400" />
+              )}
+            </div>
+            {expert.coverImage && (
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">专家主页封面</p>
+                <img
+                  src={expert.coverImage}
+                  alt="专家主页封面"
+                  className="w-48 h-32 object-cover rounded-lg border"
+                />
+              </div>
             )}
           </div>
           <div>

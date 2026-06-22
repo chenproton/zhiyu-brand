@@ -24,6 +24,7 @@ import {
   Building2,
   Search,
   FileText,
+  Eye,
 } from "lucide-react"
 import { getEmploymentProjectById, enterprises, jobs } from "@/lib/mock-data"
 import {
@@ -267,9 +268,7 @@ function JobCard({ job }: { job: typeof jobs[0] }) {
           <CardContent className="flex-1 p-4 flex flex-col justify-center min-w-0">
             <div className="flex items-center justify-between gap-2 mb-1.5">
               <h4 className="font-bold text-slate-900 text-sm truncate">{job.title}</h4>
-              <Badge variant="outline" className="text-[10px] font-medium border-amber-200 text-amber-700 bg-amber-50 shrink-0">
-                {JOB_TYPE_LABELS[job.type]}
-              </Badge>
+              <Eye className="h-3.5 w-3.5 text-slate-400 shrink-0" />
             </div>
             <p className="text-xs text-slate-400 line-clamp-1 mb-2">{job.partnerName} · {job.description}</p>
             <div className="flex flex-wrap gap-1 mb-2">
@@ -292,7 +291,6 @@ function JobCard({ job }: { job: typeof jobs[0] }) {
                 <span className="text-slate-400 flex items-center gap-1">
                   <MapPin className="h-3 w-3" /> {job.location}
                 </span>
-                <span className="text-slate-400">需求 {job.headcount} 人</span>
               </div>
               <Badge variant={job.status === "published" ? "secondary" : "outline"} className="text-[10px]">
                 {JOB_STATUS_LABELS[job.status]}

@@ -46,6 +46,8 @@ type JobFormState = {
   responsibilities: string
   requirements: string
   secondaryCollege: string
+  abilityModel: string
+  featureTags: string
 }
 
 const emptyForm: JobFormState = {
@@ -58,6 +60,12 @@ const emptyForm: JobFormState = {
   responsibilities: "",
   requirements: "",
   secondaryCollege: "",
+  abilityModel: "",
+  featureTags: "",
+}
+
+function splitByComma(val: string): string[] {
+  return val.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
 }
 
 function lines(value: string) {
@@ -90,12 +98,12 @@ export function makeNonTeachingJob(partner: Pick<Partner, "id" | "name" | "logo"
     salaryUnit: "month",
     requirements: lines(form.requirements),
     responsibilities: lines(form.responsibilities),
-    benefits: [],
     education: "不限",
     experience: "不限",
     headcount: 1,
     suitableMajors: form.selectedMajors,
-    skills: [],
+    skills: splitByComma(form.abilityModel),
+    benefits: splitByComma(form.featureTags),
     description: form.description,
     status: "draft",
     isUrgent: false,
@@ -135,6 +143,8 @@ export function NonTeachingJobDialog({
           responsibilities: initialJob.responsibilities.join("\n"),
           requirements: initialJob.requirements.join("\n"),
           secondaryCollege: initialJob.secondaryCollege || "",
+          abilityModel: initialJob.skills?.join(", ") || "",
+          featureTags: "",
         }
       : emptyForm
   )
@@ -161,6 +171,8 @@ export function NonTeachingJobDialog({
           description: form.description,
           responsibilities: lines(form.responsibilities),
           requirements: lines(form.requirements),
+          skills: splitByComma(form.abilityModel),
+          benefits: splitByComma(form.featureTags),
           secondaryCollege: form.secondaryCollege,
           updatedAt: new Date(),
         }
@@ -208,6 +220,24 @@ export function NonTeachingJobDialog({
                   <span>{major}</span>
                 </label>
               ))}
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>能力要求（逗号分隔）</Label>
+              <Input
+                value={form.abilityModel}
+                onChange={(e) => setForm((prev) => ({ ...prev, abilityModel: e.target.value }))}
+                placeholder="团队协作, 问题解决, 学习能力, 沟通能力"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>特色标签（逗号分隔）</Label>
+              <Input
+                value={form.featureTags}
+                onChange={(e) => setForm((prev) => ({ ...prev, featureTags: e.target.value }))}
+                placeholder="发展空间大, 技术前沿"
+              />
             </div>
           </div>
           <div className="space-y-2">

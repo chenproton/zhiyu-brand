@@ -25,11 +25,13 @@ import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
 import { AdminListPage } from "@/components/admin/list-page"
 import { AdminDataTable } from "@/components/admin/data-table"
 import { Plus, Pencil, Trash2, Upload, X, FileText } from "lucide-react"
-import { cultureBrands } from "@/lib/mock-data"
+import { cultureBrands, majorBrands } from "@/lib/mock-data"
 import { CULTURE_TYPE_LABELS } from "@/lib/types"
 import type { CultureBrand } from "@/lib/types"
 import { Switch } from "@/components/ui/switch"
 import { PublicDisplaySwitch } from "@/components/shared/public-display-switch"
+
+const MAJOR_OPTIONS = majorBrands.map((m) => m.name)
 
 function generateId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
@@ -426,12 +428,22 @@ export default function CultureBrandPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="c-major">面向专业</Label>
-              <Input
-                id="c-major"
+              <Select
                 value={form.relatedMajor}
-                onChange={(e) => setForm({ ...form, relatedMajor: e.target.value })}
-                placeholder="请输入面向专业（选填）"
-              />
+                onValueChange={(value) => setForm({ ...form, relatedMajor: value })}
+              >
+                <SelectTrigger id="c-major">
+                  <SelectValue placeholder="请选择面向专业（选填）" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">无</SelectItem>
+                  {MAJOR_OPTIONS.map((major) => (
+                    <SelectItem key={major} value={major}>
+                      {major}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center gap-2">
               <Label htmlFor="c-isPublicDisplay" className="flex-1">前台展示</Label>

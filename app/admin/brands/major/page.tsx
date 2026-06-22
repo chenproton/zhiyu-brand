@@ -57,7 +57,7 @@ export default function MajorBrandPage() {
     { key: "department", title: "所属院系", render: (major: MajorBrand) => major.department },
     {
       key: "level",
-      title: "品牌",
+      title: "品牌类型",
       render: (major: MajorBrand) => <Badge variant="outline">{BRAND_LEVEL_LABELS[major.level]}</Badge>,
     },
     {
@@ -104,6 +104,19 @@ export default function MajorBrandPage() {
     },
   ]
 
+  const tagExamples = [
+    "推荐品牌",
+    "重点品牌",
+    "标准品牌",
+    "省级特色专业",
+    "教育部1+X试点",
+    "省技能竞赛一等奖",
+    "校企共建实训室",
+    "产教融合示范基地",
+    "高水平专业群",
+    "现代学徒制试点",
+  ]
+
   return (
     <AdminListPage
       title="专业品牌管理"
@@ -126,6 +139,11 @@ export default function MajorBrandPage() {
         </Button>
       }
     >
+      <div className="mb-4 flex flex-wrap gap-2">
+        {tagExamples.map((tag) => (
+          <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+        ))}
+      </div>
       <AdminDataTable
         columns={columns}
         data={filteredMajors}

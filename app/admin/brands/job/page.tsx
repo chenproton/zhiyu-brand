@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { FakeRichTextEditor } from "@/components/shared/fake-rich-text-editor"
 import { TableRowActions } from "@/components/admin/table-row-actions"
 import {
@@ -26,9 +25,10 @@ import {
 import { AdminListPage } from "@/components/admin/list-page"
 import { AdminDataTable } from "@/components/admin/data-table"
 import { Pencil, Trash2, AlertCircle } from "lucide-react"
-import { jobBrands, jobs } from "@/lib/mock-data"
+import { jobBrands } from "@/lib/mock-data"
 import type { JobBrand, Job } from "@/lib/types"
-import { INDUSTRIES, JOB_CATEGORY_LABELS, SECONDARY_COLLEGES } from "@/lib/types"
+import { INDUSTRIES, JOB_CATEGORY_LABELS, SECONDARY_COLLEGES, MAJORS } from "@/lib/types"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import {
   JobActionButtons,
@@ -183,7 +183,7 @@ export default function JobBrandPage() {
     { key: "demandCount", title: "需求量", render: (job: JobBrand) => job.demandCount ?? 0 },
     {
       key: "suitableMajors",
-      title: "适用专业",
+      title: "面向专业",
       render: (job: JobBrand) => (
         <div className="flex flex-wrap gap-1 max-w-[200px]">
           {job.suitableMajors.slice(0, 2).map((major) => (
@@ -312,12 +312,33 @@ export default function JobBrandPage() {
                 onChange={(e) => setEditForm((prev) => ({ ...prev, demandCount: Number(e.target.value) }))}
               />
             </div>
-            <div className="space-y-2">
-              <Label>适用专业（逗号分隔）</Label>
-              <Input
-                value={editForm.suitableMajors?.join(", ") || ""}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, suitableMajors: splitByComma(e.target.value) }))}
-              />
+            <div className="col-span-2 space-y-2">
+              <Label>面向专业</Label>
+              <div className="border rounded-md p-3 max-h-[200px] overflow-y-auto">
+                <div className="grid grid-cols-3 gap-2">
+                  {MAJORS.map((major) => (
+                    <label
+                      key={major}
+                      className="flex items-center gap-2 text-sm cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={editForm.suitableMajors?.includes(major) ?? false}
+                        onCheckedChange={(checked) => {
+                          const current = editForm.suitableMajors || []
+                          setEditForm((prev) => ({
+                            ...prev,
+                            suitableMajors:
+                              checked === true
+                                ? [...current, major]
+                                : current.filter((m) => m !== major),
+                          }))
+                        }}
+                      />
+                      <span className="truncate">{major}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>岗位分类</Label>

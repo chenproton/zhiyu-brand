@@ -16,7 +16,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { majorBrands } from "@/lib/mock-data"
 import { BRAND_LEVEL_LABELS } from "@/lib/types"
-
 const IMAGES = [
   "/images/landingpage/lab.jpg",
   "/images/landingpage/coding.jpg",
@@ -35,7 +34,6 @@ function getImage(index: number) {
 export default function MajorBrandPage() {
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState<Record<string, string>>({
-    level: "all",
     department: "all",
   })
 
@@ -54,7 +52,6 @@ export default function MajorBrandPage() {
           major.introduction.toLowerCase().includes(term)
         if (!matchesSearch) return false
       }
-      if (filters.level !== "all" && major.level !== filters.level) return false
       if (filters.department !== "all" && major.department !== filters.department) return false
       return major.status === "published"
     })
@@ -66,7 +63,7 @@ export default function MajorBrandPage() {
 
   const handleClearFilters = () => {
     setSearch("")
-    setFilters({ level: "all", department: "all" })
+    setFilters({ department: "all" })
   }
 
   const hasActiveFilters = search || Object.values(filters).some((v) => v !== "all")
@@ -102,17 +99,6 @@ export default function MajorBrandPage() {
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Select value={filters.level} onValueChange={(v) => handleFilterChange("level", v)}>
-                    <SelectTrigger className="w-[150px] rounded-xl">
-                      <SelectValue placeholder="全部等级" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">全部等级</SelectItem>
-                      {Object.entries(BRAND_LEVEL_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <Select value={filters.department} onValueChange={(v) => handleFilterChange("department", v)}>
                     <SelectTrigger className="w-[150px] rounded-xl">
                       <SelectValue placeholder="全部院系" />

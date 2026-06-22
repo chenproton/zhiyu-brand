@@ -736,63 +736,6 @@ function CTASection() {
   )
 }
 
-function Footer() {
-  return (
-    <footer className="bg-black border-t border-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <School className="w-5 h-5 text-black" />
-              </div>
-              <span className="font-bold text-lg text-white">{schoolInfo.shortName}</span>
-            </div>
-            <p className="text-gray-500 text-sm leading-relaxed max-w-sm mb-6">
-              {schoolInfo.introduction}
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors cursor-pointer">
-                <Globe className="w-4 h-4" />
-              </div>
-              <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors cursor-pointer">
-                <Github className="w-4 h-4" />
-              </div>
-              <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors cursor-pointer">
-                <Linkedin className="w-4 h-4" />
-              </div>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold text-white mb-4">平台导航</h4>
-            <ul className="space-y-3 text-sm text-gray-500">
-              <li><Link href="/partners" className="hover:text-white transition-colors">合作主体</Link></li>
-              <li><Link href="/projects" className="hover:text-white transition-colors">合作项目</Link></li>
-              <li><Link href="/experts" className="hover:text-white transition-colors">专家资源</Link></li>
-              <li><Link href="/achievements" className="hover:text-white transition-colors">成果展示</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-white mb-4">联系我们</h4>
-            <ul className="space-y-3 text-sm text-gray-500">
-              <li className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {schoolInfo.address}</li>
-              <li className="flex items-center gap-2"><Phone className="w-4 h-4" /> {schoolInfo.contactPhone}</li>
-              <li className="flex items-center gap-2"><Mail className="w-4 h-4" /> {schoolInfo.contactEmail}</li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-gray-900 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
-          <p> {schoolInfo.shortName} 版权所有</p>
-          <div className="flex items-center gap-6">
-            <Link href="/privacy" className="hover:text-white transition-colors">隐私政策</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">服务条款</Link>
-          </div>
-        </div>
-      </div>
-    </footer>
-  )
-}
-
 /* ============================================================
    MAIN PAGE
    ============================================================ */
@@ -865,7 +808,6 @@ export default function LandingPage2() {
       <BrandShowcase />
       <EmploymentSection />
       <CTASection />
-      <Footer />
     </main>
   )
 }

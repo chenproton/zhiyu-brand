@@ -893,7 +893,7 @@ export default function PermissionsPage() {
           </DialogHeader>
           {shareGrant && (() => {
             const account = accounts.find(a => a.id === shareGrant.accountId)
-            const shareText = `您好！账号已为您准备就绪 🎉\n\n您可以通过以下地址登录平台：\nhttp://111.170.170.202:3001/partner/login\n\n登录账号：${account?.username ?? '—'}\n登录密码：${account?.password ?? '******'}\n\n如有任何问题，欢迎随时联系管理员（${shareAdminContact}）。`
+            const shareText = `您好！账号已为您准备就绪 🎉\n\n您可以通过以下地址登录平台：\nhttp://demo2.zhiyu.com.cn:3001/partner/login\n\n登录账号：${account?.username ?? '—'}\n登录密码：${account?.password ?? '******'}\n\n如有任何问题，欢迎随时联系管理员（${shareAdminContact}）。`
             return (
               <div className="space-y-4">
                 <div className="space-y-2">

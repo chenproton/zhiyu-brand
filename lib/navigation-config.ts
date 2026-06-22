@@ -1,9 +1,9 @@
 import type { PlatformNavigationConfig } from "@/platform-navigation-shell"
 import { SECONDARY_COLLEGES } from "@/lib/types"
 
-const externalPortalUrl = "http://111.170.170.202:3001/portal"
-const externalWorkspaceUrl = "http://111.170.170.202:3001/portal/workspace"
-const externalAppsUrl = "http://111.170.170.202:3001/portal/apps"
+const externalPortalUrl = "http://demo2.zhiyu.com.cn:3001/portal"
+const externalWorkspaceUrl = "http://demo2.zhiyu.com.cn:3001/portal/workspace"
+const externalAppsUrl = "http://demo2.zhiyu.com.cn:3001/portal/apps"
 
 export const publicNavigationConfig: PlatformNavigationConfig = {
   brandTitle: "产业联盟与人资品牌服务平台",

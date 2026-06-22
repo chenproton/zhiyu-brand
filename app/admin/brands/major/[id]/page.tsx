@@ -204,12 +204,12 @@ function LevelEditDialog({
     <Dialog open={open} onOpenChange={handleOpen}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{item ? "编辑品牌描述" : "新增品牌描述"}</DialogTitle>
+          <DialogTitle>{item ? "编辑品牌类型" : "新增品牌类型"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label>品牌描述</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="填写品牌描述" />
+            <Label>品牌类型</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="填写品牌类型" />
           </div>
           <div className="space-y-2">
             <Label>详细说明</Label>
@@ -285,6 +285,7 @@ export default function MajorBrandDetailPage() {
   )
   const [introductionAttachments, setIntroductionAttachments] = useState<string[]>([])
   const introFileRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   const handleIntroFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -296,6 +297,14 @@ export default function MajorBrandDetailPage() {
 
   const removeIntroAttachment = (index: number) => {
     setIntroductionAttachments((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files[0]) {
+      setMajor((prev) => (prev ? { ...prev, coverImage: URL.createObjectURL(files[0]) } : prev))
+    }
+    e.target.value = ""
   }
 
   // Tab 2 states
@@ -388,6 +397,12 @@ export default function MajorBrandDetailPage() {
       coreCourses: courses.map((c) => ({ name: c.name, description: c.description || undefined, url: c.url || undefined })).filter((c) => c.name),
       updatedAt: new Date(),
     }
+
+    const index = majorBrands.findIndex((m) => m.id === major.id)
+    if (index !== -1) {
+      majorBrands[index] = updated
+    }
+
     setMajor(updated)
     alert("保存成功（演示）")
   }
@@ -655,6 +670,47 @@ export default function MajorBrandDetailPage() {
                       <SelectItem value="archived">已归档</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="coverImage">专业封面</Label>
+                  <input
+                    ref={coverInputRef}
+                    id="coverImage"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleCoverChange}
+                  />
+                  <div className="flex items-center gap-3">
+                    {major.coverImage && (
+                      <div className="relative">
+                        <img
+                          src={major.coverImage}
+                          alt="专业封面"
+                          className="w-48 h-32 object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setMajor((prev) => (prev ? { ...prev, coverImage: undefined } : prev))}
+                          className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-48 h-32 flex flex-col items-center justify-center gap-2 border-dashed"
+                      onClick={() => coverInputRef.current?.click()}
+                    >
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        {major.coverImage ? "更换封面" : "上传封面"}
+                      </span>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

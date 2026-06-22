@@ -17,7 +17,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CooperationRatingBadge } from "@/components/shared/status-badge"
 import { partners, enterprises } from "@/lib/mock-data"
 import {
-  COOPERATION_STATUS_LABELS,
   COOPERATION_RATING_LABELS,
   INDUSTRIES,
 } from "@/lib/types"
@@ -41,7 +40,6 @@ function getImage(index: number) {
 export default function PartnersPage() {
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState<Record<string, string>>({
-    status: "all",
     rating: "all",
     industry: "all",
   })
@@ -64,7 +62,6 @@ export default function PartnersPage() {
         if (!matchesSearch) return false
       }
 
-      if (filters.status !== "all" && partner.status !== filters.status) return false
       if (filters.rating !== "all" && partner.rating !== filters.rating) return false
       if (filters.industry !== "all" && partner.industry !== filters.industry) return false
 
@@ -79,7 +76,6 @@ export default function PartnersPage() {
   const handleClearFilters = () => {
     setSearch("")
     setFilters({
-      status: "all",
       rating: "all",
       industry: "all",
     })
@@ -118,17 +114,6 @@ export default function PartnersPage() {
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Select value={filters.status} onValueChange={(v) => handleFilterChange("status", v)}>
-                    <SelectTrigger className="w-[150px] rounded-xl">
-                      <SelectValue placeholder="全部状态" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">全部状态</SelectItem>
-                      {Object.entries(COOPERATION_STATUS_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <Select value={filters.rating} onValueChange={(v) => handleFilterChange("rating", v)}>
                     <SelectTrigger className="w-[150px] rounded-xl">
                       <SelectValue placeholder="全部评级" />
