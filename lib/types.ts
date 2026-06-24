@@ -124,6 +124,8 @@ export interface Partner {
   address?: string
   establishedYear?: number
   employeeCount?: number
+  // 统一社会信用代码
+  unifiedSocialCreditCode?: string
   secondaryColleges?: string[]
   coverImage?: string
   hiredStudents?: string[]

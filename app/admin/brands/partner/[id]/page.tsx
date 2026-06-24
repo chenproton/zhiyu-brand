@@ -38,10 +38,15 @@ import {
   Search,
   Plus,
   X,
+  ImageIcon,
+  FileImage,
+  Award,
+  Medal,
 } from "lucide-react"
 import { partners, jobs as mockJobs, talentProfiles } from "@/lib/mock-data"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
 import {
   Select,
   SelectContent,
@@ -317,136 +322,213 @@ export default function PartnerDetailPage() {
           <TabsTrigger value="hiredStudents">已招聘学生 ({hiredStudents.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="info">
-          <div className="grid lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">品牌简介</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 leading-relaxed">
+        <TabsContent value="info" className="space-y-4">
+          {/* 基本信息 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">基本信息</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h4 className="text-sm font-medium mb-2">企业简介</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   {partner.description || "暂无描述"}
                 </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">联系信息</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {partner.contactPerson && (
-                  <div className="flex items-center gap-3">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">联系人：{partner.contactPerson}</span>
+              </div>
+              <Separator />
+              <div>
+                <h4 className="text-sm font-medium mb-4">其他信息</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">企业类型</p>
+                    <p className="text-sm font-medium">{PARTNER_TYPE_LABELS[partner.type]}</p>
                   </div>
-                )}
-                {partner.contactPhone && (
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{partner.contactPhone}</span>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">统一社会信用代码</p>
+                    <p className="text-sm font-medium">{partner.unifiedSocialCreditCode || "-"}</p>
                   </div>
-                )}
-                {partner.contactEmail && (
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{partner.contactEmail}</span>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">成立年份</p>
+                    <p className="text-sm font-medium">{partner.establishedYear || "-"}</p>
                   </div>
-                )}
-                {partner.address && (
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{partner.address}</span>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">员工规模</p>
+                    <p className="text-sm font-medium">
+                      {partner.employeeCount?.toLocaleString() || "-"} 人
+                    </p>
                   </div>
-                )}
-                {!partner.contactPerson && !partner.contactPhone && !partner.contactEmail && !partner.address && (
-                  <p className="text-sm text-muted-foreground">暂无联系信息</p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">所属行业与地区</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">所属行业</span>
-                  <span className="text-sm">{partner.industry}</span>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">创建时间</p>
+                    <p className="text-sm font-medium">
+                      {partner.createdAt.toLocaleDateString("zh-CN")}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">更新时间</p>
+                    <p className="text-sm font-medium">
+                      {partner.updatedAt.toLocaleDateString("zh-CN")}
+                    </p>
+                  </div>
+                  <div className="md:col-span-3">
+                    <p className="text-xs text-muted-foreground mb-1">关联二级学院</p>
+                    <p className="text-sm font-medium">
+                      {partner.secondaryColleges?.join("、") || "-"}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">地区</span>
-                  <span className="text-sm">{partner.region || "-"}</span>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            {!isIndependent && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">合作信息</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">合作状态</span>
-                    <CooperationStatusBadge status={partner.status} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">合作深度</span>
-                    <CooperationRatingBadge rating={partner.rating} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">合作类型</span>
-                    <div className="flex flex-wrap gap-1 justify-end">
-                      {partner.cooperationTypes.length > 0 ? (
-                        partner.cooperationTypes.map((type) => (
-                          <Badge key={type} variant="secondary" className="text-xs">
-                            {type}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-sm">-</span>
-                      )}
+          {/* 联系信息 */}
+          <Card className="md:max-w-[50%]">
+            <CardHeader>
+              <CardTitle className="text-base">联系信息</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {partner.contactPerson && (
+                <div className="flex items-center gap-3">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">联系人：{partner.contactPerson}</span>
+                </div>
+              )}
+              {partner.contactPhone && (
+                <div className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{partner.contactPhone}</span>
+                </div>
+              )}
+              {partner.contactEmail && (
+                <div className="flex items-center gap-3">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{partner.contactEmail}</span>
+                </div>
+              )}
+              {partner.address && (
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{partner.address}</span>
+                </div>
+              )}
+              {!partner.contactPerson && !partner.contactPhone && !partner.contactEmail && !partner.address && (
+                <p className="text-sm text-muted-foreground">暂无联系信息</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 企业形象 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                企业形象
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground mb-3">企业 Logo</p>
+              <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                {partner.logo ? (
+                  <img
+                    src={partner.logo}
+                    alt={partner.name}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <Building2 className="w-8 h-8 text-gray-400" />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 营业执照 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileImage className="h-4 w-4 text-muted-foreground" />
+                营业执照
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {partner.businessLicensePhotos && partner.businessLicensePhotos.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {partner.businessLicensePhotos.map((url, idx) => (
+                    <div
+                      key={idx}
+                      className="aspect-[3/4] bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden"
+                    >
+                      <img
+                        src={url}
+                        alt="营业执照"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">暂无营业执照</p>
+              )}
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">其他信息</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">主体类型</span>
-                  <span className="text-sm">{PARTNER_TYPE_LABELS[partner.type]}</span>
+          {/* 知识产权 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Award className="h-4 w-4 text-muted-foreground" />
+                知识产权
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {partner.intellectualPropertyPhotos && partner.intellectualPropertyPhotos.length > 0 ? (
+                <div className="flex flex-wrap gap-6">
+                  {partner.intellectualPropertyPhotos.map((photo, idx) => (
+                    <div key={idx} className="text-center">
+                      <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden mb-2">
+                        <img
+                          src={photo.url}
+                          alt={photo.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-600">{photo.name}</p>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">成立年份</span>
-                  <span className="text-sm">{partner.establishedYear || "-"}</span>
+              ) : (
+                <p className="text-sm text-muted-foreground">暂无知识产权证书</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 企业荣誉资质 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Medal className="h-4 w-4 text-muted-foreground" />
+                企业荣誉资质
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {partner.qualificationPhotos && partner.qualificationPhotos.length > 0 ? (
+                <div className="flex flex-wrap gap-6">
+                  {partner.qualificationPhotos.map((photo, idx) => (
+                    <div key={idx} className="text-center">
+                      <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden mb-2">
+                        <img
+                          src={photo.url}
+                          alt={photo.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-600">{photo.name}</p>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">员工规模</span>
-                  <span className="text-sm">
-                    {partner.employeeCount?.toLocaleString() || "-"} 人
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">创建时间</span>
-                  <span className="text-sm">
-                    {partner.createdAt.toLocaleDateString("zh-CN")}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">更新时间</span>
-                  <span className="text-sm">
-                    {partner.updatedAt.toLocaleDateString("zh-CN")}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">暂无荣誉资质证书</p>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="jobs">

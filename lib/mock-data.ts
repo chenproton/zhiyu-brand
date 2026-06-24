@@ -720,8 +720,18 @@ export const partners: Partner[] = [
   address: "苏州市工业园区创业街100号",
   establishedYear: 2010,
   employeeCount: 500,
+  unifiedSocialCreditCode: "91320594MA1P7XXXX1",
   secondaryColleges: ['智能制造学院'],
   hiredStudents: ['tp001', 'tp003'],
+  businessLicensePhotos: ["/placeholder.svg?height=300&width=220"],
+  intellectualPropertyPhotos: [
+    { name: "发明专利证书", url: "/placeholder.svg?height=160&width=160" },
+    { name: "软件著作权登记证书", url: "/placeholder.svg?height=160&width=160" },
+  ],
+  qualificationPhotos: [
+    { name: "高新技术企业证书", url: "/placeholder.svg?height=160&width=160" },
+    { name: "专精特新小巨人证书", url: "/placeholder.svg?height=160&width=160" },
+  ],
   createdAt: new Date('2010-01-15'),
   createdBy: '管理员',
   updatedAt: new Date('2024-06-20'),

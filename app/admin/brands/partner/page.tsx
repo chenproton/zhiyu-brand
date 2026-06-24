@@ -277,7 +277,6 @@ export default function PartnerBrandPage() {
     { key: "type", title: "类型", render: (partner: Partner) => PARTNER_TYPE_LABELS[partner.type] },
     { key: "industry", title: "行业", render: (partner: Partner) => partner.industry },
     { key: "region", title: "地区", render: (partner: Partner) => partner.region },
-    { key: "cooperationTypes", title: "合作方式", render: (partner: Partner) => partner.cooperationTypes.length > 0 ? partner.cooperationTypes.join(", ") : "-" },
     {
       key: "jobs",
       title: "关联岗位",
