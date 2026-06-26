@@ -50,8 +50,8 @@ import {
   Pencil,
 } from "lucide-react"
 import { getMajorBrandById, majorBrands, partners, jobs as mockJobs, achievements } from "@/lib/mock-data"
-import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS, INDUSTRIES, JOB_CATEGORY_LABELS } from "@/lib/types"
-import type { MajorBrand, Job, JobCategory } from "@/lib/types"
+import { BRAND_LEVEL_LABELS, BRAND_STATUS_LABELS, JOB_CATEGORY_LABELS } from "@/lib/types"
+import type { MajorBrand, Job, JobCategory, Partner } from "@/lib/types"
 
 import {
   JobActionButtons,
@@ -59,6 +59,7 @@ import {
   TeachingJobDialog,
 } from "@/components/admin/job-brand-tools"
 import { TableRowActions } from "@/components/admin/table-row-actions"
+import { CreatePartnerDialog } from "@/components/admin/create-partner-dialog"
 
 const departments = ["智能制造学院", "信息工程学院", "数字商务学院", "现代服务学院", "设计艺术学院"]
 
@@ -332,22 +333,10 @@ export default function MajorBrandDetailPage() {
       description: "",
     }))
   )
-  const [companyDialog, setCompanyDialog] = useState<{ open: boolean; item?: CompanyItem | null }>({ open: false })
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false)
   const [selectedPartnerId, setSelectedPartnerId] = useState("")
   const [createCompanyOpen, setCreateCompanyOpen] = useState(false)
-  const [createCompanyForm, setCreateCompanyForm] = useState({
-    name: "",
-    industry: INDUSTRIES[0],
-    region: "",
-    description: "",
-    contactPerson: "",
-    contactPhone: "",
-    contactEmail: "",
-    address: "",
-    establishedYear: "",
-    employeeCount: "",
-  })
+  const [editingCompany, setEditingCompany] = useState<Partner | null>(null)
 
   // Tab 5 states
   const majorAchievements = useMemo(
@@ -439,15 +428,6 @@ export default function MajorBrandDetailPage() {
   }
 
   // Tab 4 helpers
-  const handleSaveCompany = (name: string, description: string) => {
-    if (companyDialog.item) {
-      setCompanies((prev) => prev.map((c) => (c.id === companyDialog.item!.id ? { ...c, name, description } : c)))
-    } else {
-      setCompanies((prev) => [...prev, { id: generateId("co"), name, description }])
-    }
-    setCompanyDialog({ open: false })
-  }
-
   const removeCompany = (id: string) => {
     setCompanies((prev) => prev.filter((c) => c.id !== id))
   }
@@ -461,29 +441,45 @@ export default function MajorBrandDetailPage() {
     setQuoteDialogOpen(false)
   }
 
-  const handleCreateCompany = () => {
-    if (!createCompanyForm.name.trim()) return
-    setCompanies((prev) => [
-      ...prev,
-      {
-        id: generateId("co"),
-        name: createCompanyForm.name,
-        description: `所属行业：${createCompanyForm.industry}，地区：${createCompanyForm.region}，${createCompanyForm.description}`,
-      },
-    ])
-    setCreateCompanyForm({
-      name: "",
-      industry: INDUSTRIES[0],
-      region: "",
-      description: "",
-      contactPerson: "",
-      contactPhone: "",
-      contactEmail: "",
-      address: "",
-      establishedYear: "",
-      employeeCount: "",
-    })
+  const handleCompanyDialogSubmit = (partner: Partner) => {
+    if (editingCompany) {
+      setCompanies((prev) =>
+        prev.map((c) =>
+          c.id === (editingCompany as unknown as CompanyItem).id
+            ? { ...c, name: partner.name, description: partner.description || `所属行业：${partner.industry || "-"}，地区：${partner.region || "-"}` }
+            : c
+        )
+      )
+      setEditingCompany(null)
+    } else {
+      setCompanies((prev) => [
+        ...prev,
+        {
+          id: generateId("co"),
+          name: partner.name,
+          description: partner.description || `所属行业：${partner.industry || "-"}，地区：${partner.region || "-"}`,
+        },
+      ])
+    }
     setCreateCompanyOpen(false)
+  }
+
+  const openEditCompanyDialog = (company: CompanyItem) => {
+    const partner = {
+      id: company.id,
+      name: company.name,
+      description: company.description,
+      type: 'enterprise' as const,
+      industry: '',
+      region: '',
+      status: 'active' as const,
+      rating: 'general' as const,
+      cooperationTypes: [] as string[],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as unknown as Partner
+    setEditingCompany(partner)
+    setCreateCompanyOpen(true)
   }
 
   // Tab 6 helpers
@@ -953,7 +949,7 @@ export default function MajorBrandDetailPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setCompanyDialog({ open: true, item: row })}
+                          onClick={() => openEditCompanyDialog(row)}
                         >
                           <Pencil className="h-3 w-3 mr-1" />
                           编辑
@@ -1161,19 +1157,6 @@ export default function MajorBrandDetailPage() {
         description="填写岗位基础信息，保存后关联到当前专业就业方向。"
       />
 
-      {/* 合作企业编辑弹窗 */}
-      <NameDescDialog
-        open={companyDialog.open}
-        onOpenChange={(open) => setCompanyDialog({ open })}
-        title={companyDialog.item ? "编辑合作企业" : "新增合作企业"}
-        nameLabel="企业名称"
-        descLabel="合作内容"
-        namePlaceholder="填写企业名称"
-        descPlaceholder="填写合作内容、共建基础或合作成效"
-        item={companyDialog.item ? { name: companyDialog.item.name, description: companyDialog.item.description } : null}
-        onSave={handleSaveCompany}
-      />
-
       {/* 课程体系编辑弹窗 */}
       <NameDescDialog
         open={courseDialog.open}
@@ -1187,6 +1170,17 @@ export default function MajorBrandDetailPage() {
         urlPlaceholder="请输入课程链接地址"
         item={courseDialog.item ? { name: courseDialog.item.name, description: courseDialog.item.description, url: courseDialog.item.url } : null}
         onSave={handleSaveCourse}
+      />
+
+      {/* 新增/编辑独立雇主企业 Dialog */}
+      <CreatePartnerDialog
+        open={createCompanyOpen}
+        onOpenChange={(open) => {
+          setCreateCompanyOpen(open)
+          if (!open) setEditingCompany(null)
+        }}
+        editingPartner={editingCompany}
+        onSubmit={handleCompanyDialogSubmit}
       />
     </div>
   )
