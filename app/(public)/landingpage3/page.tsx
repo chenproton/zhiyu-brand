@@ -111,7 +111,7 @@ export default function LandingPage3() {
             <div className="h-8 w-8 rounded-md bg-black flex items-center justify-center">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
-            <span className="font-bold text-lg tracking-tight">产教融合平台</span>
+            <span className="font-bold text-lg tracking-tight">产教协同与人才品牌运营平台</span>
           </div>
           <div className="hidden md:flex items-center gap-1 text-sm font-medium text-muted-foreground">
             {["合作主体","项目","专家","品牌","就业"].map((item) => (
@@ -142,7 +142,7 @@ export default function LandingPage3() {
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
             <Badge variant="secondary" className="mb-8 px-4 py-1.5 text-sm font-medium rounded-full border shadow-sm">
-              产业联盟与人资品牌服务平台
+              产教协同与人才品牌运营平台
             </Badge>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-[1.08]">
               搭建产教融合桥梁

@@ -186,7 +186,7 @@ export function NonTeachingJobDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{initialJob ? "编辑非教学岗位" : "新建非教学岗位"}</DialogTitle>
+          <DialogTitle>{initialJob ? "编辑独立岗位" : "新增独立岗位"}</DialogTitle>
           <DialogDescription>{description || "填写岗位基础信息，保存后直接关联到当前雇主品牌。"}</DialogDescription>
         </DialogHeader>
         <div className="space-y-5 py-2">

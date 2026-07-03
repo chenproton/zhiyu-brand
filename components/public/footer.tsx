@@ -28,7 +28,7 @@ export function Footer() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-foreground text-background">
                 <Building2 className="h-5 w-5" />
               </div>
-              <span className="font-semibold text-lg">产教融合服务平台</span>
+              <span className="font-semibold text-lg">产教协同与人才品牌运营平台</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-sm">
               搭建产业与教育深度融合的桥梁，促进学校、企业、行业协会、产业园区等多元主体协同合作，共同培养适应产业发展需求的高素质人才。
@@ -73,7 +73,7 @@ export function Footer() {
         <div className="mt-8 pt-8 border-t">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} 产教融合服务平台. 保留所有权利.
+              &copy; {new Date().getFullYear()} 产教协同与人才品牌运营平台. 保留所有权利.
             </p>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <Link href="/terms" className="hover:text-foreground">服务条款</Link>

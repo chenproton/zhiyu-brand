@@ -52,7 +52,7 @@ export function Navbar() {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-foreground text-background">
             <Building2 className="h-5 w-5" />
           </div>
-          <span className="font-semibold text-lg hidden sm:inline-block">产教融合服务平台</span>
+           <span className="font-semibold text-lg hidden sm:inline-block">产教协同与人才品牌运营平台</span>
         </Link>
 
         {/* Desktop Navigation */}

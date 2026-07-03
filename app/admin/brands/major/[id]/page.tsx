@@ -323,6 +323,7 @@ export default function MajorBrandDetailPage() {
   const [directionJobs, setDirectionJobs] = useState<Job[]>([...mockJobs])
   const [teachingOpen, setTeachingOpen] = useState(false)
   const [nonTeachingOpen, setNonTeachingOpen] = useState(false)
+  const [editingJob, setEditingJob] = useState<Job | null>(null)
   const virtualPartner = { id: "virtual", name: "岗位品牌", logo: "" }
 
   // Tab 4 states
@@ -417,14 +418,26 @@ export default function MajorBrandDetailPage() {
   }
 
   const handleSaveNonTeachingJob = (job: Job) => {
-    setDirectionJobs((prev) => [job, ...prev])
+    setDirectionJobs((prev) => {
+      const exists = prev.some((j) => j.id === job.id)
+      if (exists) {
+        return prev.map((j) => (j.id === job.id ? job : j))
+      }
+      return [job, ...prev]
+    })
     setNonTeachingOpen(false)
+    setEditingJob(null)
   }
 
   const handleRemoveJob = (jobId: string) => {
     if (confirm("确定要移除该岗位吗？")) {
       setDirectionJobs((prev) => prev.filter((j) => j.id !== jobId))
     }
+  }
+
+  const openEditJobDialog = (job: Job) => {
+    setEditingJob(job)
+    setNonTeachingOpen(true)
   }
 
   // Tab 4 helpers
@@ -895,6 +908,12 @@ export default function MajorBrandDetailPage() {
                         </TableCell>
                         <TableCell className="text-right relative">
                           <TableRowActions>
+                            {job.jobCategory === "non-teaching" && (
+                              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEditJobDialog(job)}>
+                                <Pencil className="mr-1 h-3 w-3" />
+                                编辑
+                              </Button>
+                            )}
                             <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-red-500 hover:text-red-600" onClick={() => handleRemoveJob(job.id)}>
                               <Trash2 className="mr-1 h-3 w-3" />
                               删除
@@ -1148,11 +1167,15 @@ export default function MajorBrandDetailPage() {
         description="从岗位库中选择教学岗位，保存后关联到当前专业就业方向。"
       />
 
-      {/* 添加非教学岗位弹窗 */}
+      {/* 添加/编辑独立岗位弹窗 */}
       <NonTeachingJobDialog
         open={nonTeachingOpen}
-        onOpenChange={setNonTeachingOpen}
+        onOpenChange={(open) => {
+          setNonTeachingOpen(open)
+          if (!open) setEditingJob(null)
+        }}
         partner={virtualPartner}
+        initialJob={editingJob}
         onSave={handleSaveNonTeachingJob}
         description="填写岗位基础信息，保存后关联到当前专业就业方向。"
       />

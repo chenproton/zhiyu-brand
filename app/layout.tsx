@@ -7,7 +7,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: '产业联盟与人资品牌服务平台',
+  title: '产教协同与人才品牌运营平台',
   description: '产教融合管理、品牌运营管理、就业服务管理一体化平台',
   generator: 'v0.app',
   icons: {

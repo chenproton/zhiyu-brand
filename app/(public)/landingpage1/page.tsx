@@ -1000,11 +1000,7 @@ export default function LandingPage() {
               <p className="text-base md:text-lg text-slate-300 mb-10 max-w-lg leading-relaxed">
                 坚持以产业需求为牵引，面向职业岗位能力要求，依托真实实践场景，推动企业用人标准、教学培养目标与人才测评体系协同贯通。
               </p>
-              <div className="flex flex-wrap items-center gap-4">
-                <GradientButton href="#achievement-library">浏览产教成果</GradientButton>
-                <GradientButton href="/jobs" variant="secondary">查看岗位大厅</GradientButton>
-              </div>
-            </div>
+             </div>
 
             <div className="hidden lg:block">
               <Card className="border border-white/10 shadow-2xl rounded-2xl overflow-hidden bg-white/10 backdrop-blur-xl">

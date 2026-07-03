@@ -203,10 +203,12 @@ export default function JobBrandPage() {
       align: "right" as const,
       render: (job: JobBrand) => (
         <TableRowActions>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEdit(job)}>
-            <Pencil className="mr-1 h-3 w-3" />
-            编辑
-          </Button>
+          {job.jobCategory !== "teaching" && (
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEdit(job)}>
+              <Pencil className="mr-1 h-3 w-3" />
+              编辑
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
