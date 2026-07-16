@@ -44,7 +44,7 @@ export const schoolInfo: SchoolInfo = {
   city: '苏州市',
   address: '江苏省苏州市工业园区教育路188号',
   introduction: '华东职业技术学院是一所以工科为主，工、管、经、艺协调发展的全日制公办高等职业院校。学院始终坚持"产教融合、校企合作"的办学理念，积极探索校企深度合作模式，为区域经济发展培养高素质技术技能人才。',
-  website: 'https://www.hdvtc.edu.cn',
+  website: 'https://www.zhiyu.com.cn/',
   contactPhone: '0512-12345678',
   contactEmail: 'info@hdvtc.edu.cn',
   studentCount: 12000,

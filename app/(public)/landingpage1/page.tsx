@@ -919,20 +919,6 @@ function SectionAnchorNav() {
   )
 }
 
-function Footer() {
-  return (
-    <footer className="bg-slate-900 text-slate-400">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-          <Link href="/" className="hover:text-white transition-colors">返回首页</Link>
-          <Link href="/about" className="hover:text-white transition-colors">关于平台</Link>
-          <Link href="/help" className="hover:text-white transition-colors">使用帮助</Link>
-        </div>
-      </div>
-    </footer>
-  )
-}
-
 export default function LandingPage() {
   const [selectedCollege, handleCollegeChange] = useSelectedCollege()
   const [partnerCollege, setPartnerCollege] = useLocalCollege()
@@ -1340,7 +1326,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }
