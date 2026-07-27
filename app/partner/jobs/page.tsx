@@ -274,17 +274,15 @@ export default function PartnerJobsPage() {
                     <TableCell>{getIndustry(job)}</TableCell>
                     <TableCell className="text-right relative">
                       <TableRowActions>
-                        {job.status === 'draft' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => handlePublish(job.id)}
-                          >
-                            <Send className="mr-1 h-3 w-3" />
-                            发布
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => handlePublish(job.id)}
+                        >
+                          <Send className="mr-1 h-3 w-3" />
+                          发布
+                        </Button>
                         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
                           <Link href={`/partner/jobs/${job.id}/edit`}>
                             <Pencil className="mr-1 h-3 w-3" />
