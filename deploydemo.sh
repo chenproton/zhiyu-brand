@@ -21,6 +21,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REMOTE_BASE="/var/www"
 REMOTE_DIR="$REMOTE_BASE/$SITE_NAME"
 STANDALONE_DIR="$SCRIPT_DIR/.next/standalone"
+STATIC_DIR="$SCRIPT_DIR/.next/static"
+PUBLIC_DIR="$SCRIPT_DIR/public"
 DEMO_PKG_DIR="/dev/shm/${SITE_NAME}-demo-pkg"
 DATA_DIR="$SCRIPT_DIR/data"
 SSH_PORT="${SSH_PORT:-22}"
@@ -63,6 +65,17 @@ echo "[1/4] 复制本地 standalone 产物到 $DEMO_PKG_DIR ..."
 rm -rf "$DEMO_PKG_DIR"
 mkdir -p "$DEMO_PKG_DIR"
 rsync -a --delete --exclude='*.map' "$STANDALONE_DIR/" "$DEMO_PKG_DIR/"
+
+# 补充 .next/static 和 public（standalone 不含这些，但 Next.js 运行时需要）
+if [ -d "$STATIC_DIR" ]; then
+  mkdir -p "$DEMO_PKG_DIR/.next/static"
+  rsync -a --delete --exclude='*.map' "$STATIC_DIR/" "$DEMO_PKG_DIR/.next/static/"
+fi
+
+if [ -d "$PUBLIC_DIR" ]; then
+  mkdir -p "$DEMO_PKG_DIR/public"
+  rsync -a --delete --exclude='*.map' "$PUBLIC_DIR/" "$DEMO_PKG_DIR/public/"
+fi
 
 # 同时复制 data 目录中的配置（如平台链接等），确保运行时读取到的是 demo 配置
 if [ -d "$DATA_DIR" ]; then
