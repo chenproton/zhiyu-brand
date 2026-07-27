@@ -15,9 +15,104 @@ import {
 } from '@/components/ui/dialog'
 import { AdminListPage } from '@/components/admin/list-page'
 import { AdminDataTable } from '@/components/admin/data-table'
-import { Calendar, Briefcase, FileText, Plus, Pencil, Trash2, Eye } from 'lucide-react'
-import { employmentProjects } from '@/lib/mock-data'
+import { Calendar, Briefcase, FileText, Plus, Pencil, Trash2, Eye, ChevronRight, Send } from 'lucide-react'
+import { employmentProjects, enterprises } from '@/lib/mock-data'
 import { EMPLOYMENT_PROJECT_TYPE_LABELS, EMPLOYMENT_PROJECT_STATUS_LABELS } from '@/lib/types'
+
+function TransferPicker({
+  items,
+  selectedItems,
+  selectedIds,
+  onSelectedIdsChange,
+  availableTitle,
+  selectedTitle,
+}: {
+  items: { id: string; title: string; subtitle: string; group: string }[]
+  selectedItems: { id: string; title: string; subtitle: string }[]
+  selectedIds: string[]
+  onSelectedIdsChange: (ids: string[]) => void
+  availableTitle: string
+  selectedTitle: string
+}) {
+  const add = (id: string) => {
+    if (!selectedIds.includes(id)) onSelectedIdsChange([...selectedIds, id])
+  }
+  const remove = (id: string) => {
+    onSelectedIdsChange(selectedIds.filter((item) => item !== id))
+  }
+
+  const groups = Array.from(new Set(items.map((item) => item.group)))
+  const grouped = groups
+    .map((group) => ({
+      group,
+      items: items.filter((item) => item.group === group && !selectedIds.includes(item.id)),
+    }))
+    .filter((g) => g.items.length > 0)
+
+  return (
+    <div className="grid gap-4 py-4 md:grid-cols-[1fr_1fr]">
+      <div className="rounded-md border">
+        <div className="border-b px-3 py-2 text-sm font-medium">{availableTitle}</div>
+        <div className="max-h-80 overflow-y-auto p-2">
+          {grouped.map(({ group, items }) => (
+            <div key={group}>
+              <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 rounded mt-1">
+                {group}
+              </div>
+              {items.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm hover:bg-muted"
+                  onClick={() => add(item.id)}
+                >
+                  <span>
+                    <span className="block font-medium">{item.title}</span>
+                    <span className="text-xs text-muted-foreground">{item.subtitle}</span>
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
+              ))}
+            </div>
+          ))}
+          {grouped.length === 0 && (
+            <div className="py-10 text-center text-sm text-muted-foreground">无可选项目</div>
+          )}
+        </div>
+      </div>
+      <div className="rounded-md border">
+        <div className="flex items-center justify-between border-b px-3 py-2">
+          <span className="text-sm font-medium">{selectedTitle}（{selectedItems.length}）</span>
+          {selectedItems.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => onSelectedIdsChange([])}>
+              清空
+            </Button>
+          )}
+        </div>
+        <div className="max-h-80 overflow-y-auto p-2">
+          {selectedItems.length === 0 ? (
+            <div className="py-10 text-center text-sm text-muted-foreground">暂无选择</div>
+          ) : (
+            selectedItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm hover:bg-muted"
+                onClick={() => remove(item.id)}
+              >
+                <span>
+                  <span className="block font-medium">{item.title}</span>
+                  <span className="text-xs text-muted-foreground">{item.subtitle}</span>
+                </span>
+                <Trash2 className="h-4 w-4 text-muted-foreground" />
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const statusColors: Record<string, string> = {
   preparing: 'bg-yellow-100 text-yellow-800',
@@ -32,6 +127,9 @@ export default function EmploymentProjectsPage() {
     status: 'all',
   })
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
+  const [inviteProjectId, setInviteProjectId] = useState<string | null>(null)
+  const [selectedEnterpriseIds, setSelectedEnterpriseIds] = useState<string[]>([])
 
   const filtered = useMemo(() => {
     return employmentProjects.filter((ep) => {
@@ -142,6 +240,19 @@ export default function EmploymentProjectsPage() {
           <Button
             variant="ghost"
             size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => {
+              setSelectedEnterpriseIds(ep.partnerIds || [])
+              setInviteProjectId(ep.id)
+              setInviteDialogOpen(true)
+            }}
+          >
+            <Send className="mr-1 h-3 w-3" />
+            邀请企业
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
             onClick={() => setDeleteId(ep.id)}
           >
@@ -196,6 +307,45 @@ export default function EmploymentProjectsPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteId(null)}>取消</Button>
             <Button variant="destructive" onClick={handleDelete}>确认删除</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>邀请企业</DialogTitle>
+            <DialogDescription>选择要邀请参与该项目的企业</DialogDescription>
+          </DialogHeader>
+          <TransferPicker
+            items={enterprises.map((e) => ({
+              id: e.id,
+              title: e.name,
+              subtitle: e.secondaryColleges?.join('、') || '',
+              group: e.secondaryColleges?.[0] || '其他',
+            }))}
+            selectedItems={enterprises
+              .filter((e) => selectedEnterpriseIds.includes(e.id))
+              .map((e) => ({ id: e.id, title: e.name, subtitle: e.secondaryColleges?.join('、') || '' }))}
+            selectedIds={selectedEnterpriseIds}
+            onSelectedIdsChange={setSelectedEnterpriseIds}
+            availableTitle="参与企业"
+            selectedTitle="已选企业"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>取消</Button>
+            <Button
+              disabled={selectedEnterpriseIds.length === 0}
+              onClick={() => {
+                if (inviteProjectId) {
+                  const ep = employmentProjects.find((p) => p.id === inviteProjectId)
+                  if (ep) ep.partnerIds = [...selectedEnterpriseIds]
+                }
+                setInviteDialogOpen(false)
+              }}
+            >
+              确认邀请
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
