@@ -56,6 +56,8 @@ export default function PartnerJobsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [notifOpen, setNotifOpen] = useState(false)
   const [confirmedIds, setConfirmedIds] = useState<string[]>([])
+  const [publishJobId, setPublishJobId] = useState<string | null>(null)
+  const [publishProjectId, setPublishProjectId] = useState<string>('')
 
   const partnerProjects = useMemo(() => {
     if (!selectedEnterpriseId) return []
@@ -97,11 +99,24 @@ export default function PartnerJobsPage() {
   ])
 
   const handlePublish = (jobId: string) => {
-    const job = jobs.find((j) => j.id === jobId)
+    setPublishJobId(jobId)
+    setPublishProjectId('')
+  }
+
+  const handleConfirmPublish = () => {
+    if (!publishJobId) return
+    const job = jobs.find((j) => j.id === publishJobId)
     if (job) {
       job.status = 'published'
       job.updatedAt = new Date()
+      if (publishProjectId) {
+        const project = employmentProjects.find((p) => p.id === publishProjectId)
+        job.employmentProjectId = publishProjectId
+        job.employmentProjectName = project?.name || ''
+      }
     }
+    setPublishJobId(null)
+    setPublishProjectId('')
   }
 
   const handleDelete = () => {
@@ -259,12 +274,6 @@ export default function PartnerJobsPage() {
                     <TableCell>{getIndustry(job)}</TableCell>
                     <TableCell className="text-right relative">
                       <TableRowActions>
-                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-                          <Link href={`/partner/jobs/${job.id}/edit`}>
-                            <Pencil className="mr-1 h-3 w-3" />
-                            编辑
-                          </Link>
-                        </Button>
                         {job.status === 'draft' && (
                           <Button
                             variant="ghost"
@@ -276,6 +285,12 @@ export default function PartnerJobsPage() {
                             发布
                           </Button>
                         )}
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+                          <Link href={`/partner/jobs/${job.id}/edit`}>
+                            <Pencil className="mr-1 h-3 w-3" />
+                            编辑
+                          </Link>
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -385,6 +400,32 @@ export default function PartnerJobsPage() {
               })
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 发布岗位选择项目对话框 */}
+      <Dialog open={!!publishJobId} onOpenChange={(open) => { if (!open) { setPublishJobId(null); setPublishProjectId('') } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>发布岗位</DialogTitle>
+            <DialogDescription>选择要绑定的就业项目，确认后岗位将发布</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <Select value={publishProjectId} onValueChange={setPublishProjectId}>
+              <SelectTrigger>
+                <SelectValue placeholder="选择就业项目（可选）" />
+              </SelectTrigger>
+              <SelectContent>
+                {partnerProjects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setPublishJobId(null); setPublishProjectId('') }}>取消</Button>
+            <Button onClick={handleConfirmPublish}>确认发布</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
