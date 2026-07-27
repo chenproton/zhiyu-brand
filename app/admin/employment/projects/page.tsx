@@ -15,104 +15,10 @@ import {
 } from '@/components/ui/dialog'
 import { AdminListPage } from '@/components/admin/list-page'
 import { AdminDataTable } from '@/components/admin/data-table'
-import { Calendar, Briefcase, FileText, Plus, Pencil, Trash2, Eye, ChevronRight, Send } from 'lucide-react'
+import { Calendar, Briefcase, FileText, Plus, Pencil, Trash2, Eye, Send, Check } from 'lucide-react'
 import { employmentProjects, enterprises } from '@/lib/mock-data'
 import { EMPLOYMENT_PROJECT_TYPE_LABELS, EMPLOYMENT_PROJECT_STATUS_LABELS } from '@/lib/types'
-
-function TransferPicker({
-  items,
-  selectedItems,
-  selectedIds,
-  onSelectedIdsChange,
-  availableTitle,
-  selectedTitle,
-}: {
-  items: { id: string; title: string; subtitle: string; group: string }[]
-  selectedItems: { id: string; title: string; subtitle: string }[]
-  selectedIds: string[]
-  onSelectedIdsChange: (ids: string[]) => void
-  availableTitle: string
-  selectedTitle: string
-}) {
-  const add = (id: string) => {
-    if (!selectedIds.includes(id)) onSelectedIdsChange([...selectedIds, id])
-  }
-  const remove = (id: string) => {
-    onSelectedIdsChange(selectedIds.filter((item) => item !== id))
-  }
-
-  const groups = Array.from(new Set(items.map((item) => item.group)))
-  const grouped = groups
-    .map((group) => ({
-      group,
-      items: items.filter((item) => item.group === group && !selectedIds.includes(item.id)),
-    }))
-    .filter((g) => g.items.length > 0)
-
-  return (
-    <div className="grid gap-4 py-4 md:grid-cols-[1fr_1fr]">
-      <div className="rounded-md border">
-        <div className="border-b px-3 py-2 text-sm font-medium">{availableTitle}</div>
-        <div className="max-h-80 overflow-y-auto p-2">
-          {grouped.map(({ group, items }) => (
-            <div key={group}>
-              <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 rounded mt-1">
-                {group}
-              </div>
-              {items.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className="flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm hover:bg-muted"
-                  onClick={() => add(item.id)}
-                >
-                  <span>
-                    <span className="block font-medium">{item.title}</span>
-                    <span className="text-xs text-muted-foreground">{item.subtitle}</span>
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </button>
-              ))}
-            </div>
-          ))}
-          {grouped.length === 0 && (
-            <div className="py-10 text-center text-sm text-muted-foreground">无可选项目</div>
-          )}
-        </div>
-      </div>
-      <div className="rounded-md border">
-        <div className="flex items-center justify-between border-b px-3 py-2">
-          <span className="text-sm font-medium">{selectedTitle}（{selectedItems.length}）</span>
-          {selectedItems.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => onSelectedIdsChange([])}>
-              清空
-            </Button>
-          )}
-        </div>
-        <div className="max-h-80 overflow-y-auto p-2">
-          {selectedItems.length === 0 ? (
-            <div className="py-10 text-center text-sm text-muted-foreground">暂无选择</div>
-          ) : (
-            selectedItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className="flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm hover:bg-muted"
-                onClick={() => remove(item.id)}
-              >
-                <span>
-                  <span className="block font-medium">{item.title}</span>
-                  <span className="text-xs text-muted-foreground">{item.subtitle}</span>
-                </span>
-                <Trash2 className="h-4 w-4 text-muted-foreground" />
-              </button>
-            ))
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
+import { cn } from '@/lib/utils'
 
 const statusColors: Record<string, string> = {
   preparing: 'bg-yellow-100 text-yellow-800',
@@ -130,6 +36,26 @@ export default function EmploymentProjectsPage() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [inviteProjectId, setInviteProjectId] = useState<string | null>(null)
   const [selectedEnterpriseIds, setSelectedEnterpriseIds] = useState<string[]>([])
+  const [enterpriseCollegeFilter, setEnterpriseCollegeFilter] = useState('全部')
+
+  const availableColleges = useMemo(() => {
+    const set = new Set<string>()
+    enterprises.forEach((e) => {
+      e.secondaryColleges?.forEach((c) => set.add(c))
+    })
+    return ['全部', ...Array.from(set).sort()]
+  }, [])
+
+  const filteredEnterprises = useMemo(() => {
+    if (enterpriseCollegeFilter === '全部') return enterprises
+    return enterprises.filter((e) => e.secondaryColleges?.includes(enterpriseCollegeFilter))
+  }, [enterpriseCollegeFilter])
+
+  const toggleEnterprise = (id: string) => {
+    setSelectedEnterpriseIds((current) =>
+      current.includes(id) ? current.filter((eid) => eid !== id) : [...current, id]
+    )
+  }
 
   const filtered = useMemo(() => {
     return employmentProjects.filter((ep) => {
@@ -243,6 +169,7 @@ export default function EmploymentProjectsPage() {
             className="h-7 px-2 text-xs"
             onClick={() => {
               setSelectedEnterpriseIds(ep.partnerIds || [])
+              setEnterpriseCollegeFilter('全部')
               setInviteProjectId(ep.id)
               setInviteDialogOpen(true)
             }}
@@ -317,21 +244,90 @@ export default function EmploymentProjectsPage() {
             <DialogTitle>邀请企业</DialogTitle>
             <DialogDescription>选择要邀请参与该项目的企业</DialogDescription>
           </DialogHeader>
-          <TransferPicker
-            items={enterprises.map((e) => ({
-              id: e.id,
-              title: e.name,
-              subtitle: e.secondaryColleges?.join('、') || '',
-              group: e.secondaryColleges?.[0] || '其他',
-            }))}
-            selectedItems={enterprises
-              .filter((e) => selectedEnterpriseIds.includes(e.id))
-              .map((e) => ({ id: e.id, title: e.name, subtitle: e.secondaryColleges?.join('、') || '' }))}
-            selectedIds={selectedEnterpriseIds}
-            onSelectedIdsChange={setSelectedEnterpriseIds}
-            availableTitle="参与企业"
-            selectedTitle="已选企业"
-          />
+          <div className="grid gap-4 py-4 md:grid-cols-[1fr_1fr]">
+            <div className="rounded-md border">
+              <div className="p-2 border-b">
+                <div className="text-sm font-medium mb-2">企业</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {availableColleges.map((college) => (
+                    <button
+                      key={college}
+                      type="button"
+                      onClick={() => setEnterpriseCollegeFilter(college)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                        enterpriseCollegeFilter === college
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
+                    >
+                      {college}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="max-h-[300px] overflow-y-auto p-2 space-y-1">
+                {filteredEnterprises
+                  .filter((e) => !selectedEnterpriseIds.includes(e.id))
+                  .map((enterprise) => (
+                    <div
+                      key={enterprise.id}
+                      className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
+                      onClick={() => toggleEnterprise(enterprise.id)}
+                    >
+                      <div
+                        className={cn(
+                          'flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                          selectedEnterpriseIds.includes(enterprise.id)
+                            ? 'bg-primary text-primary-foreground'
+                            : 'opacity-50'
+                        )}
+                      >
+                        {selectedEnterpriseIds.includes(enterprise.id) && (
+                          <Check className="h-3 w-3" />
+                        )}
+                      </div>
+                      <span className="text-sm">{enterprise.name}</span>
+                    </div>
+                  ))}
+                {filteredEnterprises.filter((e) => !selectedEnterpriseIds.includes(e.id)).length === 0 && (
+                  <div className="py-10 text-center text-sm text-muted-foreground">无可选企业</div>
+                )}
+              </div>
+            </div>
+            <div className="rounded-md border">
+              <div className="flex items-center justify-between border-b px-3 py-2">
+                <span className="text-sm font-medium">已选企业（{selectedEnterpriseIds.length}）</span>
+                {selectedEnterpriseIds.length > 0 && (
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedEnterpriseIds([])}>
+                    清空
+                  </Button>
+                )}
+              </div>
+              <div className="max-h-[300px] overflow-y-auto p-2">
+                {selectedEnterpriseIds.length === 0 ? (
+                  <div className="py-10 text-center text-sm text-muted-foreground">暂无选择</div>
+                ) : (
+                  selectedEnterpriseIds.map((id) => {
+                    const enterprise = enterprises.find((e) => e.id === id)
+                    return (
+                      <div
+                        key={id}
+                        className="flex items-center justify-between rounded px-3 py-2 text-sm hover:bg-muted"
+                      >
+                        <span>{enterprise?.name}</span>
+                        <button
+                          onClick={() => toggleEnterprise(id)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>取消</Button>
             <Button
