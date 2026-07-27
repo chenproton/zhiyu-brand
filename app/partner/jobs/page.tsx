@@ -37,10 +37,14 @@ import {
   Pencil,
   Trash2,
   Send,
+  Bell,
+  Briefcase,
+  CheckCircle2,
 } from 'lucide-react'
 import { jobs, jobBrands, employmentProjects } from '@/lib/mock-data'
 import {
   JOB_CATEGORY_LABELS,
+  EMPLOYMENT_PROJECT_TYPE_LABELS,
 } from '@/lib/types'
 import { usePartner } from '../partner-context'
 
@@ -50,8 +54,17 @@ export default function PartnerJobsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [projectFilter, setProjectFilter] = useState<string>('all')
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [confirmedIds, setConfirmedIds] = useState<string[]>([])
 
   const partnerProjects = useMemo(() => {
+    if (!selectedEnterpriseId) return []
+    return employmentProjects.filter((p) =>
+      p.partnerIds.includes(selectedEnterpriseId)
+    )
+  }, [selectedEnterpriseId])
+
+  const invitations = useMemo(() => {
     if (!selectedEnterpriseId) return []
     return employmentProjects.filter((p) =>
       p.partnerIds.includes(selectedEnterpriseId)
@@ -117,12 +130,28 @@ export default function PartnerJobsPage() {
           <h1 className="text-2xl font-bold">岗位管理</h1>
           <p className="text-muted-foreground">发布和管理企业招聘岗位</p>
         </div>
-        <Button asChild>
-          <Link href="/partner/jobs/new">
-            <Plus className="h-4 w-4 mr-2" />
-            新建岗位
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="relative"
+            onClick={() => setNotifOpen(true)}
+          >
+            <Bell className="h-4 w-4 mr-1" />
+            消息提醒
+            {invitations.length > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-medium flex items-center justify-center">
+                {invitations.length}
+              </span>
+            )}
+          </Button>
+          <Button asChild>
+            <Link href="/partner/jobs/new">
+              <Plus className="h-4 w-4 mr-2" />
+              新建岗位
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* 筛选栏 */}
@@ -281,6 +310,81 @@ export default function PartnerJobsPage() {
               确认删除
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 消息提醒对话框 */}
+      <Dialog open={notifOpen} onOpenChange={setNotifOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>项目邀请通知</DialogTitle>
+            <DialogDescription>学校邀请您参与就业项目，确认后可选择项目创建岗位</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {invitations.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground text-sm">
+                暂无新的邀请消息
+              </div>
+            ) : (
+              invitations.map((project) => {
+                const isConfirmed = confirmedIds.includes(project.id)
+                return (
+                  <div
+                    key={project.id}
+                    className="border rounded-lg p-4 space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium text-sm truncate">{project.name}</h4>
+                          <Badge variant="outline" className="shrink-0 text-xs">
+                            {EMPLOYMENT_PROJECT_TYPE_LABELS[project.type] || project.type}
+                          </Badge>
+                        </div>
+                        {project.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {project.description}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>
+                            {project.startDate.toLocaleDateString('zh-CN')} ~ {project.endDate.toLocaleDateString('zh-CN')}
+                          </span>
+                          <span>面向：{project.targetStudentGroups.join('、')}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
+                      {isConfirmed ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            已确认
+                          </span>
+                          <Button size="sm" asChild>
+                            <Link href={`/partner/jobs/new?project=${project.id}`}>
+                              <Briefcase className="h-3.5 w-3.5 mr-1" />
+                              创建岗位
+                            </Link>
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setConfirmedIds((prev) => [...prev, project.id])
+                          }}
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                          确认邀请
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
