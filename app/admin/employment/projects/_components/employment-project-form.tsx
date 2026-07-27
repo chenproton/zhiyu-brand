@@ -220,7 +220,7 @@ export default function EmploymentProjectForm({ mode, initialData, onSubmit }: E
   const handleSubmit = () => {
     const finalType = type === 'custom' ? customType : type
     const finalOrganizer = organizerMode === 'custom' ? organizer : selectedOrganizer || organizer
-    if (!name || !finalType || selectedPartnerIds.length === 0 || selectedStudentGroups.length === 0 || !startDate || !endDate || !finalOrganizer) {
+    if (!name || !finalType || selectedStudentGroups.length === 0 || !startDate || !endDate || !finalOrganizer) {
       alert('请填写所有必填项')
       return
     }
@@ -387,7 +387,7 @@ export default function EmploymentProjectForm({ mode, initialData, onSubmit }: E
 
           <div className="space-y-2">
             <Label>
-              参与企业 <span className="text-red-500">*</span>
+              参与企业
             </Label>
             <Popover open={enterprisePopoverOpen} onOpenChange={setEnterprisePopoverOpen}>
               <PopoverTrigger asChild>
