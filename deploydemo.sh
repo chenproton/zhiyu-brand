@@ -14,7 +14,8 @@ OLD_IP="${OLD_IP:-111.170.170.202}"
 
 # ==================== 项目配置（每个项目只需改这里） ====================
 SITE_NAME="brand"
-PORT=3004
+PORT=13104
+EXT_PORT=3004
 
 # ==================== 自动推导 ====================
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -50,7 +51,7 @@ cd "$SCRIPT_DIR"
 
 # ==================== 主流程 ====================
 echo ""
-echo "🚀 启动演示环境部署: [$SITE_NAME] -> http://$DEMO_HOST:$PORT"
+echo "🚀 启动演示环境部署: [$SITE_NAME] -> https://$DEMO_HOST:$EXT_PORT"
 echo ""
 
 # ── 0. 确保本地 standalone 产物已存在 ─────────────────────────────────
@@ -122,7 +123,7 @@ rsync -az --delete \
 
 # ── 4. 远程启动服务 ───────────────────────────────────────────────────
 echo ""
-echo "[4/4] 远程启动 PM2 服务 ..."
+echo "[4/4] 远程启动服务 ..."
 
 $SSH_CMD $SSH_OPTS "$DEMO_USER@$DEMO_HOST" \
   "export SITE_NAME='$SITE_NAME'; export PORT='$PORT'; export REMOTE_DIR='$REMOTE_DIR'; bash -s" << 'REMOTE_EOF'
@@ -151,6 +152,8 @@ $SSH_CMD $SSH_OPTS "$DEMO_USER@$DEMO_HOST" \
     --restart-delay 3000
 
   pm2 save > /dev/null
+
+  nginx -t 2>/dev/null && systemctl reload nginx 2>/dev/null || true
 REMOTE_EOF
 
 $SSH_CMD $SSH_OPTS "$DEMO_USER@$DEMO_HOST" \
@@ -161,5 +164,5 @@ rm -rf "$DEMO_PKG_DIR"
 
 echo ""
 echo "✨ [$SITE_NAME] 演示环境部署完成！"
-echo "   访问地址: http://$DEMO_HOST:$PORT"
+echo "   访问地址: https://$DEMO_HOST:$EXT_PORT"
 echo ""
